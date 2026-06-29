@@ -10,6 +10,7 @@ namespace TurnosApp.Core.Application.Interfaces.Persistence;
 public interface IUnitOfWork : IDisposable
 {
     IServicioRepository Servicios { get; }
+    IClienteRepository Clientes { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.
