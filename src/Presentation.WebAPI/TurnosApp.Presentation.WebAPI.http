@@ -1,0 +1,6 @@
+@TurnosApp.Presentation.WebAPI_HostAddress = http://localhost:5094
+
+GET {{TurnosApp.Presentation.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

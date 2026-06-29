@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core.Application/">
+    <Project Path="src/Core.Application/TurnosApp.Core.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/Core.Domain/">
+    <Project Path="src/Core.Domain/TurnosApp.Core.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Infra.Data/">
+    <Project Path="src/Infra.Data/TurnosApp.Infra.Data.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation.WebAPI/">
+    <Project Path="src/Presentation.WebAPI/TurnosApp.Presentation.WebAPI.csproj" />
+  </Folder>
+</Solution>
