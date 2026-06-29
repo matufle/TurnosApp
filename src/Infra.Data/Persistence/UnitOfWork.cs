@@ -14,6 +14,8 @@ public class UnitOfWork : IUnitOfWork
     // Campos de respaldo para lazy initialization.
     private IServicioRepository? _servicios;
     private IClienteRepository? _clientes;
+    private ITurnoRepository? _turnos;
+    private ITenantRepository? _tenants;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -25,6 +27,10 @@ public class UnitOfWork : IUnitOfWork
 
     public IClienteRepository Clientes
         => _clientes ??= new ClienteRepository(_context);
+    public ITurnoRepository Turnos
+     => _turnos ??= new TurnoRepository(_context);
+    public ITenantRepository Tenants
+        => _tenants ??= new TenantRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);
