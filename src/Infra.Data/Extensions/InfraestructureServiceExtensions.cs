@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Infra.Data.Context;
 using TurnosApp.Infra.Data.Interceptors;
+using TurnosApp.Infra.Data.Persistence;
 
 namespace TurnosApp.Infra.Data.Extensions;
 
@@ -30,6 +32,15 @@ public static class InfrastructureServiceExtensions
                         errorNumbersToAdd: null);
                 });
         });
+
+        // UnitOfWork como Scoped garantiza que una única instancia de DbContext
+        // sea compartida por toda la request HTTP, manteniendo la consistencia
+        // transaccional sin necesidad de coordinar manualmente.
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Los repositorios no se registran individualmente en DI —
+        // se accede a ellos exclusivamente a través de IUnitOfWork,
+        // que los instancia internamente con lazy init compartiendo el DbContext.
 
         return services;
     }
