@@ -4,6 +4,9 @@ using TurnosApp.Infra.Data.Extensions;
 using TurnosApp.Presentation.WebAPI.ExceptionHandlers;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
+using TurnosApp.Presentation.WebAPI.Filters;
+using Microsoft.OpenApi;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,36 +33,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new()
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "TurnosApp API",
         Version = "v1",
         Description = "Sistema de gestión de turnos Multi-tenant"
     });
 
-    // Permite enviar el header X-Tenant-Id desde Swagger UI para pruebas.
-    options.AddSecurityDefinition("TenantHeader", new()
-    {
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Name = HttpContextTenantProvider.HeaderName,
-        Description = "ID del tenant para filtrar los datos. Ej: 1"
-    });
-
-    options.AddSecurityRequirement(new()
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new()
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id   = "TenantHeader"
-                }
-            },
-            []
-        }
-    });
+    // Registra el filtro — se ejecuta una vez por cada endpoint descubierto.
+    // No requiere instanciar IOpenApiSecurityScheme ni tocar propiedades globales.
+    options.OperationFilter<TenantHeaderFilter>();
 });
 
 // ── Construcción de la app ─────────────────────────────────────────────────
