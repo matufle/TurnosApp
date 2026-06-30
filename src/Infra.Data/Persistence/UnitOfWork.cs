@@ -11,26 +11,25 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
 
-    // Campos de respaldo para lazy initialization.
-    private IServicioRepository? _servicios;
-    private IClienteRepository? _clientes;
-    private ITurnoRepository? _turnos;
-    private ITenantRepository? _tenants;
+    // Repositorios recibidos por DI — misma instancia Scoped que el DbContext.
+    public ITenantRepository Tenants { get; }
+    public IServicioRepository Servicios { get; }
+    public IClienteRepository Clientes { get; }
+    public ITurnoRepository Turnos { get; }
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(
+        ApplicationDbContext context,
+        ITenantRepository tenants,
+        IServicioRepository servicios,
+        IClienteRepository clientes,
+        ITurnoRepository turnos)
     {
         _context = context;
+        Tenants = tenants;
+        Servicios = servicios;
+        Clientes = clientes;
+        Turnos = turnos;
     }
-
-    public IServicioRepository Servicios
-        => _servicios ??= new ServicioRepository(_context);
-
-    public IClienteRepository Clientes
-        => _clientes ??= new ClienteRepository(_context);
-    public ITurnoRepository Turnos
-     => _turnos ??= new TurnoRepository(_context);
-    public ITenantRepository Tenants
-        => _tenants ??= new TenantRepository(_context);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);
