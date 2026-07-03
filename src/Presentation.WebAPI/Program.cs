@@ -27,6 +27,16 @@ builder.Services.AddScoped<ITenantProvider, HttpContextTenantProvider>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // La URL de tu React (Vite)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // ── Controllers y Swagger ──────────────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -57,7 +67,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("PermitirFrontend");
 app.UseHttpsRedirection();
 
 // TenantMiddleware antes de routing: corta el pipeline si falta el header.
