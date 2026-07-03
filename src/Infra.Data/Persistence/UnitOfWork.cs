@@ -16,12 +16,14 @@ public class UnitOfWork : IUnitOfWork
     public IServicioRepository Servicios { get; }
     public IClienteRepository Clientes { get; }
     public ITurnoRepository Turnos { get; }
+    public IRecursoRepository Recursos { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
         ITenantRepository tenants,
         IServicioRepository servicios,
         IClienteRepository clientes,
+        IRecursoRepository recursos,
         ITurnoRepository turnos)
     {
         _context = context;
@@ -29,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
         Servicios = servicios;
         Clientes = clientes;
         Turnos = turnos;
+        Recursos = recursos;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

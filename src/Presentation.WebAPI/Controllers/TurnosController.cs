@@ -17,26 +17,43 @@ public class TurnosController : ControllerBase
     }
 
     /// <summary>
-    /// Reserva un nuevo turno para un cliente y recurso dados.
-    /// Valida automáticamente el solapamiento con turnos existentes.
-    /// Retorna 409 Conflict si el horario no está disponible.
+    /// Lista todos los turnos activos del tenant actual (excluye cancelados).
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<TurnoDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        var turnos = await _turnoAppService.GetAllAsync(cancellationToken);
+        return Ok(turnos);
+    }
+
+    /// <summary>
+    /// Reserva un nuevo turno validando solapamiento.
+    /// Retorna 409 si el horario no está disponible para el recurso.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(TurnoDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CrearTurno(
         [FromBody] CrearTurnoDto dto,
         CancellationToken cancellationToken)
     {
-        // El GlobalExceptionHandler captura BusinessException (solapamiento)
-        // y la traduce a 409 Conflict con ProblemDetails.
-        // No necesitamos try/catch aquí — el pipeline lo maneja.
         var turno = await _turnoAppService.CrearTurnoAsync(dto, cancellationToken);
-
-        // 201 Created: la respuesta incluye el header Location
-        // apuntando al turno creado (cuando implementemos GetById de Turno).
         return StatusCode(StatusCodes.Status201Created, turno);
+    }
+
+    /// <summary>
+    /// Soft Delete: cancela el turno cambiando su estado a Cancelado.
+    /// El registro se conserva en la base de datos para auditoría.
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CancelarTurno(int id, CancellationToken cancellationToken)
+    {
+        await _turnoAppService.CancelarTurnoAsync(id, cancellationToken);
+        return NoContent();
     }
 }

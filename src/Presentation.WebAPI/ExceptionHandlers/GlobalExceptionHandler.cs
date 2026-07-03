@@ -1,83 +1,79 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using TurnosApp.Core.Application.Exceptions;
+using Microsoft.EntityFrameworkCore;
+using TurnosApp.Core.Application.Exceptions; // BusinessException
 using TurnosApp.Core.Domain.Exceptions;
+using TurnosApp.Core.Exceptions;      // NotFoundException, BadRequestException, ConflictException, SolapamientoException, DomainException
 
-namespace TurnosApp.Presentation.WebAPI.ExceptionHandlers;
+namespace TurnosApp.Presentation.WebAPI.Middleware;
 
-/// <summary>
-/// Centraliza la traducción de excepciones de dominio/aplicación
-/// a respuestas HTTP con ProblemDetails (RFC 7807).
-/// Registrado en DI como IExceptionHandler (disponible desde .NET 8).
-/// Evita try/catch en cada controller.
-/// </summary>
-public sealed class GlobalExceptionHandler : IExceptionHandler
+public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly IHostEnvironment _env;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
     {
         _logger = logger;
+        _env = env;
     }
 
     public async ValueTask<bool> TryHandleAsync(
-        HttpContext context,
+        HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var (statusCode, title, detail, extensions) = exception switch
-        {
-            BusinessException bex => (
-                StatusCodes.Status409Conflict,
-                "Conflicto de negocio",
-                bex.Message,
-                (IDictionary<string, object?>?)new Dictionary<string, object?> { ["code"] = bex.Code }
-            ),
+        var (statusCode, title, detail) = MapException(exception);
 
-            NotFoundException nex => (
-                StatusCodes.Status404NotFound,
-                "Recurso no encontrado",
-                nex.Message,
-                (IDictionary<string, object?>?)null
-            ),
-
-            DomainException dex => (
-                StatusCodes.Status422UnprocessableEntity,
-                "Violación de regla de dominio",
-                dex.Message,
-                (IDictionary<string, object?>?)null
-            ),
-
-            _ => (
-                StatusCodes.Status500InternalServerError,
-                "Error interno del servidor",
-                "Ocurrió un error inesperado. Por favor, intentá más tarde.",
-                (IDictionary<string, object?>?)null
-            )
-        };
-
-        // Logueamos el stack completo solo para errores no controlados.
         if (statusCode == StatusCodes.Status500InternalServerError)
             _logger.LogError(exception, "Excepción no controlada: {Message}", exception.Message);
         else
-            _logger.LogWarning(exception, "Excepción de negocio: {Message}", exception.Message);
+            _logger.LogWarning("Excepción de negocio ({Status}): {Message}", statusCode, detail);
 
         var problemDetails = new ProblemDetails
         {
             Status = statusCode,
             Title = title,
             Detail = detail,
-            Instance = context.Request.Path
+            Instance = httpContext.Request.Path
         };
 
-        if (extensions is not null)
-            foreach (var (key, value) in extensions)
-                problemDetails.Extensions[key] = value;
+        problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
 
-        context.Response.StatusCode = statusCode;
+        httpContext.Response.StatusCode = statusCode;
+        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
-        await context.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-        return true; // true = excepción manejada, el pipeline no propaga más.
+        return true;
     }
+
+    private (int StatusCode, string Title, string Detail) MapException(Exception exception) => exception switch
+    {
+        NotFoundException => (StatusCodes.Status404NotFound, "Recurso no encontrado", exception.Message),
+
+        SolapamientoException => (StatusCodes.Status409Conflict, "Conflicto de horario", exception.Message),
+
+        ConflictException => (StatusCodes.Status409Conflict, "Conflicto con el estado actual del recurso", exception.Message),
+
+        BusinessException => (StatusCodes.Status409Conflict, "Regla de negocio violada", exception.Message),
+
+        BadRequestException => (StatusCodes.Status400BadRequest, "Solicitud inválida", exception.Message),
+
+        DomainException => (StatusCodes.Status422UnprocessableEntity, "Violación de una regla del dominio", exception.Message),
+
+        UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "No autorizado", exception.Message),
+
+        DbUpdateException dbEx => (
+            StatusCodes.Status409Conflict,
+            "No se pudo guardar el cambio",
+            _env.IsDevelopment()
+                ? $"{dbEx.Message} | Inner: {dbEx.InnerException?.Message}"
+                : "Los datos ingresados violan una restricción existente (posible duplicado o referencia inválida)."
+        ),
+
+        _ => (
+            StatusCodes.Status500InternalServerError,
+            "Ocurrió un error interno inesperado",
+            _env.IsDevelopment() ? exception.Message : "Contactá al administrador si el problema persiste."
+        )
+    };
 }

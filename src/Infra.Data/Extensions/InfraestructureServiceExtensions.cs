@@ -41,6 +41,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITurnoRepository, TurnoRepository>();
         services.AddScoped<IServicioRepository, ServicioRepository>();
         services.AddScoped<IClienteRepository, ClienteRepository>();
+        services.AddScoped<IRecursoRepository, RecursoRepository>();
         services.AddScoped<ITenantRepository, TenantRepository>();
 
         // Los repositorios no se registran individualmente en DI —

@@ -11,6 +11,8 @@ public static class ApplicationServiceExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddScoped<ITenantAppService, TenantAppService>();    // ← nuevo
+        services.AddScoped<IRecursoAppService, RecursoAppService>();
         services.AddScoped<IServicioService, ServicioService>();
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<ITurnoAppService, TurnoAppService>();
