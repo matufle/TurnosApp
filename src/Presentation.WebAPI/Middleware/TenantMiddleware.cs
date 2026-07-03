@@ -66,5 +66,6 @@ public class TenantMiddleware
     private static bool IsExemptPath(PathString path) =>
         path.StartsWithSegments("/swagger") ||
         path.StartsWithSegments("/health") ||
-        path.StartsWithSegments("/favicon.ico");
+        path.StartsWithSegments("/favicon.ico") ||
+        path.StartsWithSegments("/api/tenants");
 }

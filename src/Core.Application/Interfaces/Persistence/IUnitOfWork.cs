@@ -13,6 +13,7 @@ public interface IUnitOfWork : IDisposable
     IServicioRepository Servicios { get; }
     IClienteRepository Clientes { get; }
     ITurnoRepository Turnos { get; }
+    IRecursoRepository Recursos { get; }
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.
     /// </summary>

@@ -6,6 +6,7 @@ using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
+using TurnosApp.Core.Exceptions;
 
 namespace TurnosApp.Core.Application.Services;
 

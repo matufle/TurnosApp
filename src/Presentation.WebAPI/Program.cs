@@ -1,7 +1,6 @@
 using TurnosApp.Core.Application.Extensions;
 using TurnosApp.Core.Application.Interfaces;
 using TurnosApp.Infra.Data.Extensions;
-using TurnosApp.Presentation.WebAPI.ExceptionHandlers;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
 using TurnosApp.Presentation.WebAPI.Filters;
