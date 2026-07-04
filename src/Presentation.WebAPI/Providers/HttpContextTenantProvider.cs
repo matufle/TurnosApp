@@ -1,4 +1,4 @@
-﻿using TurnosApp.Core.Application.Interfaces;
+﻿using TurnosApp.Core.Application.Interfaces.Services;
 
 namespace TurnosApp.Presentation.WebAPI.Providers;
 

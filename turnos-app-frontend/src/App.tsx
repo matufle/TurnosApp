@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LandingPage } from './pages/Landing/LandindPage';
 import { PrivateLayout } from './layout/PrivateLayout';
 import { ProtectedRoute } from './auth/ProtectedRoute';
+import { LoginPage } from './pages/Login/LoginPage';
+import { RegisterPage } from './pages/Register/RegisterPage';
 //import { TurnosPage } from './pages/Turnos/TurnosPage';
 //import { RecursosPage } from './pages/Recursos/RecursosPage';
 //import { ServiciosPage } from './pages/Servicios/ServiciosPage';
@@ -13,7 +15,8 @@ function App() {
       <Routes>
         {/* Pública */}
         <Route path="/" element={<LandingPage />} />
-
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
         {/* Privada, protegida y con layout compartido */}
         <Route
           path="/app"
