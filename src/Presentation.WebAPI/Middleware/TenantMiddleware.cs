@@ -63,9 +63,15 @@ public class TenantMiddleware
         await _next(context);
     }
 
-    private static bool IsExemptPath(PathString path) =>
-        path.StartsWithSegments("/swagger") ||
-        path.StartsWithSegments("/health") ||
-        path.StartsWithSegments("/favicon.ico") ||
-        path.StartsWithSegments("/api/tenants");
+    private static bool IsExemptPath(PathString path)
+    {
+        var pathValue = path.Value ?? string.Empty;
+
+        return pathValue.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/api/tenants", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase);
+    }
+
 }

@@ -6,13 +6,10 @@ using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Entities;
+using TurnosApp.Core.Exceptions;
 
 namespace TurnosApp.Core.Application.Services;
-
-public interface IAuthAppService
-{
-    Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto, CancellationToken cancellationToken);
-}
 
 public class AuthAppService : IAuthAppService
 {
@@ -30,10 +27,44 @@ public class AuthAppService : IAuthAppService
         _jwtTokenService = jwtTokenService;
     }
 
+    public async Task<LoginResponseDTO> RegisterAsync(RegisterRequestDTO dto, CancellationToken cancellationToken)
+    {
+        var emailExistente = await _unitOfWork.Usuarios.GetByEmailGlobalAsync(dto.Email, cancellationToken);
+
+        if (emailExistente is not null)
+            throw new ConflictException("Ya existe una cuenta registrada con ese email.");
+
+        var tenant = new Tenant
+        {
+            Nombre = dto.NombreNegocio,
+            Slug = GenerarSlug(dto.NombreNegocio),
+        };
+
+        await _unitOfWork.Tenants.AddAsync(tenant, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken); // necesario: EF recién asigna tenant.Id acá
+
+        var passwordHash = _passwordHasher.HashPassword(dto.Password);
+        var usuario = new Usuario(dto.Email, passwordHash, tenant.Id);
+
+        await _unitOfWork.Usuarios.AddAsync(usuario, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var token = _jwtTokenService.GenerateToken(usuario);
+
+        return new LoginResponseDTO(token, usuario.TenantId, usuario.Email);
+    }
+
+    private static string GenerarSlug(string nombre)
+    {
+        return nombre
+            .ToLowerInvariant()
+            .Trim()
+            .Replace(" ", "-")
+            .Normalize(System.Text.NormalizationForm.FormD); // simplificado — ver nota abajo
+    }
+
     public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto, CancellationToken cancellationToken)
     {
-        // Gracias al query filter global, esto ya busca SOLO dentro del tenant
-        // que llegó en el header X-Tenant-Id
         var usuario = await _unitOfWork.Usuarios.GetByEmailGlobalAsync(dto.Email, cancellationToken);
 
         if (usuario is null || !_passwordHasher.VerifyPassword(usuario.PasswordHash, dto.Password))

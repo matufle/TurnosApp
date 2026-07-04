@@ -3,9 +3,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
 using TurnosApp.Core.Application.Extensions;
+using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Application.Services;
 using TurnosApp.Infra.Data.Extensions;
+using TurnosApp.Infra.Data.Repositories;
 using TurnosApp.Presentation.WebAPI.Filters;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
@@ -45,15 +47,17 @@ builder.Services.AddScoped<ITenantProvider, HttpContextTenantProvider>();
 builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthAppService, AuthAppService>();
+builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PermitirFrontend", policy =>
+    options.AddPolicy("FrontendDev", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // La URL de tu React (Vite)
+        policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -89,7 +93,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("PermitirFrontend");
+app.UseCors("FrontendDev");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 // TenantMiddleware antes de routing: corta el pipeline si falta el header.
