@@ -1,8 +1,7 @@
-// src/layouts/PrivateLayout.tsx
+// src/layout/DashboardLayout.tsx
 import { AppShell, Group, Title, NavLink, Stack, Text, Avatar, Menu, UnstyledButton } from '@mantine/core';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  IconCalendarEvent,
   IconUsers,
   IconBriefcase,
   IconLogout,
@@ -10,26 +9,22 @@ import {
 } from '@tabler/icons-react';
 
 const navItems = [
-  { label: 'Turnos', icon: IconCalendarEvent, path: '/app/turnos' },
   { label: 'Recursos', icon: IconUsers, path: '/app/recursos' },
   { label: 'Servicios', icon: IconBriefcase, path: '/app/servicios' },
 ];
 
-export function PrivateLayout() {
+export function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('turnify_token'); // ajustar según tu manejo real de auth
-    navigate('/login');
+    localStorage.removeItem('turnify_token');
+    localStorage.removeItem('turnify_tenant_id');
+    navigate('/login', { replace: true });
   };
 
   return (
-    <AppShell
-      header={{ height: 64 }}
-      navbar={{ width: 240, breakpoint: 'sm' }}
-      padding="md"
-    >
+    <AppShell header={{ height: 64 }} navbar={{ width: 240, breakpoint: 'sm' }} padding="md">
       <AppShell.Header style={{ backgroundColor: 'white' }}>
         <Group h="100%" px="md" justify="space-between">
           <Title order={3} c="cyan.6">
@@ -77,7 +72,7 @@ export function PrivateLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Outlet /> {/* acá se renderizan las rutas hijas: TurnosPage, RecursosPage, etc. */}
+        <Outlet />
       </AppShell.Main>
     </AppShell>
   );
