@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TurnosApp.Core.Application.Interfaces;
+using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
 using TurnosApp.Infra.Data.Configurations;
 using TurnosApp.Infra.Data.Interceptors;
@@ -28,6 +28,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Turno> Turnos => Set<Turno>();
     public DbSet<TurnoServicio> TurnoServicios => Set<TurnoServicio>();
 
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
     // Exponemos el TenantId resuelto para que las configuraciones lo capturen
     // en el closure del Global Query Filter.
     internal int CurrentTenantId => _tenantProvider.GetCurrentTenantId();
@@ -51,7 +53,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ClienteConfiguration(this));
         modelBuilder.ApplyConfiguration(new ServicioConfiguration(this));
         modelBuilder.ApplyConfiguration(new TurnoConfiguration(this));
-
+        modelBuilder.ApplyConfiguration(new UsuarioConfiguration(this));
         // Estas no necesitan contexto — se registran solas vía assembly scan:
         // TenantConfiguration, TurnoServicioConfiguration
 

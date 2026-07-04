@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Infra.Data.Interceptors;
 
 namespace TurnosApp.Infra.Data.Context;
@@ -44,7 +45,7 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 /// Retorna 0 — los Global Query Filters no se evalúan en migraciones.
 /// </summary>
 internal sealed class DesignTimeTenantProvider
-    : TurnosApp.Core.Application.Interfaces.ITenantProvider
+    : ITenantProvider
 {
     public int GetCurrentTenantId() => 0;
 }

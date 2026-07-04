@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using System.Text;
 using TurnosApp.Core.Application.Extensions;
-using TurnosApp.Core.Application.Interfaces;
+using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Application.Services;
 using TurnosApp.Infra.Data.Extensions;
+using TurnosApp.Presentation.WebAPI.Filters;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
-using TurnosApp.Presentation.WebAPI.Filters;
-using Microsoft.OpenApi;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +16,22 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Servicios de infraestructura ───────────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
 // ── Servicios de aplicación ────────────────────────────────────────────────
 builder.Services.AddApplication();
 
@@ -22,7 +42,9 @@ builder.Services.AddHttpContextAccessor();
 
 // Scoped: una instancia por request, mismo ciclo de vida que DbContext.
 builder.Services.AddScoped<ITenantProvider, HttpContextTenantProvider>();
-
+builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthAppService, AuthAppService>();
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -69,7 +91,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("PermitirFrontend");
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 // TenantMiddleware antes de routing: corta el pipeline si falta el header.
 app.UseMiddleware<TenantMiddleware>();
 

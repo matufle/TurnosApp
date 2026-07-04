@@ -14,6 +14,8 @@ public interface IUnitOfWork : IDisposable
     IClienteRepository Clientes { get; }
     ITurnoRepository Turnos { get; }
     IRecursoRepository Recursos { get; }
+
+    IUsuarioRepository Usuarios { get; }
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.
     /// </summary>
