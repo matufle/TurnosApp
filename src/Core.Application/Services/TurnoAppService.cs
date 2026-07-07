@@ -27,27 +27,74 @@ public class TurnoAppService : ITurnoAppService
 
     public async Task<IReadOnlyList<TurnoDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var turnos = await _unitOfWork.Turnos.GetAllAsync(cancellationToken);
+        var turnos = await _unitOfWork.Turnos.GetAllConDetallesAsync(cancellationToken);
 
         return turnos
             .Where(t => t.Estado != EstadoTurno.Cancelado)
-            .Select(t => MapToDto(t))
+            .Select(MapToDto)
             .ToList();
     }
 
     public async Task<TurnoDto> CrearTurnoAsync(CrearTurnoDto dto, CancellationToken cancellationToken = default)
     {
-        // ── Paso 1: Obtener servicio para calcular duración ───────────────────
-        var servicio = await _unitOfWork.Servicios.GetByIdAsync(dto.ServicioId, cancellationToken);
+        var tenantId = _tenantProvider.GetCurrentTenantId();
 
-        if (servicio is null)
-            throw new NotFoundException(nameof(Servicio), dto.ServicioId);
+        // ── Paso 0: Resolver cliente (existente o inline) ─────────────────────
+        int clienteId;
 
-        // ── Paso 2: Calcular FechaHoraFin ─────────────────────────────────────
-        var fechaHoraFin = dto.FechaHoraInicio.AddMinutes(servicio.DuracionMinutos);
+        if (dto.ClienteId is not null)
+        {
+            var clienteExistente = await _unitOfWork.Clientes.GetByIdAsync(dto.ClienteId.Value, cancellationToken);
+
+            if (clienteExistente is null)
+                throw new NotFoundException(nameof(Cliente), dto.ClienteId.Value);
+
+            clienteId = clienteExistente.Id;
+        }
+        else if (dto.ClienteNuevo is not null)
+        {
+            var clienteNuevo = new Cliente
+            {
+                Nombre = dto.ClienteNuevo.Nombre,
+                Apellido = dto.ClienteNuevo.Apellido,
+                Telefono = dto.ClienteNuevo.Telefono,
+                Activo = true
+            };
+
+            await _unitOfWork.Clientes.AddAsync(clienteNuevo, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            clienteId = clienteNuevo.Id;
+        }
+        else
+        {
+            throw new BusinessException(
+                code: "CLIENTE_REQUERIDO",
+                message: "Debe indicar un cliente existente o los datos de un cliente nuevo.");
+        }
+
+        // ── Paso 1: Validar y obtener TODOS los servicios ─────────────────────
+        if (dto.ServicioIds is null || dto.ServicioIds.Count == 0)
+            throw new BusinessException(
+                code: "SERVICIOS_REQUERIDOS",
+                message: "El turno debe incluir al menos un servicio.");
+
+        var servicios = new List<Servicio>();
+        foreach (var servicioId in dto.ServicioIds)
+        {
+            var servicio = await _unitOfWork.Servicios.GetByIdAsync(servicioId, cancellationToken);
+
+            if (servicio is null)
+                throw new NotFoundException(nameof(Servicio), servicioId);
+
+            servicios.Add(servicio);
+        }
+
+        // ── Paso 2: Calcular FechaHoraFin (suma de todas las duraciones) ──────
+        var duracionTotalMinutos = servicios.Sum(s => s.DuracionMinutos);
+        var fechaHoraFin = dto.FechaHoraInicio.AddMinutes(duracionTotalMinutos);
 
         // ── Paso 3: Leer PermitirSolapamiento del Tenant ──────────────────────
-        var tenantId = _tenantProvider.GetCurrentTenantId();
         var tenant = await _unitOfWork.Tenants.GetByIdAsync(tenantId, cancellationToken);
 
         if (tenant is null)
@@ -61,29 +108,35 @@ public class TurnoAppService : ITurnoAppService
             permitirSolapamiento: tenant.PermitirSolapamiento,
             cancellationToken: cancellationToken);
 
-        // ── Paso 5: Construir entidad ─────────────────────────────────────────
+        // ── Paso 5: Construir entidad con TODOS los TurnoServicio ─────────────
         var turno = new Turno
         {
             TenantId = tenantId,
-            ClienteId = dto.ClienteId,
+            ClienteId = clienteId,
             RecursoId = dto.RecursoId,
             FechaHoraInicio = dto.FechaHoraInicio,
             Estado = EstadoTurno.Pendiente,
             CreadoPor = tenantId.ToString()
         };
 
-        turno.TurnoServicios.Add(new TurnoServicio
+        for (var i = 0; i < servicios.Count; i++)
         {
-            ServicioId = dto.ServicioId,
-            Orden = 1,
-            PrecioAplicado = servicio.Precio
-        });
+            turno.TurnoServicios.Add(new TurnoServicio
+            {
+                ServicioId = servicios[i].Id,
+                Orden = i + 1,
+                PrecioAplicado = servicios[i].Precio
+            });
+        }
 
-        // ── Paso 6: Persistir ─────────────────────────────────────────────────
+        // ── Paso 6: Persistir ───────────────────────────────────────────────── 
         await _unitOfWork.Turnos.AddAsync(turno, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return MapToDto(turno, dto.ServicioId, fechaHoraFin);
+        // Releemos con detalles para armar el DTO completo (nombres, precio total)
+        var turnoCompleto = await _unitOfWork.Turnos.GetByIdConDetallesAsync(turno.Id, cancellationToken);
+
+        return MapToDto(turnoCompleto!);
     }
 
     public async Task CancelarTurnoAsync(int id, CancellationToken cancellationToken = default)
@@ -98,8 +151,6 @@ public class TurnoAppService : ITurnoAppService
                 code: "TURNO_YA_CANCELADO",
                 message: $"El turno {id} ya se encuentra cancelado.");
 
-        // Soft Delete: cambia el estado en lugar de eliminar el registro.
-        // El historial del turno queda intacto en la base de datos.
         turno.Estado = EstadoTurno.Cancelado;
         turno.ModificadoEn = DateTime.UtcNow;
 
@@ -107,17 +158,17 @@ public class TurnoAppService : ITurnoAppService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private static TurnoDto MapToDto(Turno turno, int servicioId = 0, DateTime fechaHoraFin = default) => new(
+    private static TurnoDto MapToDto(Turno turno) => new(
         Id: turno.Id,
-        ClienteId: turno.ClienteId,
         RecursoId: turno.RecursoId,
-        ServicioId: servicioId > 0
-                             ? servicioId
-                             : turno.TurnoServicios.FirstOrDefault()?.ServicioId ?? 0,
+        RecursoNombre: turno.Recurso?.Nombre ?? string.Empty,
+        ClienteId: turno.ClienteId,
+        ClienteNombreCompleto: $"{turno.Cliente?.Nombre} {turno.Cliente?.Apellido}".Trim(),
         FechaHoraInicio: turno.FechaHoraInicio,
-        FechaHoraFin: fechaHoraFin != default
-                             ? fechaHoraFin
-                             : turno.FechaHoraInicio,   // fallback para GET sin cálculo
-        Estado: turno.Estado
+        FechaHoraFin: turno.FechaHoraInicio.AddMinutes(
+            turno.TurnoServicios.Sum(ts => ts.Servicio?.DuracionMinutos ?? 0)),
+        Estado: turno.Estado.ToString(),
+        Servicios: turno.TurnoServicios.Select(ts => ts.Servicio?.Nombre ?? string.Empty).ToList(),
+        PrecioTotal: turno.TurnoServicios.Sum(ts => ts.PrecioAplicado)
     );
 }

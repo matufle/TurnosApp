@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Tenants;
 using TurnosApp.Core.Application.Interfaces.Services;
 
@@ -11,6 +12,7 @@ namespace TurnosApp.Presentation.WebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize]
 public class TenantsController : ControllerBase
 {
     private readonly ITenantAppService _tenantAppService;

@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 namespace TurnosApp.Core.Application.DTOs.Turnos;
 
-/// <summary>
-/// DTO de entrada para reservar un turno.
-/// FechaHoraFin no se recibe: se calcula a partir de
-/// FechaHoraInicio + DuracionMinutos del Servicio.
-/// TenantId no se recibe: lo resuelve ITenantProvider en Application.
-/// </summary>
+// TurnosApp.Core.Application/DTOs/Turnos/CrearTurnoDto.cs
 public record CrearTurnoDto(
-    int ClienteId,
+    int? ClienteId,                    // ahora nullable
+    ClienteInlineDto? ClienteNuevo,    // nuevo
     int RecursoId,
-    int ServicioId,
-    DateTime FechaHoraInicio
-);
+    IReadOnlyList<int> ServicioIds,
+    DateTime FechaHoraInicio);
+
+public record ClienteInlineDto(string Nombre, string Apellido, string? Telefono);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Recursos;
 using TurnosApp.Core.Application.Interfaces.Services;
 namespace TurnosApp.Presentation.WebAPI.Controllers;
@@ -6,6 +7,7 @@ namespace TurnosApp.Presentation.WebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize]
 public class RecursosController : ControllerBase
 {
     private readonly IRecursoAppService _recursoAppService;

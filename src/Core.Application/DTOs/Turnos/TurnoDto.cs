@@ -12,10 +12,12 @@ namespace TurnosApp.Core.Application.DTOs.Turnos;
 /// </summary>
 public record TurnoDto(
     int Id,
-    int ClienteId,
     int RecursoId,
-    int ServicioId,
+    string RecursoNombre,
+    int ClienteId,
+    string ClienteNombreCompleto,
     DateTime FechaHoraInicio,
     DateTime FechaHoraFin,
-    EstadoTurno Estado
-);
+    string Estado,
+    List<string> Servicios,
+    decimal PrecioTotal);

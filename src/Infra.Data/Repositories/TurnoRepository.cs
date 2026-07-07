@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Domain.Entities;
 using TurnosApp.Core.Domain.Enums;
 using TurnosApp.Infra.Data.Context;
-
-namespace TurnosApp.Infra.Data.Repositories;
+using TurnosApp.Infra.Data.Repositories;
 
 public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
 {
@@ -15,7 +11,6 @@ public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
     {
     }
 
-    // TurnoRepository.cs — versión completa para múltiples servicios
     public async Task<bool> ExisteTurnoEnRangoAsync(
         int recursoId, DateTime inicio, DateTime fin,
         CancellationToken cancellationToken = default)
@@ -27,13 +22,31 @@ public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
             .Select(t => new
             {
                 t.FechaHoraInicio,
-                // FechaHoraFin calculada en SQL sumando duraciones de todos los servicios del turno
                 FechaHoraFin = t.FechaHoraInicio.AddMinutes(
                     t.TurnoServicios.Sum(ts => ts.Servicio!.DuracionMinutos))
             })
-            .Where(t =>
-                inicio < t.FechaHoraFin &&   // el nuevo empieza antes de que termine el existente
-                fin > t.FechaHoraInicio)  // el nuevo termina después de que empiece el existente
+            .Where(t => inicio < t.FechaHoraFin && fin > t.FechaHoraInicio)
             .AnyAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Turno>> GetAllConDetallesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Include(t => t.Recurso)
+            .Include(t => t.Cliente)
+            .Include(t => t.TurnoServicios)
+                .ThenInclude(ts => ts.Servicio)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Turno?> GetByIdConDetallesAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(t => t.Recurso)
+            .Include(t => t.Cliente)
+            .Include(t => t.TurnoServicios)
+                .ThenInclude(ts => ts.Servicio)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 }
