@@ -4,11 +4,15 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   IconUsers,
   IconBriefcase,
+  IconCalendarEvent,
+  IconAddressBook,
   IconLogout,
   IconChevronDown,
 } from '@tabler/icons-react';
 
 const navItems = [
+  { label: 'Turnos', icon: IconCalendarEvent, path: '/app/turnos' },
+  { label: 'Clientes', icon: IconAddressBook, path: '/app/clientes' },
   { label: 'Recursos', icon: IconUsers, path: '/app/recursos' },
   { label: 'Servicios', icon: IconBriefcase, path: '/app/servicios' },
 ];

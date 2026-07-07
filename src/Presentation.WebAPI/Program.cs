@@ -75,9 +75,26 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Sistema de gestión de turnos Multi-tenant"
     });
 
-    // Registra el filtro — se ejecuta una vez por cada endpoint descubierto.
-    // No requiere instanciar IOpenApiSecurityScheme ni tocar propiedades globales.
     options.OperationFilter<TenantHeaderFilter>();
+
+    // --- Definición del esquema de seguridad Bearer ---
+    const string schemeId = "Bearer";
+
+    options.AddSecurityDefinition(schemeId, new OpenApiSecurityScheme
+    {
+        Description = "Ingresá el token JWT así: Bearer {tu token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    // --- Requerimiento: aplica el esquema a todos los endpoints ---
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference(schemeId, document)] = new List<string>()
+    });
 });
 
 // ── Construcción de la app ─────────────────────────────────────────────────

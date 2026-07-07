@@ -43,8 +43,6 @@ public class ClienteService : IClienteService
             Apellido = dto.Apellido,
             Email = dto.Email,
             Telefono = dto.Telefono,
-            // NotasAdicionales se persiste en DatosEspecificosJson como string plano.
-            // Cuando el dominio requiera JSON estructurado, este es el único punto a evolucionar.
             DatosEspecificosJson = dto.NotasAdicionales,
             Activo = true
         };

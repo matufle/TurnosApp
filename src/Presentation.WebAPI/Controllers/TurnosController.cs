@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Turnos;
 using TurnosApp.Core.Application.Interfaces.Services;
 
@@ -7,6 +8,7 @@ namespace TurnosApp.Presentation.WebAPI.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[Authorize]
 public class TurnosController : ControllerBase
 {
     private readonly ITurnoAppService _turnoAppService;

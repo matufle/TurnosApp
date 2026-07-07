@@ -6,6 +6,8 @@ import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
 import { RecursosPage } from './pages/Recursos/RecursosPage';
 import { ServiciosPage } from './pages/Servicios/ServiciosPage';
+import { TurnosPage } from './pages/Turnos/TurnosPage';
+import { ClientesPage } from './pages/Clientes/ClientesPage';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         >
           <Route path="recursos" element={<RecursosPage />} />
           <Route path="servicios" element={<ServiciosPage />} />
+          <Route path="clientes" element={<ClientesPage />} />
+          <Route path="turnos" element={<TurnosPage />} />
         </Route>
 
         {/* Catch-all — evita pantallas en blanco silenciosas como la de /register vs /registro */}

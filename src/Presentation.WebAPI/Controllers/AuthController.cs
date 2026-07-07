@@ -8,6 +8,7 @@ namespace TurnosApp.Presentation.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[Authorize]
 public class AuthController : ControllerBase
 {
     private readonly IAuthAppService _authAppService;
