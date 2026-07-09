@@ -63,6 +63,7 @@ interface TurnoFormValues {
 // pero guardamos el Turno completo en `resource` para no perder datos al hacer click.
 interface TurnoCalendarEvent extends CalendarEvent {
   resource: Turno;
+  colorRecurso: string;
 }
 
 export function TurnosPage() {
@@ -70,6 +71,7 @@ export function TurnosPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [servicios, setServicios] = useState<Servicio[]>([]);
+  
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -148,32 +150,40 @@ export function TurnosPage() {
   };
 
   // ---- Mapeo Turno[] -> eventos de react-big-calendar ----
-  const eventosCalendario = useMemo<TurnoCalendarEvent[]>(() => {
-    return turnos
-      .filter((t) => t.estado !== 'Cancelado')
-      .map((turno) => ({
+const eventosCalendario = useMemo<TurnoCalendarEvent[]>(() => {
+  return turnos
+    .filter((t) => t.estado !== 'Cancelado')
+    .map((turno) => {
+      // Buscamos el recurso de este turno en nuestra lista de recursos
+      const recurso = recursos.find((r) => r.id === turno.recursoId);
+      const colorDelRecurso = recurso?.colorHex || '#0EA5E9'; // Cyan por si falla algo
+
+      return {
         title: `${turno.clienteNombreCompleto} — ${turno.recursoNombre}`,
         start: new Date(turno.fechaHoraInicio),
         end: new Date(turno.fechaHoraFin),
         resource: turno,
-      }));
-  }, [turnos]);
+        colorRecurso: colorDelRecurso, // Lo guardamos en el evento
+      };
+    });
+}, [turnos, recursos]);
 
   // Color de cada evento según estado
-  const eventPropGetter = (event: TurnoCalendarEvent) => {
-    const esCancelado = event.resource.estado === 'Cancelado';
-    return {
-      style: {
-        backgroundColor: esCancelado ? '#adb5bd' : '#0EA5E9',
-        borderColor: esCancelado ? '#868e96' : '#0284c7',
-        opacity: esCancelado ? 0.6 : 1,
-        color: 'white',
-        borderRadius: '6px',
-        border: 'none',
-      },
-    };
-  };
+const eventPropGetter = (event: TurnoCalendarEvent) => {
+  const esCancelado = event.resource.estado === 'Cancelado';
+  const color = event.colorRecurso; // Leemos el color que le cruzamos arriba
 
+  return {
+    style: {
+      backgroundColor: esCancelado ? '#adb5bd' : color,
+      borderColor: esCancelado ? '#868e96' : color,
+      opacity: esCancelado ? 0.6 : 1,
+      color: 'white',
+      borderRadius: '6px',
+      border: 'none',
+    },
+  };
+};
   // ---- Click en casillero vacío: pre-carga la fecha y abre el modal ----
   const handleSelectSlot = (slotInfo: SlotInfo) => {
     form.reset();

@@ -14,6 +14,7 @@ import {
   Loader,
   Center,
   Text,
+  ColorInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
@@ -25,18 +26,20 @@ export function RecursosPage() {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Estado para saber si estamos editando
+  const [recursoEditandoId, setRecursoEditandoId] = useState<number | null>(null);
 
   const form = useForm({
-    initialValues: { nombre: '', descripcion: '' },
+    initialValues: { nombre: '', descripcion: '', colorHex: '#0EA5E9' },
     validate: {
       nombre: isNotEmpty('El nombre es obligatorio'),
     },
   });
 
-  // Carga inicial — con flag de cancelación para evitar setState en un componente
-  // ya desmontado (relevante en React Strict Mode y si el usuario navega rápido).
   useEffect(() => {
     let activo = true;
 
@@ -65,9 +68,6 @@ export function RecursosPage() {
     };
   }, []);
 
-  // Recarga manual — se usa después de crear un recurso nuevo.
-  // Al ser disparada desde un event handler (submit), no tiene el mismo
-  // riesgo de carrera que el efecto de carga inicial.
   const recargarRecursos = async () => {
     setLoading(true);
     try {
@@ -84,15 +84,23 @@ export function RecursosPage() {
   const handleSubmit = async (values: typeof form.values) => {
     setSubmitting(true);
     try {
-      await recursosService.create(values);
+      if (recursoEditandoId) {
+        // Modo Edición
+        await recursosService.update(recursoEditandoId, values);
+      } else {
+        // Modo Creación
+        await recursosService.create(values);
+      }
+      
       closeModal();
       form.reset();
-      await recargarRecursos(); // recarga la tabla con el nuevo recurso
+      setRecursoEditandoId(null);
+      await recargarRecursos();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         form.setFieldError('nombre', error.response.data.detail);
       } else {
-        setErrorMessage('No pudimos crear el recurso. Intentá de nuevo.');
+        setErrorMessage('No pudimos guardar el recurso. Intentá de nuevo.');
       }
     } finally {
       setSubmitting(false);
@@ -103,7 +111,16 @@ export function RecursosPage() {
     <Stack gap="lg">
       <Group justify="space-between">
         <Title order={2}>Gestión de Recursos</Title>
-        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={openModal}>
+        <Button 
+          leftSection={<IconPlus size={16} />} 
+          color="cyan" 
+          onClick={() => {
+            form.reset();
+            form.setFieldValue('colorHex', '#0EA5E9');
+            setRecursoEditandoId(null);
+            openModal();
+          }}
+        >
           Nuevo recurso
         </Button>
       </Group>
@@ -128,6 +145,7 @@ export function RecursosPage() {
             <Table.Tr>
               <Table.Th>Nombre</Table.Th>
               <Table.Th>Descripción</Table.Th>
+              <Table.Th>Acciones</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -135,13 +153,39 @@ export function RecursosPage() {
               <Table.Tr key={recurso.id}>
                 <Table.Td>{recurso.nombre}</Table.Td>
                 <Table.Td>{recurso.descripcion}</Table.Td>
+                <Table.Td>
+                  <Button 
+                    variant="light" 
+                    color="cyan" 
+                    size="xs"
+                    onClick={() => {
+                      form.setValues({
+                        nombre: recurso.nombre,
+                        descripcion: recurso.descripcion || '',
+                        colorHex: recurso.colorHex || '#0EA5E9',
+                      });
+                      setRecursoEditandoId(recurso.id);
+                      openModal();
+                    }}
+                  >
+                    Editar
+                  </Button>
+                </Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
         </Table>
       )}
 
-      <Modal opened={modalOpened} onClose={closeModal} title="Nuevo recurso" centered>
+      <Modal 
+        opened={modalOpened} 
+        onClose={() => {
+          closeModal();
+          setRecursoEditandoId(null);
+        }} 
+        title={recursoEditandoId ? "Editar recurso" : "Nuevo recurso"} 
+        centered
+      >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
             <TextInput
@@ -150,11 +194,21 @@ export function RecursosPage() {
               required
               {...form.getInputProps('nombre')}
             />
+            
             <Textarea
               label="Descripción"
               placeholder="Detalle opcional"
               {...form.getInputProps('descripcion')}
             />
+
+            <ColorInput
+              label="Color en la agenda"
+              placeholder="Elegí un color"
+              format="hex"
+              swatches={['#0EA5E9', '#12b886', '#fab005', '#fd7e14', '#fa5252', '#be4bdb', '#7950f2']}
+              {...form.getInputProps('colorHex')}
+            />
+
             <Button type="submit" color="cyan" loading={submitting} fullWidth mt="sm">
               Guardar
             </Button>

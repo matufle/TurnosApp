@@ -1,6 +1,7 @@
 // src/api/recursosService.ts
 import httpClient from './httpClient';
 import type { Recurso, RecursoCreateDTO } from '../types/Recurso';
+import axios from 'axios';
 
 export const recursosService = {
   getAll: async (): Promise<Recurso[]> => {
@@ -15,6 +16,11 @@ export const recursosService = {
 
   create: async (dto: RecursoCreateDTO): Promise<Recurso> => {
     const response = await httpClient.post<Recurso>('/recursos', dto);
+    return response.data;
+  },
+  
+update: async (id: number, data: RecursoCreateDTO) => { 
+    const response = await axios.put(`/api/recursos/${id}`, data); 
     return response.data;
   },
 };
