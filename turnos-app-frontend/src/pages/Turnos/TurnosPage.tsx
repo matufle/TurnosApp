@@ -1,11 +1,10 @@
 // src/pages/Turnos/TurnosPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import {
   Title,
   Button,
   Group,
-  Table,
   Modal,
   TextInput,
   Select,
@@ -17,11 +16,21 @@ import {
   Text,
   Switch,
   Badge,
+  Paper,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle } from '@tabler/icons-react';
+import { IconPlus, IconAlertCircle, IconUser, IconMapPin, IconBriefcase } from '@tabler/icons-react';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import type { SlotInfo } from 'react-big-calendar';
+import type { Event as CalendarEvent } from 'react-big-calendar';
+import {format} from 'date-fns/format';
+import {parse} from 'date-fns/parse';
+import {startOfWeek} from 'date-fns/startOfWeek';
+import {getDay} from 'date-fns/getDay';
+import {es} from 'date-fns/locale/es';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { turnosService } from '../../api/turnosService';
 import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
@@ -30,6 +39,14 @@ import type { Turno } from '../../types/Turno';
 import type { Cliente } from '../../types/Cliente';
 import type { Recurso } from '../../types/Recurso';
 import type { Servicio } from '../../types/Servicio';
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date(), { locale: es }),
+  getDay,
+  locales: { es },
+});
 
 interface TurnoFormValues {
   esClienteNuevo: boolean;
@@ -42,6 +59,12 @@ interface TurnoFormValues {
   fechaHoraInicio: Date | null;
 }
 
+// Evento enriquecido: react-big-calendar necesita start/end/title,
+// pero guardamos el Turno completo en `resource` para no perder datos al hacer click.
+interface TurnoCalendarEvent extends CalendarEvent {
+  resource: Turno;
+}
+
 export function TurnosPage() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -50,8 +73,17 @@ export function TurnosPage() {
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
+  const [detalleOpened, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
+  const [turnoSeleccionado, setTurnoSeleccionado] = useState<Turno | null>(null);
+
   const [submitting, setSubmitting] = useState(false);
+  const [cancelando, setCancelando] = useState(false);
+
+  // Estados para controlar la navegación del calendario
+  const [fechaCalendario, setFechaCalendario] = useState(new Date());
+  const [vistaCalendario, setVistaCalendario] = useState<'month' | 'week' | 'day'>('week');
 
   const form = useForm<TurnoFormValues>({
     initialValues: {
@@ -115,6 +147,46 @@ export function TurnosPage() {
     setTurnos(data);
   };
 
+  // ---- Mapeo Turno[] -> eventos de react-big-calendar ----
+  const eventosCalendario = useMemo<TurnoCalendarEvent[]>(() => {
+    return turnos
+      .filter((t) => t.estado !== 'Cancelado')
+      .map((turno) => ({
+        title: `${turno.clienteNombreCompleto} — ${turno.recursoNombre}`,
+        start: new Date(turno.fechaHoraInicio),
+        end: new Date(turno.fechaHoraFin),
+        resource: turno,
+      }));
+  }, [turnos]);
+
+  // Color de cada evento según estado
+  const eventPropGetter = (event: TurnoCalendarEvent) => {
+    const esCancelado = event.resource.estado === 'Cancelado';
+    return {
+      style: {
+        backgroundColor: esCancelado ? '#adb5bd' : '#0EA5E9',
+        borderColor: esCancelado ? '#868e96' : '#0284c7',
+        opacity: esCancelado ? 0.6 : 1,
+        color: 'white',
+        borderRadius: '6px',
+        border: 'none',
+      },
+    };
+  };
+
+  // ---- Click en casillero vacío: pre-carga la fecha y abre el modal ----
+  const handleSelectSlot = (slotInfo: SlotInfo) => {
+    form.reset();
+    form.setFieldValue('fechaHoraInicio', slotInfo.start);
+    openModal();
+  };
+
+  // ---- Click en un turno existente: abre el modal de detalle ----
+  const handleSelectEvent = (event: TurnoCalendarEvent) => {
+    setTurnoSeleccionado(event.resource);
+    openDetalle();
+  };
+
   const handleSubmit = async (values: TurnoFormValues) => {
     if (!values.fechaHoraInicio || !values.recursoId) return;
 
@@ -133,8 +205,6 @@ export function TurnosPage() {
           : null,
         recursoId: Number(values.recursoId),
         servicioIds: values.servicioIds.map(Number),
-        // Fix: DateTimePicker de Mantine puede devolver string en vez de Date.
-        // new Date(...) normaliza ambos casos antes de llamar a toISOString().
         fechaHoraInicio: new Date(values.fechaHoraInicio).toISOString(),
       });
 
@@ -147,7 +217,6 @@ export function TurnosPage() {
         setClientes(clientesData);
       }
     } catch (error) {
-      // Log completo del error real — nunca más "se traga" el detalle.
       console.error('Error real al crear turno:', error);
 
       if (axios.isAxiosError(error)) {
@@ -157,19 +226,15 @@ export function TurnosPage() {
         const detail = error.response?.data?.detail;
 
         if (status === 409) {
-          // Conflicto: solapamiento de horario (SolapamientoException / BusinessException)
           setErrorMessage(detail ?? 'El horario seleccionado no está disponible para ese recurso.');
         } else if (status === 400) {
-          // Bad Request: validación de negocio (ej: cliente/servicio requerido)
           setErrorMessage(detail ?? 'Revisá los datos ingresados, hay un problema con la solicitud.');
         } else if (status === 404) {
-          // Not Found: cliente, recurso o servicio inexistente
           setErrorMessage(detail ?? 'Alguno de los datos seleccionados ya no existe.');
         } else {
           setErrorMessage(detail ?? 'No pudimos crear el turno. Intentá de nuevo.');
         }
       } else {
-        // Error que no vino de axios (ej: error de JS antes de la request, como el bug de fecha original)
         setErrorMessage('Ocurrió un error inesperado al procesar el formulario.');
       }
     } finally {
@@ -178,12 +243,17 @@ export function TurnosPage() {
   };
 
   const handleCancelar = async (id: number) => {
+    setCancelando(true);
     try {
       await turnosService.cancelar(id);
       await recargarTurnos();
+      closeDetalle();
+      setTurnoSeleccionado(null);
     } catch (error) {
       console.error('Error al cancelar turno:', error);
       setErrorMessage('No pudimos cancelar el turno.');
+    } finally {
+      setCancelando(false);
     }
   };
 
@@ -191,7 +261,14 @@ export function TurnosPage() {
     <Stack gap="lg">
       <Group justify="space-between">
         <Title order={2}>Agenda de Turnos</Title>
-        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={openModal}>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          color="cyan"
+          onClick={() => {
+            form.reset();
+            openModal();
+          }}
+        >
           Nuevo turno
         </Button>
       </Group>
@@ -206,49 +283,38 @@ export function TurnosPage() {
         <Center py="xl">
           <Loader color="cyan" />
         </Center>
-      ) : turnos.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">
-          Todavía no hay turnos cargados.
-        </Text>
       ) : (
-        <Table striped highlightOnHover verticalSpacing="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Cliente</Table.Th>
-              <Table.Th>Recurso</Table.Th>
-              <Table.Th>Servicios</Table.Th>
-              <Table.Th>Inicio</Table.Th>
-              <Table.Th>Estado</Table.Th>
-              <Table.Th>Precio</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {turnos.map((turno) => (
-              <Table.Tr key={turno.id}>
-                <Table.Td>{turno.clienteNombreCompleto}</Table.Td>
-                <Table.Td>{turno.recursoNombre}</Table.Td>
-                <Table.Td>{turno.servicios.join(', ')}</Table.Td>
-                <Table.Td>{new Date(turno.fechaHoraInicio).toLocaleString('es-AR')}</Table.Td>
-                <Table.Td>
-                  <Badge color={turno.estado === 'Cancelado' ? 'red' : 'cyan'} variant="light">
-                    {turno.estado}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>${turno.precioTotal}</Table.Td>
-                <Table.Td>
-                  {turno.estado !== 'Cancelado' && (
-                    <Button size="xs" color="red" variant="subtle" onClick={() => handleCancelar(turno.id)}>
-                      Cancelar
-                    </Button>
-                  )}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+        <Paper withBorder radius="md" p="md">
+          <Calendar
+            localizer={localizer}
+            events={eventosCalendario}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: 650 }}
+            selectable
+            onSelectSlot={handleSelectSlot}
+            onSelectEvent={handleSelectEvent}
+            eventPropGetter={eventPropGetter}
+            date={fechaCalendario}
+            onNavigate={(newDate) => setFechaCalendario(newDate)}
+            view={vistaCalendario}
+            onView={(newView: string) => setVistaCalendario(newView as 'month' | 'week' | 'day')}
+            views={['month', 'week', 'day']}
+            culture="es"
+            messages={{
+              next: 'Siguiente',
+              previous: 'Anterior',
+              today: 'Hoy',
+              month: 'Mes',
+              week: 'Semana',
+              day: 'Día',
+              noEventsInRange: 'No hay turnos en este rango.',
+            }}
+          />
+        </Paper>
       )}
 
+      {/* Modal de creación */}
       <Modal opened={modalOpened} onClose={closeModal} title="Nuevo turno" centered size="md">
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
@@ -261,33 +327,16 @@ export function TurnosPage() {
 
             {form.values.esClienteNuevo ? (
               <Stack gap="sm">
-                <TextInput
-                  label="Nombre"
-                  placeholder="Laura"
-                  required
-                  {...form.getInputProps('clienteNombre')}
-                />
-                <TextInput
-                  label="Apellido"
-                  placeholder="Gómez"
-                  required
-                  {...form.getInputProps('clienteApellido')}
-                />
-                <TextInput
-                  label="Teléfono"
-                  placeholder="1122334455"
-                  {...form.getInputProps('clienteTelefono')}
-                />
+                <TextInput label="Nombre" placeholder="Laura" required {...form.getInputProps('clienteNombre')} />
+                <TextInput label="Apellido" placeholder="Gómez" required {...form.getInputProps('clienteApellido')} />
+                <TextInput label="Teléfono" placeholder="1122334455" {...form.getInputProps('clienteTelefono')} />
               </Stack>
             ) : (
               <Select
                 label="Cliente"
                 placeholder="Buscá un cliente existente"
                 searchable
-                data={clientes.map((c) => ({
-                  value: c.id.toString(),
-                  label: `${c.nombre} ${c.apellido}`,
-                }))}
+                data={clientes.map((c) => ({ value: c.id.toString(), label: `${c.nombre} ${c.apellido}` }))}
                 {...form.getInputProps('clienteId')}
               />
             )}
@@ -321,6 +370,84 @@ export function TurnosPage() {
           </Stack>
         </form>
       </Modal>
+
+      {/* Modal de detalle */}
+      <Modal opened={detalleOpened} onClose={closeDetalle} title="Detalle del turno" centered size="sm">
+        {turnoSeleccionado && (
+          <Stack gap="sm">
+            <Group gap="xs">
+              <IconUser size={18} color="var(--mantine-color-cyan-6)" />
+              <Text fw={500}>{turnoSeleccionado.clienteNombreCompleto}</Text>
+            </Group>
+
+            <Group gap="xs">
+              <IconMapPin size={18} color="var(--mantine-color-cyan-6)" />
+              <Text>{turnoSeleccionado.recursoNombre}</Text>
+            </Group>
+
+            <Group gap="xs">
+              <IconBriefcase size={18} color="var(--mantine-color-cyan-6)" />
+              <Text>{turnoSeleccionado.servicios.join(', ')}</Text>
+            </Group>
+
+            <Text size="sm" c="dimmed">
+              {new Date(turnoSeleccionado.fechaHoraInicio).toLocaleString('es-AR')} —{' '}
+              {new Date(turnoSeleccionado.fechaHoraFin).toLocaleTimeString('es-AR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+
+            <Group gap="xs">
+              <Badge color={turnoSeleccionado.estado === 'Cancelado' ? 'red' : 'cyan'} variant="light">
+                {turnoSeleccionado.estado}
+              </Badge>
+              <Text size="sm" c="dimmed">
+                ${turnoSeleccionado.precioTotal}
+              </Text>
+            </Group>
+
+            {turnoSeleccionado.estado !== 'Cancelado' && (
+              <Button
+                color="red"
+                variant="light"
+                fullWidth
+                mt="sm"
+                loading={cancelando}
+                onClick={() => handleCancelar(turnoSeleccionado.id)}
+              >
+                Cancelar turno
+              </Button>
+            )}
+          </Stack>
+        )}
+      </Modal>
+
+      {/* Theming Cyan */}
+      <style>{`
+        .rbc-toolbar button {
+          color: #0EA5E9;
+          border-color: #bae6fd;
+        }
+        .rbc-toolbar button:hover {
+          background-color: #e6f7ff;
+          border-color: #0EA5E9;
+        }
+        .rbc-toolbar button.rbc-active {
+          background-color: #0EA5E9;
+          border-color: #0EA5E9;
+          color: white;
+        }
+        .rbc-today {
+          background-color: #e6f7ff;
+        }
+        .rbc-event {
+          padding: 2px 6px;
+        }
+        .rbc-event:focus {
+          outline: 2px solid #0EA5E9;
+        }
+      `}</style>
     </Stack>
   );
 }
