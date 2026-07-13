@@ -12,6 +12,9 @@ public class Tenant : BaseEntity
     public string Slug { get; set; } = string.Empty;        // ej: "clinica-del-sur"
     public bool PermitirSolapamiento { get; set; } = false;
     public bool Activo { get; set; } = true;
+    
+    public string ColorPrimario { get; set; } = "#0EA5E9";
+    public bool PermiteReservasPublicas { get; set; } = false;
     public DateTime FechaAlta { get; set; } = DateTime.UtcNow;
 
     // Navegación

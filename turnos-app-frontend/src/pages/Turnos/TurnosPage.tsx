@@ -39,6 +39,7 @@ import type { Turno } from '../../types/Turno';
 import type { Cliente } from '../../types/Cliente';
 import type { Recurso } from '../../types/Recurso';
 import type { Servicio } from '../../types/Servicio';
+import { getContrastTextColor } from '../../utils/colorContrast.ts';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -168,28 +169,48 @@ const eventosCalendario = useMemo<TurnoCalendarEvent[]>(() => {
     });
 }, [turnos, recursos]);
 
-  // Color de cada evento según estado
-const eventPropGetter = (event: TurnoCalendarEvent) => {
-  const esCancelado = event.resource.estado === 'Cancelado';
-  const color = event.colorRecurso; // Leemos el color que le cruzamos arriba
 
-  return {
-    style: {
-      backgroundColor: esCancelado ? '#adb5bd' : color,
-      borderColor: esCancelado ? '#868e96' : color,
-      opacity: esCancelado ? 0.6 : 1,
-      color: 'white',
-      borderRadius: '6px',
-      border: 'none',
-    },
-  };
-};
   // ---- Click en casillero vacío: pre-carga la fecha y abre el modal ----
   const handleSelectSlot = (slotInfo: SlotInfo) => {
     form.reset();
     form.setFieldValue('fechaHoraInicio', slotInfo.start);
     openModal();
   };
+
+  // Mapa recursoId -> colorHex, para no hacer un .find() en cada evento del calendario.
+const coloresPorRecurso = useMemo(() => {
+  const mapa = new Map<number, string>();
+  recursos.forEach((r) => mapa.set(r.id, r.colorHex));
+  return mapa;
+}, [recursos]);
+
+const eventPropGetter = (event: TurnoCalendarEvent) => {
+  const esCancelado = event.resource.estado === 'Cancelado';
+
+  // Color del recurso asignado a este turno; fallback a Cyan del theme
+  // si por algún motivo el recurso no tiene color cargado.
+  const colorRecurso = coloresPorRecurso.get(event.resource.recursoId);
+  const backgroundColor = esCancelado
+    ? 'var(--mantine-color-gray-5)'
+    : colorRecurso ?? 'var(--mantine-color-cyan-6)';
+
+  const textColor = esCancelado
+    ? '#ffffff'
+    : colorRecurso
+      ? getContrastTextColor(colorRecurso)
+      : '#ffffff';
+
+  return {
+    style: {
+      backgroundColor,
+      borderColor: esCancelado ? 'var(--mantine-color-gray-6)' : backgroundColor,
+      opacity: esCancelado ? 0.6 : 1,
+      color: textColor,
+      borderRadius: '6px',
+      border: 'none',
+    },
+  };
+};
 
   // ---- Click en un turno existente: abre el modal de detalle ----
   const handleSelectEvent = (event: TurnoCalendarEvent) => {
@@ -432,32 +453,30 @@ const eventPropGetter = (event: TurnoCalendarEvent) => {
           </Stack>
         )}
       </Modal>
-
-      {/* Theming Cyan */}
-      <style>{`
-        .rbc-toolbar button {
-          color: #0EA5E9;
-          border-color: #bae6fd;
-        }
-        .rbc-toolbar button:hover {
-          background-color: #e6f7ff;
-          border-color: #0EA5E9;
-        }
-        .rbc-toolbar button.rbc-active {
-          background-color: #0EA5E9;
-          border-color: #0EA5E9;
-          color: white;
-        }
-        .rbc-today {
-          background-color: #e6f7ff;
-        }
-        .rbc-event {
-          padding: 2px 6px;
-        }
-        .rbc-event:focus {
-          outline: 2px solid #0EA5E9;
-        }
-      `}</style>
+<style>{`
+  .rbc-toolbar button {
+    color: var(--mantine-color-cyan-6);
+    border-color: var(--mantine-color-cyan-2);
+  }
+  .rbc-toolbar button:hover {
+    background-color: var(--mantine-color-cyan-0);
+    border-color: var(--mantine-color-cyan-6);
+  }
+  .rbc-toolbar button.rbc-active {
+    background-color: var(--mantine-color-cyan-6);
+    border-color: var(--mantine-color-cyan-6);
+    color: white;
+  }
+  .rbc-today {
+    background-color: var(--mantine-color-cyan-0);
+  }
+  .rbc-event {
+    padding: 2px 6px;
+  }
+  .rbc-event:focus {
+    outline: 2px solid var(--mantine-color-cyan-6);
+  }
+`}</style>
     </Stack>
   );
 }

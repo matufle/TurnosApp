@@ -8,6 +8,7 @@ import {
   IconAddressBook,
   IconLogout,
   IconChevronDown,
+  IconSettings,
 } from '@tabler/icons-react';
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
   { label: 'Clientes', icon: IconAddressBook, path: '/app/clientes' },
   { label: 'Recursos', icon: IconUsers, path: '/app/recursos' },
   { label: 'Servicios', icon: IconBriefcase, path: '/app/servicios' },
+  { label: 'Configuración', icon: IconSettings, path: '/app/configuracion' },
 ];
 
 export function DashboardLayout() {
@@ -62,15 +64,20 @@ export function DashboardLayout() {
       <AppShell.Navbar p="sm">
         <Stack gap={4}>
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              label={item.label}
-              leftSection={<item.icon size={18} />}
-              active={location.pathname.startsWith(item.path)}
-              onClick={() => navigate(item.path)}
-              color="cyan"
-              variant="light"
-            />
+// DashboardLayout.tsx — el NavLink que ya tenés
+<NavLink
+  key={item.path}
+  label={item.label}
+  leftSection={<item.icon size={18} />}
+  active={location.pathname.startsWith(item.path)}
+  onClick={() => navigate(item.path)}
+  color="cyan"
+  variant="light"
+  style={{
+    borderRadius: 'var(--mantine-radius-md)',
+    transition: 'background-color 150ms ease',
+  }}
+/>
           ))}
         </Stack>
       </AppShell.Navbar>
