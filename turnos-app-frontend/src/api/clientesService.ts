@@ -1,6 +1,6 @@
 // src/api/clientesService.ts
 import httpClient from './httpClient';
-import type { Cliente, CreateClienteDTO } from '../types/Cliente';
+import type { Cliente, CreateClienteDTO, UpdateClienteDTO } from '../types/Cliente';
 
 export const clientesService = {
   getAll: async (): Promise<Cliente[]> => {
@@ -12,4 +12,10 @@ export const clientesService = {
     const response = await httpClient.post<Cliente>('/clientes', dto);
     return response.data;
   },
+  // En src/api/clientesService.ts
+  update: async (id: number, dto: UpdateClienteDTO): Promise<Cliente> => {
+    const response = await httpClient.put<Cliente>(`/clientes/${id}`, dto);
+    return response.data;
+  },
 };
+

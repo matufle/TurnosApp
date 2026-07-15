@@ -12,4 +12,13 @@ export interface ServicioCreateDTO {
   descripcion: string;
   duracionMinutos: number;
   precio: number;
+  
+}
+
+export interface ServicioUpdateDTO {
+  nombre: string;
+  descripcion: string;
+  duracionMinutos: number;
+  precio: number;
+  
 }
