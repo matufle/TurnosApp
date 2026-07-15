@@ -16,9 +16,12 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconDeviceFloppy } from '@tabler/icons-react';
-import { tenantService} from '../../api/tenantService';
+import { tenantService } from '../../api/tenantService';
+import { useTenantTheme } from '../../context/useTenantTheme';   // 👈 nuevo
 
 export function ConfigurationPage() {
+  const { setColorHex } = useTenantTheme();   // 👈 nuevo
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -44,7 +47,7 @@ export function ConfigurationPage() {
           });
           setErrorMessage(null);
         }
-      } catch (error) {
+      } catch {
         if (activo) {
           setErrorMessage('No pudimos cargar la configuración actual.');
         }
@@ -60,6 +63,7 @@ export function ConfigurationPage() {
     return () => {
       activo = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (values: typeof form.values) => {
@@ -70,6 +74,11 @@ export function ConfigurationPage() {
     try {
       await tenantService.updateConfig(values);
       setSuccessMessage('¡Configuración guardada con éxito!');
+
+      // Actualiza el theme en caliente: dispara el re-render de ThemedApp
+      // en App.tsx sin necesidad de F5. El backend ya confirmó el guardado,
+      // así que este es el único lugar donde hace falta tocar el context.
+      setColorHex(values.colorPrimario);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         setErrorMessage(error.response.data.detail);
@@ -105,7 +114,6 @@ export function ConfigurationPage() {
         <Paper withBorder radius="md" p="xl">
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="xl">
-              
               <div>
                 <Title order={4} mb="xs">Identidad Visual</Title>
                 <Text size="sm" c="dimmed" mb="md">
@@ -135,10 +143,10 @@ export function ConfigurationPage() {
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                color="cyan" 
-                loading={submitting} 
+              <Button
+                type="submit"
+                color="cyan"
+                loading={submitting}
                 leftSection={<IconDeviceFloppy size={18} />}
                 mt="md"
               >

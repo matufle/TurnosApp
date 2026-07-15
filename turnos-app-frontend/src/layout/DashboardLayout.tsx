@@ -1,59 +1,127 @@
 // src/layout/DashboardLayout.tsx
-import { AppShell, Group, Title, NavLink, Stack, Text, Avatar, Menu, UnstyledButton } from '@mantine/core';
+import { useEffect, useState } from 'react'; // 👈 Importamos useState
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import {
-  IconUsers,
-  IconBriefcase,
-  IconCalendarEvent,
-  IconAddressBook,
-  IconLogout,
-  IconChevronDown,
+import { 
+  AppShell, 
+  Burger, 
+  Group, 
+  NavLink, 
+  Avatar, 
+  Text, 
+  Menu, 
+  UnstyledButton, 
+  Stack,
+  Center, // 👈 Importamos Center
+  Loader  // 👈 Importamos Loader
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { 
+  IconCalendarEvent, 
+  IconUsers, 
+  IconUserCog, 
+  IconBriefcase, 
   IconSettings,
+  IconChevronDown,
+  IconLogout
 } from '@tabler/icons-react';
 
-const navItems = [
-  { label: 'Turnos', icon: IconCalendarEvent, path: '/app/turnos' },
-  { label: 'Clientes', icon: IconAddressBook, path: '/app/clientes' },
-  { label: 'Recursos', icon: IconUsers, path: '/app/recursos' },
-  { label: 'Servicios', icon: IconBriefcase, path: '/app/servicios' },
-  { label: 'Configuración', icon: IconSettings, path: '/app/configuracion' },
+// Servicios y Contextos
+import { tenantService } from '../api/tenantService';
+import { useTenantTheme } from '../context/useTenantTheme';
+
+const navLinks = [
+  { icon: IconCalendarEvent, label: 'Turnos', path: '/app/turnos' },
+  { icon: IconUsers, label: 'Clientes', path: '/app/clientes' },
+  { icon: IconUserCog, label: 'Recursos', path: '/app/recursos' },
+  { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
+  { icon: IconSettings, label: 'Configuración', path: '/app/configuracion' },
 ];
 
 export function DashboardLayout() {
+  const [opened, { toggle }] = useDisclosure();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // 1. Traemos tanto el color actual como la función para actualizarlo
+  const { colorHex, setColorHex } = useTenantTheme();
 
-  const handleLogout = () => {
-    localStorage.removeItem('turnify_token');
-    localStorage.removeItem('turnify_tenant_id');
-    navigate('/login', { replace: true });
-  };
+  // 2. Creamos un estado de carga inteligente.
+  // Si 'colorHex' ya existe (ej. al presionar F5 en una página privada), no mostramos carga.
+  // Si venimos del login ('colorHex' es null), mostramos carga hasta que el fetch termine.
+  const [loading, setLoading] = useState(!colorHex);
+
+  useEffect(() => {
+    const cargarColorAlEntrar = async () => {
+      // Si el color ya fue cargado por App.tsx, no hacemos nada y evitamos doble loader
+      if (colorHex) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const config = await tenantService.getConfig();
+        if (config.colorPrimario) {
+          setColorHex(config.colorPrimario);
+        }
+      } catch (error) {
+        console.warn('Error al cargar el color de la marca en el layout', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarColorAlEntrar();
+  }, [colorHex, setColorHex]);
+
+  // 3. Mientras se resuelve el color al venir desde el Login, mostramos un spinner limpio.
+  // De esta manera, el AppShell solo se renderizará cuando Mantine ya tenga tu verde/dorado aplicado.
+  if (loading) {
+    return (
+      <Center h="100vh">
+        <Loader type="dots" color="cyan" />
+      </Center>
+    );
+  }
 
   return (
-    <AppShell header={{ height: 64 }} navbar={{ width: 240, breakpoint: 'sm' }} padding="md">
-      <AppShell.Header style={{ backgroundColor: 'white' }}>
+    <AppShell
+      header={{ height: 60 }}
+      navbar={{ 
+        width: 250, 
+        breakpoint: 'sm', 
+        collapsed: { mobile: !opened } 
+      }}
+      padding="md"
+    >
+      {/* 🟢 HEADER */}
+      <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title order={3} c="cyan.6">
-            Turnify
-          </Title>
+          <Group>
+            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Text size="xl" fw={800} c="brand">
+              Turnify
+            </Text>
+          </Group>
 
-          <Menu shadow="md" width={180}>
+          <Menu width={200} position="bottom-end" shadow="md">
             <Menu.Target>
               <UnstyledButton>
-                <Group gap="xs">
-                  <Avatar color="cyan" radius="xl" size="sm">
-                    M
-                  </Avatar>
-                  <Text size="sm" fw={500}>
-                    Mi negocio
-                  </Text>
-                  <IconChevronDown size={14} />
+                <Group gap={7}>
+                  <Avatar radius="xl" size="sm" color="brand">M</Avatar>
+                  <Text fw={500} size="sm">Mi negocio</Text>
+                  <IconChevronDown size={14} stroke={1.5} />
                 </Group>
               </UnstyledButton>
             </Menu.Target>
-
             <Menu.Dropdown>
-              <Menu.Item leftSection={<IconLogout size={14} />} onClick={handleLogout} color="red">
+              <Menu.Item leftSection={<IconSettings size={14} />}>
+                Mi Perfil
+              </Menu.Item>
+              <Menu.Item 
+                color="red" 
+                leftSection={<IconLogout size={14} />}
+                onClick={() => navigate('/login')}
+              >
                 Cerrar sesión
               </Menu.Item>
             </Menu.Dropdown>
@@ -61,29 +129,32 @@ export function DashboardLayout() {
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="sm">
-        <Stack gap={4}>
-          {navItems.map((item) => (
-// DashboardLayout.tsx — el NavLink que ya tenés
-<NavLink
-  key={item.path}
-  label={item.label}
-  leftSection={<item.icon size={18} />}
-  active={location.pathname.startsWith(item.path)}
-  onClick={() => navigate(item.path)}
-  color="cyan"
-  variant="light"
-  style={{
-    borderRadius: 'var(--mantine-radius-md)',
-    transition: 'background-color 150ms ease',
-  }}
-/>
+      {/* 🟢 NAVBAR */}
+      <AppShell.Navbar p="md">
+        <Stack gap="xs">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.path}
+              label={link.label}
+              leftSection={<link.icon size={20} stroke={1.5} />}
+              active={location.pathname.startsWith(link.path)}
+              onClick={() => {
+                navigate(link.path);
+                if (opened) toggle();
+              }}
+              color="brand"
+              variant="light"
+              style={{ borderRadius: 8 }}
+            />
           ))}
         </Stack>
       </AppShell.Navbar>
 
-      <AppShell.Main>
-        <Outlet />
+      {/* 🟢 CONTENIDO PRINCIPAL */}
+      <AppShell.Main bg="gray.0">
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <Outlet />
+        </div>
       </AppShell.Main>
     </AppShell>
   );

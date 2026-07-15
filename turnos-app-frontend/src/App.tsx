@@ -1,16 +1,14 @@
-// App.tsx corregido
+// src/App.tsx
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MantineProvider, createTheme, Loader, Center } from '@mantine/core';
 
-// 1. Tema base
 import { theme as turnifyTheme } from './theme/turnifyTheme';
 import { generateShades } from './theme/generateShades';
-
-// Servicios
+import { TenantThemeProvider } from './context/TenantThemeContext';
+import { useTenantTheme } from './context/useTenantTheme';
 import { tenantService } from './api/tenantService';
 
-// Páginas y Layouts
 import { LandingPage } from './pages/Landing/LandindPage';
 import { DashboardLayout } from './layout/DashboardLayout';
 import { ProtectedRoute } from './auth/ProtectedRoute';
@@ -20,18 +18,71 @@ import { RecursosPage } from './pages/Recursos/RecursosPage';
 import { ServiciosPage } from './pages/Servicios/ServiciosPage';
 import { TurnosPage } from './pages/Turnos/TurnosPage';
 import { ClientesPage } from './pages/Clientes/ClientesPage';
-import { ConfigurationPage } from './pages/Configuration/ConfigurationPage.tsx';
+import { ConfigurationPage } from './pages/Configuration/ConfigurationPage';
 
+function ThemedApp() {
+  const { colorHex } = useTenantTheme();
+
+  const finalTheme =
+    colorHex && colorHex !== '#0EA5E9'
+      ? createTheme({
+          ...turnifyTheme,
+          colors: {
+            ...turnifyTheme.colors,
+            cyan: generateShades(colorHex),
+          },
+          autoContrast: true,
+          luminanceThreshold: 0.45,
+        })
+      : turnifyTheme;
+
+  return (
+    <MantineProvider theme={finalTheme}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="recursos" element={<RecursosPage />} />
+            <Route path="servicios" element={<ServiciosPage />} />
+            <Route path="clientes" element={<ClientesPage />} />
+            <Route path="turnos" element={<TurnosPage />} />
+            <Route path="configuracion" element={<ConfigurationPage />} />
+          </Route>
+
+          <Route path="*" element={<div>Página no encontrada</div>} />
+        </Routes>
+      </BrowserRouter>
+    </MantineProvider>
+  );
+}
+
+// ESTA ES LA LÍNEA CLAVE QUE BUSCA VITE: "export default"
 export default function App() {
-  const [colorHex, setColorHex] = useState<string | null>(null);
+  const [colorHexInicial, setColorHexInicial] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     const cargarMarca = async () => {
+      const rutasPublicas = ['/', '/login', '/registro'];
+      if (rutasPublicas.includes(window.location.pathname)) {
+        setCargando(false);
+        return;
+      }
+
       try {
         const config = await tenantService.getConfig();
         if (config.colorPrimario) {
-          setColorHex(config.colorPrimario);
+          setColorHexInicial(config.colorPrimario);
         }
       } catch {
         console.warn('Usando color por defecto de turnifyTheme.');
@@ -53,54 +104,9 @@ export default function App() {
     );
   }
 
-  // Si hay color dinámico, lo inyectamos EN LA MISMA clave 'cyan' del theme base.
-  // Así, todo componente con color="cyan" hardcodeado (botones, badges, el
-  // eventPropGetter del calendario en TurnosPage, etc.) automáticamente
-  // usa el color del tenant sin tener que salir a buscar y reemplazar cada uso.
-  const finalTheme =
-    colorHex && colorHex !== '#0EA5E9'
-      ? createTheme({
-          ...turnifyTheme,
-          colors: {
-            ...turnifyTheme.colors,
-            cyan: generateShades(colorHex),
-          },
-          autoContrast: true,
-          luminanceThreshold: 0.45,
-        })
-      : turnifyTheme;
-
   return (
-    // key fuerza que Mantine recalcule todas las CSS variables desde cero
-    // cuando cambia colorHex, evitando el bug de "color ignorado del todo".
-    <MantineProvider theme={finalTheme} key={colorHex ?? 'default'}>
-      <BrowserRouter>
-        <Routes>
-          {/* Pública */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/registro" element={<RegisterPage />} />
-
-          {/* Privada, protegida y con layout compartido */}
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="recursos" element={<RecursosPage />} />
-            <Route path="servicios" element={<ServiciosPage />} />
-            <Route path="clientes" element={<ClientesPage />} />
-            <Route path="turnos" element={<TurnosPage />} />
-            <Route path="configuracion" element={<ConfigurationPage />} />
-          </Route>
-
-          {/* Catch-all */}
-          <Route path="*" element={<div>Página no encontrada</div>} />
-        </Routes>
-      </BrowserRouter>
-    </MantineProvider>
+    <TenantThemeProvider initialColorHex={colorHexInicial}>
+      <ThemedApp />
+    </TenantThemeProvider>
   );
 }
