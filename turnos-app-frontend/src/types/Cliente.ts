@@ -15,3 +15,11 @@ export interface CreateClienteDTO {
   telefono?: string;
   notasAdicionales?: string;
 }
+
+export interface UpdateClienteDTO {
+  nombre: string;
+  apellido: string;
+  email?: string;
+  telefono?: string;
+  notasAdicionales?: string;
+}

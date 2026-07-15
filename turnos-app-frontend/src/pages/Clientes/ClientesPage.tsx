@@ -1,5 +1,5 @@
 // src/pages/Clientes/ClientesPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import {
   Title,
@@ -16,7 +16,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle } from '@tabler/icons-react';
+import { IconPlus, IconAlertCircle, IconSearch } from '@tabler/icons-react';
 import { clientesService } from '../../api/clientesService';
 import type { Cliente } from '../../types/Cliente';
 
@@ -24,8 +24,11 @@ export function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  const [searchTerm, setSearchTerm] = useState('');
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
+  const [clienteEditandoId, setClienteEditandoId] = useState<number | null>(null);
 
   const form = useForm({
     initialValues: { nombre: '', apellido: '', email: '', telefono: '' },
@@ -35,54 +38,48 @@ export function ClientesPage() {
     },
   });
 
-  useEffect(() => {
-    let activo = true;
+  // Lógica de búsqueda reactiva
+  const clientesFiltrados = useMemo(() => {
+    return clientes.filter((c) => 
+      c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [clientes, searchTerm]);
 
+  useEffect(() => {
     const cargar = async () => {
+      setLoading(true);
       try {
         const data = await clientesService.getAll();
-        if (activo) {
-          setClientes(data);
-          setErrorMessage(null);
-        }
+        setClientes(data);
       } catch {
-        if (activo) setErrorMessage('No pudimos cargar los clientes. Intentá de nuevo.');
+        setErrorMessage('No pudimos cargar los clientes.');
       } finally {
-        if (activo) setLoading(false);
+        setLoading(false);
       }
     };
-
     cargar();
-    return () => {
-      activo = false;
-    };
   }, []);
-
-  const recargarClientes = async () => {
-    setLoading(true);
-    try {
-      const data = await clientesService.getAll();
-      setClientes(data);
-      setErrorMessage(null);
-    } catch {
-      setErrorMessage('No pudimos cargar los clientes. Intentá de nuevo.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (values: typeof form.values) => {
     setSubmitting(true);
     try {
-      await clientesService.create(values);
+      if (clienteEditandoId) {
+        await clientesService.update(clienteEditandoId, values);
+      } else {
+        await clientesService.create(values);
+      }
       closeModal();
       form.reset();
-      await recargarClientes();
+      setClienteEditandoId(null);
+      const data = await clientesService.getAll();
+      setClientes(data);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         form.setFieldError('nombre', error.response.data.detail);
       } else {
-        setErrorMessage('No pudimos crear el cliente. Intentá de nuevo.');
+        setErrorMessage('No pudimos guardar los cambios.');
       }
     } finally {
       setSubmitting(false);
@@ -93,10 +90,22 @@ export function ClientesPage() {
     <Stack gap="lg">
       <Group justify="space-between">
         <Title order={2}>Gestión de Clientes</Title>
-        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={openModal}>
+        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={() => {
+          form.reset();
+          setClienteEditandoId(null);
+          openModal();
+        }}>
           Nuevo cliente
         </Button>
       </Group>
+
+      <TextInput
+        placeholder="Buscar por nombre, apellido o email..."
+        leftSection={<IconSearch size={16} />}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.currentTarget.value)}
+        maw={400}
+      />
 
       {errorMessage && (
         <Alert icon={<IconAlertCircle size={16} />} color="red" variant="light">
@@ -105,13 +114,9 @@ export function ClientesPage() {
       )}
 
       {loading ? (
-        <Center py="xl">
-          <Loader color="cyan" />
-        </Center>
-      ) : clientes.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">
-          Todavía no cargaste ningún cliente.
-        </Text>
+        <Center py="xl"> <Loader color="cyan" /> </Center>
+      ) : clientesFiltrados.length === 0 ? (
+        <Text c="dimmed" ta="center" py="xl">No se encontraron clientes.</Text>
       ) : (
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
@@ -120,22 +125,46 @@ export function ClientesPage() {
               <Table.Th>Apellido</Table.Th>
               <Table.Th>Teléfono</Table.Th>
               <Table.Th>Email</Table.Th>
+              <Table.Th>Acciones</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {clientes.map((cliente) => (
-              <Table.Tr key={cliente.id}>
-                <Table.Td>{cliente.nombre}</Table.Td>
-                <Table.Td>{cliente.apellido}</Table.Td>
-                <Table.Td>{cliente.telefono ?? '—'}</Table.Td>
-                <Table.Td>{cliente.email ?? '—'}</Table.Td>
+            {clientesFiltrados.map((c) => (
+              <Table.Tr key={c.id}>
+                <Table.Td>{c.nombre}</Table.Td>
+                <Table.Td>{c.apellido}</Table.Td>
+                <Table.Td>{c.telefono ?? '—'}</Table.Td>
+                <Table.Td>{c.email ?? '—'}</Table.Td>
+                <Table.Td>
+                  <Button 
+                    variant="light" 
+                    color="cyan" 
+                    size="xs" 
+                    onClick={() => {
+                      // Saneamos los datos aquí mismo:
+                      // Convertimos null a undefined o string vacío según lo que tu formulario necesite
+                      form.setValues({
+                        nombre: c.nombre,
+                        apellido: c.apellido,
+                        email: c.email ?? '',      // Si es null, devuelve string vacío
+                        telefono: c.telefono ?? '' // Si es null, devuelve string vacío
+                      });
+                      
+                      setClienteEditandoId(c.id);
+                      openModal();
+                    }}
+                  >
+                    Editar
+                  </Button>
+                </Table.Td>
               </Table.Tr>
             ))}
           </Table.Tbody>
         </Table>
       )}
 
-      <Modal opened={modalOpened} onClose={closeModal} title="Nuevo cliente" centered>
+      <Modal opened={modalOpened} onClose={() => { closeModal(); setClienteEditandoId(null); }} 
+             title={clienteEditandoId ? "Editar cliente" : "Nuevo cliente"} centered>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
             <TextInput label="Nombre" required {...form.getInputProps('nombre')} />

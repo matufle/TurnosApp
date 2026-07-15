@@ -1,5 +1,5 @@
 // src/pages/Recursos/RecursosPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import {
   Title,
@@ -18,7 +18,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle } from '@tabler/icons-react';
+import { IconPlus, IconAlertCircle, IconSearch } from '@tabler/icons-react';
 import { recursosService } from '../../api/recursosService';
 import type { Recurso } from '../../types/Recurso';
 
@@ -27,10 +27,11 @@ export function RecursosPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
+  // Estado para la búsqueda
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
-  
-  // Estado para saber si estamos editando
   const [recursoEditandoId, setRecursoEditandoId] = useState<number | null>(null);
 
   const form = useForm({
@@ -40,67 +41,63 @@ export function RecursosPage() {
     },
   });
 
-  useEffect(() => {
-    let activo = true;
+  // Lógica de búsqueda reactiva
+  const recursosFiltrados = useMemo(() => {
+    return recursos.filter((r) => 
+      r.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [recursos, searchTerm]);
 
-    const cargar = async () => {
-      try {
-        const data = await recursosService.getAll();
-        if (activo) {
-          setRecursos(data);
-          setErrorMessage(null);
-        }
-      } catch {
-        if (activo) {
-          setErrorMessage('No pudimos cargar los recursos. Intentá de nuevo.');
-        }
-      } finally {
-        if (activo) {
-          setLoading(false);
-        }
-      }
-    };
-
-    cargar();
-
-    return () => {
-      activo = false;
-    };
-  }, []);
-
-  const recargarRecursos = async () => {
+  // Función de carga estable con useCallback
+  const cargarRecursos = useCallback(async () => {
     setLoading(true);
     try {
       const data = await recursosService.getAll();
       setRecursos(data);
       setErrorMessage(null);
     } catch {
-      setErrorMessage('No pudimos cargar los recursos. Intentá de nuevo.');
+      setErrorMessage('No pudimos cargar los recursos.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+ useEffect(() => {
+    // Definimos la función asíncrona DENTRO del efecto
+    const cargar = async () => {
+      setLoading(true);
+      try {
+        const data = await recursosService.getAll();
+        setRecursos(data);
+        setErrorMessage(null);
+      } catch {
+        setErrorMessage('No pudimos cargar los recursos.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargar();
+  }, []); // Array vacío porque ahora la función no depende de nada externo
 
   const handleSubmit = async (values: typeof form.values) => {
     setSubmitting(true);
     try {
       if (recursoEditandoId) {
-        // Modo Edición
         await recursosService.update(recursoEditandoId, values);
       } else {
-        // Modo Creación
         await recursosService.create(values);
       }
-      
       closeModal();
       form.reset();
       setRecursoEditandoId(null);
-      await recargarRecursos();
+      await cargarRecursos();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         form.setFieldError('nombre', error.response.data.detail);
       } else {
-        setErrorMessage('No pudimos guardar el recurso. Intentá de nuevo.');
+        setErrorMessage('No pudimos guardar el recurso.');
       }
     } finally {
       setSubmitting(false);
@@ -125,6 +122,15 @@ export function RecursosPage() {
         </Button>
       </Group>
 
+      {/* Input de Búsqueda */}
+      <TextInput
+        placeholder="Buscar por nombre o descripción..."
+        leftSection={<IconSearch size={16} />}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.currentTarget.value)}
+        maw={400}
+      />
+
       {errorMessage && (
         <Alert icon={<IconAlertCircle size={16} />} color="red" variant="light">
           {errorMessage}
@@ -136,9 +142,7 @@ export function RecursosPage() {
           <Loader color="cyan" />
         </Center>
       ) : recursos.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">
-          Todavía no cargaste ningún recurso.
-        </Text>
+        <Text c="dimmed" ta="center" py="xl">Todavía no cargaste ningún recurso.</Text>
       ) : (
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
@@ -149,15 +153,13 @@ export function RecursosPage() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {recursos.map((recurso) => (
+            {recursosFiltrados.map((recurso) => (
               <Table.Tr key={recurso.id}>
                 <Table.Td>{recurso.nombre}</Table.Td>
                 <Table.Td>{recurso.descripcion}</Table.Td>
                 <Table.Td>
                   <Button 
-                    variant="light" 
-                    color="cyan" 
-                    size="xs"
+                    variant="light" color="cyan" size="xs"
                     onClick={() => {
                       form.setValues({
                         nombre: recurso.nombre,
@@ -179,36 +181,15 @@ export function RecursosPage() {
 
       <Modal 
         opened={modalOpened} 
-        onClose={() => {
-          closeModal();
-          setRecursoEditandoId(null);
-        }} 
+        onClose={() => { closeModal(); setRecursoEditandoId(null); }} 
         title={recursoEditandoId ? "Editar recurso" : "Nuevo recurso"} 
         centered
       >
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
-            <TextInput
-              label="Nombre"
-              placeholder="Ej: Consultorio 1"
-              required
-              {...form.getInputProps('nombre')}
-            />
-            
-            <Textarea
-              label="Descripción"
-              placeholder="Detalle opcional"
-              {...form.getInputProps('descripcion')}
-            />
-
-            <ColorInput
-              label="Color en la agenda"
-              placeholder="Elegí un color"
-              format="hex"
-              swatches={['#0EA5E9', '#12b886', '#fab005', '#fd7e14', '#fa5252', '#be4bdb', '#7950f2']}
-              {...form.getInputProps('colorHex')}
-            />
-
+            <TextInput label="Nombre" required {...form.getInputProps('nombre')} />
+            <Textarea label="Descripción" {...form.getInputProps('descripcion')} />
+            <ColorInput label="Color en la agenda" {...form.getInputProps('colorHex')} />
             <Button type="submit" color="cyan" loading={submitting} fullWidth mt="sm">
               Guardar
             </Button>
