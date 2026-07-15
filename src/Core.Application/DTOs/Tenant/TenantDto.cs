@@ -10,5 +10,7 @@ public record TenantDto(
     string Slug,
     bool PermitirSolapamiento,
     bool Activo,
-    DateTime FechaAlta
+    DateTime FechaAlta,
+    string ColorPrimario,
+    bool PermiteReservasPublicas
 );

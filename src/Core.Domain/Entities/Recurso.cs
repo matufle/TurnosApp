@@ -12,6 +12,8 @@ public class Recurso : TenantEntity
     public string? Descripcion { get; set; }
     public bool Activo { get; set; } = true;
 
+    public string ColorHex { get; set; } = "#0EA5E9";
+
     // Navegación
     public ICollection<Turno> Turnos { get; set; } = [];
 }

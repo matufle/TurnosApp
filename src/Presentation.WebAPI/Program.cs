@@ -11,6 +11,7 @@ using TurnosApp.Infra.Data.Repositories;
 using TurnosApp.Presentation.WebAPI.Filters;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
+using TurnosApp.Presentation.WebAPI.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,8 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthAppService, AuthAppService>();
 builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

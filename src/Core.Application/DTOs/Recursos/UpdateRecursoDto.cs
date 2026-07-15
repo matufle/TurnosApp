@@ -7,5 +7,6 @@ namespace TurnosApp.Core.Application.DTOs.Recursos;
 public record UpdateRecursoDto(
     string Nombre,
     string? Descripcion,
-    bool Activo
+    bool Activo,
+    string? ColorHex
 );

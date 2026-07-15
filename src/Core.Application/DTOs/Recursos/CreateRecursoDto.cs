@@ -6,5 +6,6 @@ namespace TurnosApp.Core.Application.DTOs.Recursos;
 
 public record CreateRecursoDto(
     string Nombre,
-    string? Descripcion
+    string? Descripcion,
+    string? ColorHex
 );

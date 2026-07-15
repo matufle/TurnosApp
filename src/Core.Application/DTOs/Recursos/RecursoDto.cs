@@ -7,5 +7,6 @@ public record RecursoDto(
     int Id,
     string Nombre,
     string? Descripcion,
-    bool Activo
+    bool Activo,
+    string ColorHex
 );

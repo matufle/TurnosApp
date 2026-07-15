@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TurnosApp.Core.Application.DTOs.Tenant;
 using TurnosApp.Core.Application.DTOs.Tenants;
 using TurnosApp.Core.Application.Interfaces.Services;
 
@@ -48,5 +49,26 @@ public class TenantsController : ControllerBase
         var created = await _tenantAppService.CreateAsync(dto, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
+    // --- NUEVOS ENDPOINTS PARA EL ISSUE #16 (Configuración) ---
+
+    [HttpGet("config")]
+    [ProducesResponseType(StatusCodes.Status200OK)] // Asegurate de tener TenantConfigDto creado
+    public async Task<IActionResult> GetConfig(CancellationToken cancellationToken)
+    {
+        // Acá delegamos la responsabilidad al servicio de saber QUÉ tenant traer.
+        var config = await _tenantAppService.GetConfigAsync(cancellationToken);
+        return Ok(config);
+    }
+
+    [HttpPut("config")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UpdateConfig(
+        [FromBody] UpdateTenantConfigDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _tenantAppService.UpdateConfigAsync(dto, cancellationToken);
+        return NoContent();
     }
 }

@@ -41,7 +41,8 @@ public class RecursoAppService : IRecursoAppService
         {
             Nombre = dto.Nombre,
             Descripcion = dto.Descripcion,
-            Activo = true
+            Activo = true,
+            ColorHex = dto.ColorHex ?? "#0EA5E9"
         };
 
         await _unitOfWork.Recursos.AddAsync(recurso, cancellationToken);
@@ -60,6 +61,7 @@ public class RecursoAppService : IRecursoAppService
         recurso.Nombre = dto.Nombre;
         recurso.Descripcion = dto.Descripcion;
         recurso.Activo = dto.Activo;
+        recurso.ColorHex = dto.ColorHex ?? "#0EA5E9";
 
         _unitOfWork.Recursos.Update(recurso);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -82,6 +84,7 @@ public class RecursoAppService : IRecursoAppService
         Id: r.Id,
         Nombre: r.Nombre,
         Descripcion: r.Descripcion,
-        Activo: r.Activo
+        Activo: r.Activo,
+        ColorHex: r.ColorHex
     );
 }

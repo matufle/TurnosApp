@@ -17,4 +17,10 @@ export const recursosService = {
     const response = await httpClient.post<Recurso>('/recursos', dto);
     return response.data;
   },
+  
+  update: async (id: number, data: RecursoCreateDTO) => {
+    // CAMBIO ACÁ: Usamos httpClient y le sacamos el /api/
+    const response = await httpClient.put(`/recursos/${id}`, data);
+    return response.data;
+  }
 };
