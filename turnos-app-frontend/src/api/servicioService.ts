@@ -17,4 +17,8 @@ export const serviciosService = {
       const response = await httpClient.put<Servicio>(`/servicios/${id}`, dto);
       return response.data;
     },
+
+      delete: async (id: number): Promise<void> => {
+    await httpClient.delete(`/servicios/${id}`);
+  },
 };

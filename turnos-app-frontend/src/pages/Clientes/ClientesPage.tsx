@@ -13,10 +13,11 @@ import {
   Loader,
   Center,
   Text,
+  ActionIcon, // Importamos ActionIcon para el botón de basura
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle, IconSearch } from '@tabler/icons-react';
+import { IconPlus, IconAlertCircle, IconSearch, IconTrash } from '@tabler/icons-react'; // Sumamos IconTrash
 import { clientesService } from '../../api/clientesService';
 import type { Cliente } from '../../types/Cliente';
 
@@ -29,6 +30,10 @@ export function ClientesPage() {
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
   const [clienteEditandoId, setClienteEditandoId] = useState<number | null>(null);
+
+  // Nuevos estados para manejar la eliminación
+  const [clienteAEliminar, setClienteAEliminar] = useState<Cliente | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const form = useForm({
     initialValues: { nombre: '', apellido: '', email: '', telefono: '' },
@@ -43,7 +48,7 @@ export function ClientesPage() {
     return clientes.filter((c) => 
       c.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      (c.email?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [clientes, searchTerm]);
 
@@ -83,6 +88,24 @@ export function ClientesPage() {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Función para manejar el borrado
+  const handleEliminar = async () => {
+    if (!clienteAEliminar) return;
+    setEliminando(true);
+    try {
+      // Usamos el id del cliente que guardamos en el estado temporal
+      await clientesService.delete(clienteAEliminar.id);
+      
+      // Actualizamos la tabla sacando el cliente borrado sin volver a llamar a la API
+      setClientes((prev) => prev.filter((c) => c.id !== clienteAEliminar.id));
+      setClienteAEliminar(null);
+    } catch{
+      setErrorMessage('No pudimos eliminar el cliente. Puede que tenga turnos asociados.');
+    } finally {
+      setEliminando(false);
     }
   };
 
@@ -136,26 +159,36 @@ export function ClientesPage() {
                 <Table.Td>{c.telefono ?? '—'}</Table.Td>
                 <Table.Td>{c.email ?? '—'}</Table.Td>
                 <Table.Td>
-                  <Button 
-                    variant="light" 
-                    color="cyan" 
-                    size="xs" 
-                    onClick={() => {
-                      // Saneamos los datos aquí mismo:
-                      // Convertimos null a undefined o string vacío según lo que tu formulario necesite
-                      form.setValues({
-                        nombre: c.nombre,
-                        apellido: c.apellido,
-                        email: c.email ?? '',      // Si es null, devuelve string vacío
-                        telefono: c.telefono ?? '' // Si es null, devuelve string vacío
-                      });
-                      
-                      setClienteEditandoId(c.id);
-                      openModal();
-                    }}
-                  >
-                    Editar
-                  </Button>
+                  {/* Agrupamos los botones de acción para que queden alineados */}
+                  <Group gap="xs">
+                    <Button 
+                      variant="light" 
+                      color="cyan" 
+                      size="xs" 
+                      onClick={() => {
+                        form.setValues({
+                          nombre: c.nombre,
+                          apellido: c.apellido,
+                          email: c.email ?? '',
+                          telefono: c.telefono ?? ''
+                        });
+                        setClienteEditandoId(c.id);
+                        openModal();
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    
+                    {/* Botón de Eliminar */}
+                    <ActionIcon 
+                      variant="light" 
+                      color="red" 
+                      onClick={() => setClienteAEliminar(c)}
+                      title="Eliminar cliente"
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
                 </Table.Td>
               </Table.Tr>
             ))}
@@ -163,6 +196,7 @@ export function ClientesPage() {
         </Table>
       )}
 
+      {/* Modal de Creación / Edición */}
       <Modal opened={modalOpened} onClose={() => { closeModal(); setClienteEditandoId(null); }} 
              title={clienteEditandoId ? "Editar cliente" : "Nuevo cliente"} centered>
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -177,6 +211,28 @@ export function ClientesPage() {
           </Stack>
         </form>
       </Modal>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <Modal 
+        opened={!!clienteAEliminar} 
+        onClose={() => setClienteAEliminar(null)} 
+        title={<Text c="red" fw={600}>Eliminar Cliente</Text>} 
+        centered
+      >
+        <Text size="sm">
+          ¿Estás seguro que querés eliminar a <strong>{clienteAEliminar?.nombre} {clienteAEliminar?.apellido}</strong>? Esta acción no se puede deshacer.
+        </Text>
+        
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={() => setClienteAEliminar(null)} disabled={eliminando}>
+            Cancelar
+          </Button>
+          <Button color="red" onClick={handleEliminar} loading={eliminando}>
+            Eliminar
+          </Button>
+        </Group>
+      </Modal>
+
     </Stack>
   );
 }
