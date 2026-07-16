@@ -22,5 +22,9 @@ export const recursosService = {
     // CAMBIO ACÁ: Usamos httpClient y le sacamos el /api/
     const response = await httpClient.put(`/recursos/${id}`, data);
     return response.data;
-  }
+  },
+    delete: async (id: number): Promise<void> => {
+    await httpClient.delete(`/recursos/${id}`);
+  },
+
 };

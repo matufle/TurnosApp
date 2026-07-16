@@ -15,10 +15,11 @@ import {
   Loader,
   Center,
   Text,
+  ActionIcon, // Agregado para el botón del tachito
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle, IconSearch } from '@tabler/icons-react';
+import { IconPlus, IconAlertCircle, IconSearch, IconTrash } from '@tabler/icons-react'; // Agregamos IconTrash
 import { serviciosService } from '../../api/servicioService';
 import type { Servicio } from '../../types/Servicio';
 
@@ -31,6 +32,10 @@ export function ServiciosPage() {
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
   const [servicioEditandoId, setServicioEditandoId] = useState<number | null>(null);
+
+  // Estados para eliminar
+  const [servicioAEliminar, setServicioAEliminar] = useState<Servicio | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const form = useForm({
     initialValues: { nombre: '', descripcion: '', duracionMinutos: 30, precio: 0 },
@@ -61,7 +66,7 @@ export function ServiciosPage() {
     }
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     // Definimos la función dentro del efecto para que sea local y segura
     const cargar = async () => {
       setLoading(true);
@@ -99,6 +104,23 @@ useEffect(() => {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Función para manejar el borrado
+  const handleEliminar = async () => {
+    if (!servicioAEliminar) return;
+    setEliminando(true);
+    try {
+      await serviciosService.delete(servicioAEliminar.id);
+      
+      // Actualizamos la tabla sacando el servicio borrado
+      setServicios((prev) => prev.filter((s) => s.id !== servicioAEliminar.id));
+      setServicioAEliminar(null);
+    } catch {
+      setErrorMessage('No pudimos eliminar el servicio. Puede que tenga turnos asociados.');
+    } finally {
+      setEliminando(false);
     }
   };
 
@@ -152,11 +174,24 @@ useEffect(() => {
                 <Table.Td>{s.duracionMinutos} min</Table.Td>
                 <Table.Td>${s.precio}</Table.Td>
                 <Table.Td>
-                  <Button variant="light" color="cyan" size="xs" onClick={() => {
-                    form.setValues(s);
-                    setServicioEditandoId(s.id);
-                    openModal();
-                  }}>Editar</Button>
+                  <Group gap="xs">
+                    <Button variant="light" color="cyan" size="xs" onClick={() => {
+                      form.setValues(s);
+                      setServicioEditandoId(s.id);
+                      openModal();
+                    }}>
+                      Editar
+                    </Button>
+                    
+                    <ActionIcon 
+                      variant="light" 
+                      color="red" 
+                      onClick={() => setServicioAEliminar(s)}
+                      title="Eliminar servicio"
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Group>
                 </Table.Td>
               </Table.Tr>
             ))}
@@ -164,6 +199,7 @@ useEffect(() => {
         </Table>
       )}
 
+      {/* Modal de Creación / Edición */}
       <Modal opened={modalOpened} onClose={() => { closeModal(); setServicioEditandoId(null); }} 
              title={servicioEditandoId ? "Editar servicio" : "Nuevo servicio"} centered>
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -178,6 +214,28 @@ useEffect(() => {
           </Stack>
         </form>
       </Modal>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <Modal 
+        opened={!!servicioAEliminar} 
+        onClose={() => setServicioAEliminar(null)} 
+        title={<Text c="red" fw={600}>Eliminar Servicio</Text>} 
+        centered
+      >
+        <Text size="sm">
+          ¿Estás seguro que querés eliminar el servicio <strong>{servicioAEliminar?.nombre}</strong>? Esta acción no se puede deshacer.
+        </Text>
+        
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={() => setServicioAEliminar(null)} disabled={eliminando}>
+            Cancelar
+          </Button>
+          <Button color="red" onClick={handleEliminar} loading={eliminando}>
+            Eliminar
+          </Button>
+        </Group>
+      </Modal>
+
     </Stack>
   );
 }
