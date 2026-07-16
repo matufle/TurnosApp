@@ -10,7 +10,7 @@ public class Tenant : BaseEntity
 {
     public string Nombre { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;        // ej: "clinica-del-sur"
-    public bool PermitirSolapamiento { get; set; } = false;
+    public bool PermiteSolapamiento { get; set; } = false;
     public bool Activo { get; set; } = true;
     
     public string ColorPrimario { get; set; } = "#0EA5E9";

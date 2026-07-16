@@ -44,7 +44,7 @@ public class TenantAppService : ITenantAppService
         {
             Nombre = dto.Nombre,
             Slug = dto.Slug,
-            PermitirSolapamiento = dto.PermitirSolapamiento,
+            PermiteSolapamiento = dto.PermiteSolapamiento,
             Activo = true,
             FechaAlta = DateTime.UtcNow,
             ColorPrimario = dto.ColorPrimario,
@@ -68,6 +68,7 @@ public class TenantAppService : ITenantAppService
 
         return new TenantConfigDto(
             Nombre: tenant.Nombre,
+            PermiteSolapamiento: tenant.PermiteSolapamiento,
             ColorPrimario: tenant.ColorPrimario,
             PermiteReservasPublicas: tenant.PermiteReservasPublicas
         );
@@ -85,7 +86,7 @@ public class TenantAppService : ITenantAppService
         // 2. Pisamos los valores
         tenant.ColorPrimario = dto.ColorPrimario;
         tenant.PermiteReservasPublicas = dto.PermiteReservasPublicas;
-
+        tenant.PermiteSolapamiento = dto.PermiteSolapamiento;
         // 3. Como EF Core trackea la entidad, solo guardamos
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -95,7 +96,7 @@ public class TenantAppService : ITenantAppService
         Id: t.Id,
         Nombre: t.Nombre,
         Slug: t.Slug,
-        PermitirSolapamiento: t.PermitirSolapamiento,
+        PermiteSolapamiento: t.PermiteSolapamiento,
         Activo: t.Activo,
         FechaAlta: t.FechaAlta,
         PermiteReservasPublicas: t.PermiteReservasPublicas,

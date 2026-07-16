@@ -1,4 +1,4 @@
-// src/pages/Configuracion/ConfiguracionPage.tsx
+// src/pages/Configuration/ConfigurationPage.tsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
@@ -17,10 +17,10 @@ import {
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconDeviceFloppy } from '@tabler/icons-react';
 import { tenantService } from '../../api/tenantService';
-import { useTenantTheme } from '../../context/useTenantTheme';   // 👈 nuevo
+import { useTenantTheme } from '../../context/useTenantTheme';
 
 export function ConfigurationPage() {
-  const { setColorHex } = useTenantTheme();   // 👈 nuevo
+  const { setColorHex } = useTenantTheme();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +31,7 @@ export function ConfigurationPage() {
     initialValues: {
       colorPrimario: '#0EA5E9',
       permiteReservasPublicas: false,
+      permiteSolapamiento: false, // Unificado: usamos 'permite' en todo
     },
   });
 
@@ -41,9 +42,12 @@ export function ConfigurationPage() {
       try {
         const data = await tenantService.getConfig();
         if (activo) {
+          // Asegúrate de usar el nombre exacto que devuelve el backend
           form.setValues({
             colorPrimario: data.colorPrimario || '#0EA5E9',
             permiteReservasPublicas: data.permiteReservasPublicas || false,
+            // Aquí usamos 'permiteSolapamiento' para que coincida con la propiedad
+            permiteSolapamiento: data.permiteSolapamiento || false, 
           });
           setErrorMessage(null);
         }
@@ -63,7 +67,7 @@ export function ConfigurationPage() {
     return () => {
       activo = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (values: typeof form.values) => {
@@ -72,12 +76,9 @@ export function ConfigurationPage() {
     setSuccessMessage(null);
 
     try {
+      // Enviamos el objeto con el nombre unificado
       await tenantService.updateConfig(values);
       setSuccessMessage('¡Configuración guardada con éxito!');
-
-      // Actualiza el theme en caliente: dispara el re-render de ThemedApp
-      // en App.tsx sin necesidad de F5. El backend ya confirmó el guardado,
-      // así que este es el único lugar donde hace falta tocar el context.
       setColorHex(values.colorPrimario);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
@@ -108,7 +109,7 @@ export function ConfigurationPage() {
 
       {loading ? (
         <Center py="xl">
-          <Loader color="cyan" />
+          <Loader />
         </Center>
       ) : (
         <Paper withBorder radius="md" p="xl">
@@ -117,7 +118,7 @@ export function ConfigurationPage() {
               <div>
                 <Title order={4} mb="xs">Identidad Visual</Title>
                 <Text size="sm" c="dimmed" mb="md">
-                  Personalizá el color principal que verán tus clientes al momento de reservar.
+                  Personalizá el color principal que verán tus clientes.
                 </Text>
                 <ColorInput
                   label="Color Primario"
@@ -134,18 +135,24 @@ export function ConfigurationPage() {
                 <Text size="sm" c="dimmed" mb="md">
                   Ajustá cómo funciona la agenda y quién puede interactuar con ella.
                 </Text>
-                <Switch
-                  label="Permitir Reservas Públicas"
-                  description="Si está activo, los clientes podrán autogestionar sus turnos desde un enlace público."
-                  size="md"
-                  color="cyan"
-                  {...form.getInputProps('permiteReservasPublicas', { type: 'checkbox' })}
-                />
+                <Stack gap="md">
+                  <Switch
+                    label="Permitir Reservas Públicas"
+                    description="Si está activo, los clientes podrán autogestionar sus turnos."
+                    size="md"
+                    {...form.getInputProps('permiteReservasPublicas', { type: 'checkbox' })}
+                  />
+                  <Switch
+                    label="Permitir turnos en simultáneo (Solapamiento)"
+                    description="Si está activo, permitirá múltiples turnos en el mismo horario."
+                    size="md"
+                    {...form.getInputProps('permiteSolapamiento', { type: 'checkbox' })}
+                  />
+                </Stack>
               </div>
 
               <Button
                 type="submit"
-                color="cyan"
                 loading={submitting}
                 leftSection={<IconDeviceFloppy size={18} />}
                 mt="md"

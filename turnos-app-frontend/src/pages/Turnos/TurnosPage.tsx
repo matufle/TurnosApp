@@ -335,7 +335,6 @@ export function TurnosPage() {
 
         <Button
           leftSection={<IconPlus size={16} />}
-          color="cyan"
           onClick={() => {
             form.reset();
             // Si hay un recurso filtrado, lo mandamos al form
@@ -357,7 +356,7 @@ export function TurnosPage() {
 
       {loading ? (
         <Center py="xl">
-          <Loader color="cyan" />
+          <Loader/>
         </Center>
       ) : (
         <Paper withBorder radius="md" p="md">
@@ -460,7 +459,6 @@ export function TurnosPage() {
 
             <Switch
               label="Es un cliente nuevo"
-              color="cyan"
               {...form.getInputProps('esClienteNuevo', { type: 'checkbox' })}
             />
 
@@ -482,7 +480,7 @@ export function TurnosPage() {
               />
             )}
 
-            <Button type="submit" color="cyan" loading={submitting} fullWidth mt="xl" size="md">
+            <Button type="submit" loading={submitting} fullWidth mt="xl" size="md">
               Guardar Turno
             </Button>
           </Stack>

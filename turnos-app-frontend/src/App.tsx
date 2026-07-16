@@ -23,10 +23,11 @@ import { ConfigurationPage } from './pages/Configuration/ConfigurationPage';
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
 
-  const finalTheme =
+const finalTheme =
     colorHex && colorHex !== '#0EA5E9'
       ? createTheme({
           ...turnifyTheme,
+          primaryColor: 'cyan', // <-- ESTA LÍNEA ES LA CLAVE
           colors: {
             ...turnifyTheme.colors,
             cyan: generateShades(colorHex),
@@ -34,7 +35,10 @@ function ThemedApp() {
           autoContrast: true,
           luminanceThreshold: 0.45,
         })
-      : turnifyTheme;
+      : createTheme({
+          ...turnifyTheme,
+          primaryColor: 'cyan', // Lo aseguramos también para el tema por defecto
+        });
 
   return (
     <MantineProvider theme={finalTheme}>

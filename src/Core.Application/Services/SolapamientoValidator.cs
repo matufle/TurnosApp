@@ -28,15 +28,15 @@ public class SolapamientoValidator
     /// <param name="recursoId">Recurso (profesional, sala, máquina) a validar.</param>
     /// <param name="inicio">Fecha y hora de inicio del turno propuesto.</param>
     /// <param name="fin">Fecha y hora de fin calculada (inicio + duración del servicio).</param>
-    /// <param name="permitirSolapamiento">Flag del Tenant. Si es true, omite la validación.</param>
+    /// <param name="permiteSolapamiento">Flag del Tenant. Si es true, omite la validación.</param>
     public async Task ValidarAsync(
         int recursoId,
         DateTime inicio,
         DateTime fin,
-        bool permitirSolapamiento,
+        bool permiteSolapamiento,
         CancellationToken cancellationToken = default)
     {
-        if (permitirSolapamiento)
+        if (permiteSolapamiento)
             return;
 
         var existeSolapamiento = await _turnoRepository.ExisteTurnoEnRangoAsync(

@@ -17,9 +17,10 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle, IconSearch, IconTrash } from '@tabler/icons-react'; // Sumamos IconTrash
+import { IconPlus, IconAlertCircle, IconSearch, IconTrash, IconUsers } from '@tabler/icons-react'; // Sumamos IconTrash
 import { clientesService } from '../../api/clientesService';
 import type { Cliente } from '../../types/Cliente';
+import { EmptyState } from '../../components/EmptyState';
 
 export function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -113,7 +114,7 @@ export function ClientesPage() {
     <Stack gap="lg">
       <Group justify="space-between">
         <Title order={2}>Gestión de Clientes</Title>
-        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={() => {
+        <Button leftSection={<IconPlus size={16} />} onClick={() => {
           form.reset();
           setClienteEditandoId(null);
           openModal();
@@ -137,9 +138,23 @@ export function ClientesPage() {
       )}
 
       {loading ? (
-        <Center py="xl"> <Loader color="cyan" /> </Center>
+        <Center py="xl"> <Loader /> </Center>
+      ) : clientes.length === 0 ? (
+        // Si NO HAY clientes en la base de datos (Empty State real)
+        <EmptyState 
+          icon={IconUsers}
+          title="Sin clientes registrados"
+          description="Aún no tenés clientes en tu base de datos. Agregá tu primer cliente para empezar a asignarle turnos."
+          actionLabel="Crear mi primer cliente"
+          onAction={() => {
+            form.reset();
+            setClienteEditandoId(null);
+            openModal();
+          }}
+        />
       ) : clientesFiltrados.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">No se encontraron clientes.</Text>
+        // Si el usuario buscó algo y no hubo resultados
+        <Text c="dimmed" ta="center" py="xl">No se encontraron resultados para tu búsqueda.</Text>
       ) : (
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
@@ -163,7 +178,6 @@ export function ClientesPage() {
                   <Group gap="xs">
                     <Button 
                       variant="light" 
-                      color="cyan" 
                       size="xs" 
                       onClick={() => {
                         form.setValues({
@@ -205,7 +219,7 @@ export function ClientesPage() {
             <TextInput label="Apellido" required {...form.getInputProps('apellido')} />
             <TextInput label="Teléfono" {...form.getInputProps('telefono')} />
             <TextInput label="Email" {...form.getInputProps('email')} />
-            <Button type="submit" color="cyan" loading={submitting} fullWidth mt="sm">
+            <Button type="submit" loading={submitting} fullWidth mt="sm">
               Guardar
             </Button>
           </Stack>
