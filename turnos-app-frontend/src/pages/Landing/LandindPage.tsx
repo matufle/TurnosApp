@@ -12,10 +12,10 @@ export function LandingPage() {
               Turnify
             </Title>
             <Group gap="sm">
-              <Button variant="subtle" color="cyan" component={Link} to="/login">
+              <Button variant="subtle" component={Link} to="/login">
                 Iniciar sesión
               </Button>
-              <Button color="cyan" component={Link} to="/registro">
+              <Button component={Link} to="/registro">
                 Registrar mi negocio
               </Button>
             </Group>
@@ -37,7 +37,7 @@ export function LandingPage() {
               Gestioná reservas, recursos y clientes desde un solo lugar. Sin planillas, sin
               llamados perdidos.
             </Text>
-            <Button size="lg" color="cyan" component={Link} to="/registro" mt="md">
+            <Button size="lg" component={Link} to="/registro" mt="md">
               Registrar mi negocio gratis
             </Button>
           </Stack>
@@ -71,7 +71,7 @@ export function LandingPage() {
 function FeatureItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <Stack align="center" ta="center" gap="xs">
-      <ThemeIcon size={44} radius="md" variant="light" color="cyan">
+      <ThemeIcon size={44} radius="md" variant="light">
         {icon}
       </ThemeIcon>
       <Text fw={600}>{title}</Text>

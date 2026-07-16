@@ -15,27 +15,26 @@ import {
   Center,
   Text,
   ColorInput,
-  ActionIcon, // Agregado para el botón del tachito
+  ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle, IconSearch, IconTrash } from '@tabler/icons-react'; // Agregado IconTrash
+import { IconPlus, IconAlertCircle, IconSearch, IconTrash, IconBox } from '@tabler/icons-react';
 import { recursosService } from '../../api/recursosService';
 import type { Recurso } from '../../types/Recurso';
+import { EmptyState } from '../../components/EmptyState';
 
 export function RecursosPage() {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
-  // Estado para la búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   
   const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
   const [submitting, setSubmitting] = useState(false);
   const [recursoEditandoId, setRecursoEditandoId] = useState<number | null>(null);
 
-  // Estados para eliminar
   const [recursoAEliminar, setRecursoAEliminar] = useState<Recurso | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
@@ -46,7 +45,6 @@ export function RecursosPage() {
     },
   });
 
-  // Lógica de búsqueda reactiva
   const recursosFiltrados = useMemo(() => {
     return recursos.filter((r) => 
       r.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -54,7 +52,6 @@ export function RecursosPage() {
     );
   }, [recursos, searchTerm]);
 
-  // Función de carga estable con useCallback
   const cargarRecursos = useCallback(async () => {
     setLoading(true);
     try {
@@ -69,7 +66,6 @@ export function RecursosPage() {
   }, []);
 
   useEffect(() => {
-    // Definimos la función asíncrona DENTRO del efecto
     const cargar = async () => {
       setLoading(true);
       try {
@@ -109,14 +105,12 @@ export function RecursosPage() {
     }
   };
 
-  // Función para manejar el borrado
   const handleEliminar = async () => {
     if (!recursoAEliminar) return;
     setEliminando(true);
     try {
       await recursosService.delete(recursoAEliminar.id);
       
-      // Actualizamos la tabla sacando el recurso borrado
       setRecursos((prev) => prev.filter((r) => r.id !== recursoAEliminar.id));
       setRecursoAEliminar(null);
     } catch {
@@ -132,7 +126,6 @@ export function RecursosPage() {
         <Title order={2}>Gestión de Recursos</Title>
         <Button 
           leftSection={<IconPlus size={16} />} 
-          color="cyan" 
           onClick={() => {
             form.reset();
             form.setFieldValue('colorHex', '#0EA5E9');
@@ -144,7 +137,6 @@ export function RecursosPage() {
         </Button>
       </Group>
 
-      {/* Input de Búsqueda */}
       <TextInput
         placeholder="Buscar por nombre o descripción..."
         leftSection={<IconSearch size={16} />}
@@ -161,10 +153,23 @@ export function RecursosPage() {
 
       {loading ? (
         <Center py="xl">
-          <Loader color="cyan" />
+          <Loader />
         </Center>
       ) : recursos.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">Todavía no cargaste ningún recurso.</Text>
+        <EmptyState 
+          icon={IconBox}
+          title="Sin recursos configurados"
+          description="Los recursos son los lugares o profesionales que van a ser reservados. Creá el primero para armar tu agenda."
+          actionLabel="Agregar recurso"
+          onAction={() => {
+            form.reset();
+            form.setFieldValue('colorHex', '#0EA5E9');
+            setRecursoEditandoId(null);
+            openModal();
+          }}
+        />
+      ) : recursosFiltrados.length === 0 ? (
+        <Text c="dimmed" ta="center" py="xl">No se encontraron resultados para tu búsqueda.</Text>
       ) : (
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
@@ -179,7 +184,6 @@ export function RecursosPage() {
               <Table.Tr key={recurso.id}>
                 <Table.Td>
                   <Group gap="sm">
-                    {/* Mostramos una bolita con el color del recurso al lado del nombre */}
                     <div 
                       style={{ 
                         width: 12, 
@@ -195,7 +199,7 @@ export function RecursosPage() {
                 <Table.Td>
                   <Group gap="xs">
                     <Button 
-                      variant="light" color="cyan" size="xs"
+                      variant="light" size="xs"
                       onClick={() => {
                         form.setValues({
                           nombre: recurso.nombre,
@@ -236,14 +240,13 @@ export function RecursosPage() {
             <TextInput label="Nombre" required {...form.getInputProps('nombre')} />
             <Textarea label="Descripción" {...form.getInputProps('descripcion')} />
             <ColorInput label="Color en la agenda" {...form.getInputProps('colorHex')} />
-            <Button type="submit" color="cyan" loading={submitting} fullWidth mt="sm">
+            <Button type="submit" loading={submitting} fullWidth mt="sm">
               Guardar
             </Button>
           </Stack>
         </form>
       </Modal>
 
-      {/* Modal de Confirmación de Eliminación */}
       <Modal 
         opened={!!recursoAEliminar} 
         onClose={() => setRecursoAEliminar(null)} 

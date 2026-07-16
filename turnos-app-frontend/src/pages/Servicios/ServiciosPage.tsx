@@ -15,13 +15,14 @@ import {
   Loader,
   Center,
   Text,
-  ActionIcon, // Agregado para el botón del tachito
+  ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
-import { IconPlus, IconAlertCircle, IconSearch, IconTrash } from '@tabler/icons-react'; // Agregamos IconTrash
+import { IconPlus, IconAlertCircle, IconSearch, IconTrash, IconBriefcase } from '@tabler/icons-react';
 import { serviciosService } from '../../api/servicioService';
 import type { Servicio } from '../../types/Servicio';
+import { EmptyState } from '../../components/EmptyState'; // Importamos el componente
 
 export function ServiciosPage() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -33,7 +34,6 @@ export function ServiciosPage() {
   const [submitting, setSubmitting] = useState(false);
   const [servicioEditandoId, setServicioEditandoId] = useState<number | null>(null);
 
-  // Estados para eliminar
   const [servicioAEliminar, setServicioAEliminar] = useState<Servicio | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
@@ -67,7 +67,6 @@ export function ServiciosPage() {
   }, []);
 
   useEffect(() => {
-    // Definimos la función dentro del efecto para que sea local y segura
     const cargar = async () => {
       setLoading(true);
       try {
@@ -82,7 +81,7 @@ export function ServiciosPage() {
     };
 
     cargar();
-  }, []); // Array vacío: se ejecuta solo una vez al montar, tal como queremos.
+  }, []);
 
   const handleSubmit = async (values: typeof form.values) => {
     setSubmitting(true);
@@ -107,14 +106,12 @@ export function ServiciosPage() {
     }
   };
 
-  // Función para manejar el borrado
   const handleEliminar = async () => {
     if (!servicioAEliminar) return;
     setEliminando(true);
     try {
       await serviciosService.delete(servicioAEliminar.id);
       
-      // Actualizamos la tabla sacando el servicio borrado
       setServicios((prev) => prev.filter((s) => s.id !== servicioAEliminar.id));
       setServicioAEliminar(null);
     } catch {
@@ -128,7 +125,7 @@ export function ServiciosPage() {
     <Stack gap="lg">
       <Group justify="space-between">
         <Title order={2}>Gestión de Servicios</Title>
-        <Button leftSection={<IconPlus size={16} />} color="cyan" onClick={() => {
+        <Button leftSection={<IconPlus size={16} />} onClick={() => {
           form.reset();
           setServicioEditandoId(null);
           openModal();
@@ -152,9 +149,21 @@ export function ServiciosPage() {
       )}
 
       {loading ? (
-        <Center py="xl"> <Loader color="cyan" /> </Center>
+        <Center py="xl"> <Loader /> </Center>
+      ) : servicios.length === 0 ? (
+        <EmptyState 
+          icon={IconBriefcase}
+          title="Sin servicios creados"
+          description="Definí qué servicios ofrecés, su duración y su precio para que los clientes puedan reservar."
+          actionLabel="Crear nuevo servicio"
+          onAction={() => {
+            form.reset();
+            setServicioEditandoId(null);
+            openModal();
+          }}
+        />
       ) : serviciosFiltrados.length === 0 ? (
-        <Text c="dimmed" ta="center" py="xl">No se encontraron servicios.</Text>
+        <Text c="dimmed" ta="center" py="xl">No se encontraron resultados para tu búsqueda.</Text>
       ) : (
         <Table striped highlightOnHover verticalSpacing="sm">
           <Table.Thead>
@@ -175,7 +184,7 @@ export function ServiciosPage() {
                 <Table.Td>${s.precio}</Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    <Button variant="light" color="cyan" size="xs" onClick={() => {
+                    <Button variant="light" size="xs" onClick={() => {
                       form.setValues(s);
                       setServicioEditandoId(s.id);
                       openModal();
@@ -199,7 +208,6 @@ export function ServiciosPage() {
         </Table>
       )}
 
-      {/* Modal de Creación / Edición */}
       <Modal opened={modalOpened} onClose={() => { closeModal(); setServicioEditandoId(null); }} 
              title={servicioEditandoId ? "Editar servicio" : "Nuevo servicio"} centered>
         <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -208,14 +216,13 @@ export function ServiciosPage() {
             <Textarea label="Descripción" {...form.getInputProps('descripcion')} />
             <NumberInput label="Duración (minutos)" min={1} required {...form.getInputProps('duracionMinutos')} />
             <NumberInput label="Precio" min={0} prefix="$" required {...form.getInputProps('precio')} />
-            <Button type="submit" color="cyan" loading={submitting} fullWidth mt="sm">
+            <Button type="submit" loading={submitting} fullWidth mt="sm">
               Guardar
             </Button>
           </Stack>
         </form>
       </Modal>
 
-      {/* Modal de Confirmación de Eliminación */}
       <Modal 
         opened={!!servicioAEliminar} 
         onClose={() => setServicioAEliminar(null)} 
@@ -235,7 +242,6 @@ export function ServiciosPage() {
           </Button>
         </Group>
       </Modal>
-
     </Stack>
   );
 }

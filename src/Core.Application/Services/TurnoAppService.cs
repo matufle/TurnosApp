@@ -94,7 +94,7 @@ public class TurnoAppService : ITurnoAppService
         var duracionTotalMinutos = servicios.Sum(s => s.DuracionMinutos);
         var fechaHoraFin = dto.FechaHoraInicio.AddMinutes(duracionTotalMinutos);
 
-        // ── Paso 3: Leer PermitirSolapamiento del Tenant ──────────────────────
+        // ── Paso 3: Leer PermiteSolapamiento del Tenant ──────────────────────
         var tenant = await _unitOfWork.Tenants.GetByIdAsync(tenantId, cancellationToken);
 
         if (tenant is null)
@@ -105,7 +105,7 @@ public class TurnoAppService : ITurnoAppService
             recursoId: dto.RecursoId,
             inicio: dto.FechaHoraInicio,
             fin: fechaHoraFin,
-            permitirSolapamiento: tenant.PermitirSolapamiento,
+            permiteSolapamiento: tenant.PermiteSolapamiento,
             cancellationToken: cancellationToken);
 
         // ── Paso 5: Construir entidad con TODOS los TurnoServicio ─────────────

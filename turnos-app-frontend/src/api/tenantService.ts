@@ -1,14 +1,6 @@
 // src/api/tenantService.ts
 import httpClient from './httpClient';
-
-export interface TenantConfig {
-  id?: number;
-  nombre?: string;
-  colorPrimario: string;
-  permiteReservasPublicas: boolean;
-  permitirSolapamiento?: boolean;
-}
-
+import type { TenantConfig } from '../types/Tenant';
 export const tenantService = {
   getConfig: async (): Promise<TenantConfig> => {
     // Usamos httpClient y sacamos el /api/

@@ -8,7 +8,7 @@ public record TenantDto(
     int Id,
     string Nombre,
     string Slug,
-    bool PermitirSolapamiento,
+    bool PermiteSolapamiento,
     bool Activo,
     DateTime FechaAlta,
     string ColorPrimario,

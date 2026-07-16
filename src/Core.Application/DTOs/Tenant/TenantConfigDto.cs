@@ -7,6 +7,7 @@ namespace TurnosApp.Core.Application.DTOs.Tenant
     public record TenantConfigDto(
     string Nombre,
     string ColorPrimario,
-    bool PermiteReservasPublicas
+    bool PermiteReservasPublicas,
+    bool PermiteSolapamiento
 );
 }
