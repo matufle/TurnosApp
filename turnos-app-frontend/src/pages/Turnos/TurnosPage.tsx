@@ -265,7 +265,9 @@ export function TurnosPage() {
           : null,
         recursoId: Number(values.recursoId),
         servicioIds: values.servicioIds.map(Number),
-        fechaHoraInicio: format(fechaHoraCompleta, "yyyy-MM-dd'T'HH:mm:ss"), // Solución timezone
+        
+        // 👇 ACÁ ESTÁ EL CAMBIO: Usamos toISOString() directo
+        fechaHoraInicio: fechaHoraCompleta.toISOString(), 
       });
 
       closeDrawer();
