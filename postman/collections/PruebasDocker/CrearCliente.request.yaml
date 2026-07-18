@@ -1,0 +1,42 @@
+$kind: http-request
+name: CrearCliente
+url: http://localhost:8080/api/Clientes
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Lionel\",\r
+
+    \  \"apellido\": \"Messi\",\r
+
+    \  \"email\": \"lio.messi@email.com\",\r
+
+    \  \"telefono\": \"1123456789\",\r
+
+    \  \"notasAdicionales\": \"Cliente de prueba automatizada\"\r
+
+    }"
+auth:
+  type: bearer
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Cliente creado (Status 20x)\", function () {\r
+
+      \    pm.response.to.be.success; \r
+
+      });\r
+
+      \r
+
+      if (pm.response.code === 200 || pm.response.code === 201) {\r
+
+      \    var cliente = pm.response.json();\r
+
+      \    // Guardamos el ID que nos devuelve tu API\r
+
+      \    pm.globals.set(\"test_cliente_id\", cliente.id);\r
+
+      }"
+    language: text/javascript
+order: 1784325296057

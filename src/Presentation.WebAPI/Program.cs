@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
@@ -6,6 +7,7 @@ using TurnosApp.Core.Application.Extensions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Application.Services;
+using TurnosApp.Infra.Data.Context;
 using TurnosApp.Infra.Data.Extensions;
 using TurnosApp.Infra.Data.Repositories;
 using TurnosApp.Presentation.WebAPI.Filters;
@@ -18,7 +20,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Servicios de infraestructura ───────────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -107,12 +108,17 @@ var app = builder.Build();
 
 // ExceptionHandler primero: captura excepciones de todo el pipeline posterior.
 app.UseExceptionHandler();
-
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        // Esto crea la base si no existe y aplica cualquier migración pendiente
+        db.Database.Migrate();
+    }
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors("FrontendDev");
 app.UseHttpsRedirection();
 app.UseAuthentication();

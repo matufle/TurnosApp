@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 44110f5a-ec04-4df6-88f3-b9367a6b0669
+
+localResources:
+  specs:
+    - ../src/Presentation.WebAPI/obj/Debug/net10.0/EndpointInfo/TurnosApp.Presentation.WebAPI.json

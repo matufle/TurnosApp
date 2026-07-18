@@ -1,0 +1,24 @@
+$kind: collection
+name: PruebasDocker
+scripts:
+  - type: http:beforeRequest
+    code: "// Inyecta el header X-Tenant-Id en todas las peticiones de la carpeta\r
+
+      var tenantId = pm.globals.get(\"tenant_id\") || \"1\"; // Si no hay login previo, usa el 1 por defecto\r
+
+      \r
+
+      pm.request.headers.add({\r
+
+      \    key: \"X-Tenant-Id\",\r
+
+      \    value: tenantId\r
+
+      });"
+    language: text/javascript
+auth:
+  - id: 652de222-f59e-4aa9-8040-783b1827c59a
+    type: bearer
+    name: Bearer Token
+    credentials:
+      token: "{{jwt_token}}"

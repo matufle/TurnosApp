@@ -1,0 +1,65 @@
+# docker-compose.yml — raíz del proyecto
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: turnos_sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Password123"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    networks:
+      - turnos_net
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      # /opt/mssql-tools18 es la ruta en imágenes recientes de SQL Server 2022
+      # (mssql-tools sin el 18 quedó deprecado). -C ignora la validación del certificado
+      # autofirmado, necesario para el healthcheck interno del contenedor.
+      test: >
+        /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Password123" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api_turnos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: turnos_api
+    depends_on:
+      sqlserver:
+        condition: service_healthy   # espera a que el healthcheck de arriba pase, no solo a que el contenedor "arranque"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TurnosAppDb;User Id=sa;Password=Password123;TrustServerCertificate=True;"
+    ports:
+      - "8080:8080"
+    networks:
+      - turnos_net
+
+  frontend:
+    build:
+      context: ./turnos-app-frontend
+      dockerfile: Dockerfile
+    container_name: turnos_frontend
+    depends_on:
+      - api_turnos
+    environment:
+      # Esta es la URL que env-config.js va a inyectar en runtime.
+      # Cambiala acá sin tocar ni recompilar ningún código.
+      VITE_API_BASE_URL: "http://localhost:8080/api"
+    ports:
+      - "5173:80"
+    networks:
+      - turnos_net
+
+networks:
+  turnos_net:
+    driver: bridge
+
+volumes:
+  sqlserver_data:

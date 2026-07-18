@@ -1,0 +1,43 @@
+$kind: http-request
+name: CrearServicio
+url: http://localhost:8080/api/Servicios
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Alquiler 1 Hora\",\r
+
+    \  \"descripcion\": \"Fútbol 5\",\r
+
+    \  \"duracionMinutos\": 60,\r
+
+    \  \"precio\": 15000.00\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJwZXBlcGl6emVyaWFAZ21haWwuY29tIiwidGVuYW50SWQiOiIxIiwianRpIjoiYTZhYjM5NTctNWU3ZS00YTU0LWEyZTMtOTgwZDJkODI5OGNiIiwiVGVuYW50SWQiOiIxIiwiZXhwIjoxNzg0MzYwMjM4LCJpc3MiOiJUdXJuaWZ5QXBpIiwiYXVkIjoiVHVybmlmeUNsaWVudCJ9.PlzJz_UJ0qMqW0pbEGZmjZXzDo0hvPrYqvKMcdl8KhQ
+scripts:
+  - type: beforeRequest
+    code: ""
+    language: text/javascript
+  - type: afterResponse
+    code: "pm.test(\"Servicio creado (Status 20x)\", function () {\r
+
+      \    pm.response.to.be.success;\r
+
+      });\r
+
+      \r
+
+      if (pm.response.code === 200 || pm.response.code === 201) {\r
+
+      \    var servicio = pm.response.json();\r
+
+      \    pm.globals.set(\"test_servicio_id\", servicio.id);\r
+
+      }\r\n"
+    language: text/javascript
+order: 2643519546731220

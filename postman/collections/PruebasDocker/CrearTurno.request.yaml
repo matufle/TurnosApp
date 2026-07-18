@@ -1,0 +1,36 @@
+$kind: http-request
+name: CrearTurno
+url: http://localhost:8080/api/Turnos
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"clienteId\": {{test_cliente_id}},\r
+
+    \  \"clienteNuevo\": null,\r
+
+    \  \"recursoId\": {{test_recurso_id}},\r
+
+    \  \"servicioIds\": [\r
+
+    \    {{test_servicio_id}}\r
+
+    \  ],\r
+
+    \  \"fechaHoraInicio\": \"2026-07-20T18:00:00Z\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJwZXBlcGl6emVyaWFAZ21haWwuY29tIiwidGVuYW50SWQiOiIxIiwianRpIjoiYTZhYjM5NTctNWU3ZS00YTU0LWEyZTMtOTgwZDJkODI5OGNiIiwiVGVuYW50SWQiOiIxIiwiZXhwIjoxNzg0MzYwMjM4LCJpc3MiOiJUdXJuaWZ5QXBpIiwiYXVkIjoiVHVybmlmeUNsaWVudCJ9.PlzJz_UJ0qMqW0pbEGZmjZXzDo0hvPrYqvKMcdl8KhQ
+scripts:
+  - type: afterResponse
+    code: "pm.test(\"Turno creado con éxito absoluto (Status 20x)\", function () {\r
+
+      \    pm.response.to.be.success;\r
+
+      });"
+    language: text/javascript
+order: 3105178655930706
