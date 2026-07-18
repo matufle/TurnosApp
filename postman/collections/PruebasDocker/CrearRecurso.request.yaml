@@ -1,0 +1,39 @@
+$kind: http-request
+name: CrearRecurso
+url: http://localhost:8080/api/Recursos
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"nombre\": \"Cancha Principal\",\r
+
+    \  \"descripcion\": \"Cancha techada sintética\",\r
+
+    \  \"colorHex\": \"#28a745\"\r
+
+    }"
+auth:
+  type: bearer
+scripts:
+  - type: beforeRequest
+    code: ""
+    language: text/javascript
+  - type: afterResponse
+    code: "pm.test(\"Recurso creado (Status 20x)\", function () {\r
+
+      \    pm.response.to.be.success;\r
+
+      });\r
+
+      \r
+
+      if (pm.response.code === 200 || pm.response.code === 201) {\r
+
+      \    var recurso = pm.response.json();\r
+
+      \    pm.globals.set(\"test_recurso_id\", recurso.id);\r
+
+      }"
+    language: text/javascript
+order: 1755408665807585

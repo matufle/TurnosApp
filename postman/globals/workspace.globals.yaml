@@ -1,0 +1,17 @@
+name: Globals
+values:
+  - key: jwt_token
+    value: ''
+    enabled: true
+  - key: tenant_id
+    value: ''
+    enabled: true
+  - key: test_servicio_id
+    value: ''
+    enabled: true
+  - key: test_cliente_id
+    value: ''
+    enabled: true
+  - key: test_recurso_id
+    value: ''
+    enabled: true

@@ -1,0 +1,43 @@
+$kind: http-request
+name: Login
+url: http://localhost:8080/api/auth/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"email\": \"pepepizzeria@gmail.com\",\r
+
+    \  \"password\": \"123456\"\r
+
+    }"
+scripts:
+  - type: beforeRequest
+    code: ""
+    language: text/javascript
+  - type: afterResponse
+    code: "// 1. Validamos que el login haya sido exitoso (Status 200)\r
+
+      pm.test(\"Login exitoso\", function () {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });\r
+
+      \r
+
+      // 2. Si fue exitoso, capturamos el JSON de la respuesta\r
+
+      if (pm.response.code === 200) {\r
+
+      \    var respuesta = pm.response.json();\r
+
+      \    \r
+
+      \    // 3. Guardamos el token en una variable global de Postman\r
+
+      \    pm.globals.set(\"jwt_token\", respuesta.token);\r
+
+      }"
+    language: text/javascript
+order: 1614660128887

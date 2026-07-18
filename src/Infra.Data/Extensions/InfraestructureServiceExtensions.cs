@@ -28,8 +28,8 @@ public static class InfrastructureServiceExtensions
 
                     // Resiliencia ante cortes transitorios de red con SQL Server.
                     sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
                         errorNumbersToAdd: null);
                 });
         });
