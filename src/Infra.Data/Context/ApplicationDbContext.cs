@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
 using TurnosApp.Infra.Data.Configurations;
+using TurnosApp.Infra.Data.Conversions;
 using TurnosApp.Infra.Data.Interceptors;
 
 namespace TurnosApp.Infra.Data.Context;
@@ -37,6 +39,13 @@ public class ApplicationDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(_auditInterceptor);
+    }
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<UtcNullableDateTimeConverter>();
+
+        base.ConfigureConventions(configurationBuilder);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

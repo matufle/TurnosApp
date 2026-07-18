@@ -38,7 +38,7 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         // No usamos .ToJson() (que es para owned entities),
         // sino la columna string directa — máxima flexibilidad sin schema fijo.
         builder.Property(c => c.DatosEspecificosJson)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("text")
             .HasColumnName("DatosEspecificosJson");
 
         // Global Query Filter

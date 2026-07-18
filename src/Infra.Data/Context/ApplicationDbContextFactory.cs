@@ -26,9 +26,17 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-        optionsBuilder.UseSqlServer(
+        optionsBuilder.UseNpgsql(
             configuration.GetConnectionString("DefaultConnection"),
-            sql => sql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
+            npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorCodesToAdd: null);
+
+                npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+            });
 
         // TenantProvider stub para diseño: las migraciones no necesitan
         // un tenant real, pero el DbContext lo requiere por constructor.
