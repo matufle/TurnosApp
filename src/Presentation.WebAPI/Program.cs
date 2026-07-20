@@ -57,11 +57,14 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+var allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? "")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("FrontendDev", policy =>
+    options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -119,7 +122,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseCors("FrontendDev");
+app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 // TenantMiddleware antes de routing: corta el pipeline si falta el header.
