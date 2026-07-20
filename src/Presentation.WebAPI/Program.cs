@@ -111,14 +111,10 @@ var app = builder.Build();
 
 // ExceptionHandler primero: captura excepciones de todo el pipeline posterior.
 app.UseExceptionHandler();
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        // Esto crea la base si no existe y aplica cualquier migración pendiente
-        db.Database.Migrate();
-    }
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 app.UseSwagger();
 app.UseSwaggerUI();
