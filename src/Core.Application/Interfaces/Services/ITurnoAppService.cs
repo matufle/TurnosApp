@@ -10,4 +10,5 @@ public interface ITurnoAppService
     Task<IReadOnlyList<TurnoDto>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<TurnoDto> CrearTurnoAsync(CrearTurnoDto dto, CancellationToken cancellationToken = default);
     Task CancelarTurnoAsync(int id, CancellationToken cancellationToken = default);
+    Task<TurnoDto> CambiarEstadoTurnoAsync(int id, CambiarEstadoTurnoDto dto, CancellationToken cancellationToken = default);
 }

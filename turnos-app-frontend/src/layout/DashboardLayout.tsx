@@ -15,14 +15,15 @@ import {
   Loader  // 👈 Importamos Loader
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { 
-  IconCalendarEvent, 
-  IconUsers, 
-  IconUserCog, 
-  IconBriefcase, 
+import {
+  IconCalendarEvent,
+  IconUsers,
+  IconUserCog,
+  IconBriefcase,
   IconSettings,
   IconChevronDown,
-  IconLogout
+  IconLogout,
+  IconLayoutDashboard
 } from '@tabler/icons-react';
 
 // Servicios y Contextos
@@ -114,13 +115,23 @@ export function DashboardLayout() {
               </UnstyledButton>
             </Menu.Target>
             <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconLayoutDashboard size={14} />}
+                onClick={() => navigate('/app')}
+              >
+                Dashboard
+              </Menu.Item>
               <Menu.Item leftSection={<IconSettings size={14} />}>
                 Mi Perfil
               </Menu.Item>
-              <Menu.Item 
-                color="red" 
+              <Menu.Item
+                color="red"
                 leftSection={<IconLogout size={14} />}
-                onClick={() => navigate('/login')}
+                onClick={() => {
+                  localStorage.removeItem('turnify_token');
+                  localStorage.removeItem('turnify_tenant_id');
+                  navigate('/login');
+                }}
               >
                 Cerrar sesión
               </Menu.Item>

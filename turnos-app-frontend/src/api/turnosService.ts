@@ -1,6 +1,6 @@
 // src/api/turnosService.ts
 import httpClient from './httpClient';
-import type { Turno, CrearTurnoDTO } from '../types/Turno';
+import type { Turno, CrearTurnoDTO, CambiarEstadoTurnoDTO } from '../types/Turno';
 
 export const turnosService = {
   getAll: async (): Promise<Turno[]> => {
@@ -15,5 +15,10 @@ export const turnosService = {
 
   cancelar: async (id: number): Promise<void> => {
     await httpClient.delete(`/turnos/${id}`);
+  },
+
+  cambiarEstado: async (id: number, dto: CambiarEstadoTurnoDTO): Promise<Turno> => {
+    const response = await httpClient.patch<Turno>(`/turnos/${id}/estado`, dto);
+    return response.data;
   },
 };

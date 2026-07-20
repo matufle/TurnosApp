@@ -1,0 +1,148 @@
+/* Tailwind para las páginas públicas (Login, Registro, Landing) diseñadas en Stitch.
+   Sin la capa "preflight": el resto de la app usa Mantine y ya trae su propio
+   reset — importar el preflight de Tailwind acá pisaría estilos base de Mantine
+   en todas las páginas internas (Turnos, Clientes, etc.), no solo en estas. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  --color-on-primary-fixed-variant: #004e59;
+  --color-surface-tint: #006876;
+  --color-on-secondary: #ffffff;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-surface: #f8f9ff;
+  --color-secondary-fixed: #d0e7ea;
+  --color-primary-fixed: #a1efff;
+  --color-primary-container: #00bcd4;
+  --color-tertiary-fixed-dim: #ffb77b;
+  --color-error: #ba1a1a;
+  --color-on-primary: #ffffff;
+  --color-on-tertiary-container: #633400;
+  --color-inverse-surface: #213145;
+  --color-background: #f8f9ff;
+  --color-surface-bright: #f8f9ff;
+  --color-secondary-container: #d0e7ea;
+  --color-on-surface-variant: #3c494c;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-error: #ffffff;
+  --color-on-secondary-fixed: #091f21;
+  --color-surface-container-low: #eff4ff;
+  --color-primary: #006876;
+  --color-on-secondary-container: #53686b;
+  --color-on-error-container: #93000a;
+  --color-secondary-fixed-dim: #b4cbce;
+  --color-error-container: #ffdad6;
+  --color-surface-container-high: #dce9ff;
+  --color-tertiary-fixed: #ffdcc2;
+  --color-on-primary-container: #004650;
+  --color-secondary: #4d6265;
+  --color-outline-variant: #bbc9cc;
+  --color-on-primary-fixed: #001f25;
+  --color-outline: #6c797c;
+  --color-inverse-primary: #44d8f1;
+  --color-tertiary-container: #f19640;
+  --color-on-tertiary-fixed: #2e1500;
+  --color-on-surface: #0b1c30;
+  --color-surface-container: #e5eeff;
+  --color-on-background: #0b1c30;
+  --color-surface-container-highest: #d3e4fe;
+  --color-on-secondary-fixed-variant: #364a4d;
+  --color-on-tertiary-fixed-variant: #6d3a00;
+  --color-tertiary: #8f4e00;
+  --color-on-tertiary: #ffffff;
+  --color-surface-dim: #cbdbf5;
+  --color-surface-variant: #d3e4fe;
+  --color-primary-fixed-dim: #44d8f1;
+
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  --spacing-margin-desktop: 40px;
+  --spacing-base: 8px;
+  --spacing-container-max: 1280px;
+  --spacing-margin-mobile: 16px;
+  --spacing-gutter: 24px;
+
+  --container-container-max: 1280px;
+
+  --font-display-lg: "Inter", sans-serif;
+  --font-label-md: "Inter", sans-serif;
+  --font-headline-lg-mobile: "Inter", sans-serif;
+  --font-headline-lg: "Inter", sans-serif;
+  --font-title-md: "Inter", sans-serif;
+  --font-body-lg: "Inter", sans-serif;
+  --font-body-sm: "Inter", sans-serif;
+
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.05em;
+  --text-label-md--font-weight: 600;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 600;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+
+  --text-title-md: 20px;
+  --text-title-md--line-height: 28px;
+  --text-title-md--font-weight: 600;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.soft-elevation {
+  box-shadow: 0px 4px 20px rgba(0, 188, 212, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+.animate-blob {
+  animation: blob 7s infinite;
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
