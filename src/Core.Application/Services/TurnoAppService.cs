@@ -158,6 +158,38 @@ public class TurnoAppService : ITurnoAppService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<TurnoDto> CambiarEstadoTurnoAsync(int id, CambiarEstadoTurnoDto dto, CancellationToken cancellationToken = default)
+    {
+        if (!Enum.TryParse<EstadoTurno>(dto.NuevoEstado, ignoreCase: true, out var nuevoEstado))
+            throw new BadRequestException(
+                $"'{dto.NuevoEstado}' no es un estado de turno válido.");
+
+        if (nuevoEstado == EstadoTurno.Cancelado)
+            throw new BusinessException(
+                code: "USAR_CANCELAR",
+                message: "Para cancelar un turno usá la acción de cancelar, no el cambio de estado.");
+
+        var turno = await _unitOfWork.Turnos.GetByIdAsync(id, cancellationToken);
+
+        if (turno is null)
+            throw new NotFoundException(nameof(Turno), id);
+
+        if (turno.Estado == EstadoTurno.Cancelado)
+            throw new BusinessException(
+                code: "TURNO_CANCELADO",
+                message: $"El turno {id} está cancelado y no se puede cambiar su estado.");
+
+        turno.Estado = nuevoEstado;
+        turno.ModificadoEn = DateTime.UtcNow;
+
+        _unitOfWork.Turnos.Update(turno);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var turnoCompleto = await _unitOfWork.Turnos.GetByIdConDetallesAsync(id, cancellationToken);
+
+        return MapToDto(turnoCompleto!);
+    }
+
     private static TurnoDto MapToDto(Turno turno) => new(
         Id: turno.Id,
         RecursoId: turno.RecursoId,

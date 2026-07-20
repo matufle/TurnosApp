@@ -58,4 +58,22 @@ public class TurnosController : ControllerBase
         await _turnoAppService.CancelarTurnoAsync(id, cancellationToken);
         return NoContent();
     }
+
+    /// <summary>
+    /// Cambia el estado de un turno (Pendiente, Confirmado, EnCurso, Completado, Ausente).
+    /// Para cancelar un turno usar el endpoint de cancelación, no este.
+    /// </summary>
+    [HttpPatch("{id:int}/estado")]
+    [ProducesResponseType(typeof(TurnoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CambiarEstadoTurno(
+        int id,
+        [FromBody] CambiarEstadoTurnoDto dto,
+        CancellationToken cancellationToken)
+    {
+        var turno = await _turnoAppService.CambiarEstadoTurnoAsync(id, dto, cancellationToken);
+        return Ok(turno);
+    }
 }

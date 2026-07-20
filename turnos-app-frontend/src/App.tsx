@@ -14,6 +14,7 @@ import { DashboardLayout } from './layout/DashboardLayout';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
+import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { RecursosPage } from './pages/Recursos/RecursosPage';
 import { ServiciosPage } from './pages/Servicios/ServiciosPage';
 import { TurnosPage } from './pages/Turnos/TurnosPage';
@@ -56,6 +57,7 @@ const finalTheme =
               </ProtectedRoute>
             }
           >
+            <Route index element={<DashboardPage />} />
             <Route path="recursos" element={<RecursosPage />} />
             <Route path="servicios" element={<ServiciosPage />} />
             <Route path="clientes" element={<ClientesPage />} />

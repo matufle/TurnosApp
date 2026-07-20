@@ -25,3 +25,11 @@ export interface CrearTurnoDTO {
   servicioIds: number[];
   fechaHoraInicio: string;
 }
+
+// Coincide con el enum EstadoTurno del backend (src/Core.Domain/Enums/EstadoTurno.cs),
+// sin incluir "Cancelado": para cancelar existe la acción dedicada de cancelar.
+export type EstadoTurnoEditable = 'Pendiente' | 'Confirmado' | 'EnCurso' | 'Completado' | 'Ausente';
+
+export interface CambiarEstadoTurnoDTO {
+  nuevoEstado: EstadoTurnoEditable;
+}
