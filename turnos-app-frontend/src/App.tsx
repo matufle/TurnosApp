@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MantineProvider, createTheme, Loader, Center } from '@mantine/core';
+import { DatesProvider } from '@mantine/dates';
 
 import { theme as turnifyTheme } from './theme/turnifyTheme';
 import { generateShades } from './theme/generateShades';
@@ -42,30 +43,35 @@ const finalTheme =
 
   return (
     <MantineProvider theme={finalTheme}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/registro" element={<RegisterPage />} />
+      {/* Sin esto, @mantine/dates ancla los valores a medianoche UTC en vez de
+          local, y setHours() (hora local) termina restando un día en zonas
+          horarias detrás de UTC (ej: Argentina). */}
+      <DatesProvider settings={{ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/registro" element={<RegisterPage />} />
 
-          <Route
-            path="/app"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="recursos" element={<RecursosPage />} />
-            <Route path="servicios" element={<ServiciosPage />} />
-            <Route path="clientes" element={<ClientesPage />} />
-            <Route path="turnos" element={<TurnosPage />} />
-            <Route path="configuracion" element={<ConfigurationPage />} />
-          </Route>
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="recursos" element={<RecursosPage />} />
+              <Route path="servicios" element={<ServiciosPage />} />
+              <Route path="clientes" element={<ClientesPage />} />
+              <Route path="turnos" element={<TurnosPage />} />
+              <Route path="configuracion" element={<ConfigurationPage />} />
+            </Route>
 
-          <Route path="*" element={<div>Página no encontrada</div>} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="*" element={<div>Página no encontrada</div>} />
+          </Routes>
+        </BrowserRouter>
+      </DatesProvider>
     </MantineProvider>
   );
 }

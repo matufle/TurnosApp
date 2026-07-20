@@ -72,7 +72,7 @@ interface TurnoFormValues {
   clienteTelefono: string;
   recursoId: string | null;
   servicioIds: string[];
-  fecha: Date | null;
+  fecha: Date | string | null;
   hora: string;
 }
 
@@ -82,11 +82,29 @@ interface TurnoCalendarEvent extends CalendarEvent {
   recursoId: number;
 }
 
-function combinarFechaYHora(fecha: Date, hora: string): Date {
+function combinarFechaYHora(fecha: Date | string, hora: string): Date {
   const [horas, minutos] = hora.split(':').map(Number);
-  const resultado = new Date(fecha);
-  resultado.setHours(horas, minutos, 0, 0);
-  return resultado;
+
+  let anio: number;
+  let mes: number;
+  let dia: number;
+
+  if (typeof fecha === 'string') {
+    // DatePickerInput entrega "YYYY-MM-DD" (fecha local, sin hora). new Date(string)
+    // NO sirve acá: un string solo-fecha lo interpreta como medianoche UTC, y eso
+    // corre el día para atrás en husos detrás de UTC (ej: Argentina) al combinarlo
+    // con una hora local. Por eso parseamos los componentes a mano.
+    const [y, m, d] = fecha.split('-').map(Number);
+    anio = y;
+    mes = m - 1;
+    dia = d;
+  } else {
+    anio = fecha.getFullYear();
+    mes = fecha.getMonth();
+    dia = fecha.getDate();
+  }
+
+  return new Date(anio, mes, dia, horas, minutos, 0, 0);
 }
 
 export function TurnosPage() {

@@ -363,3 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 .env
+
+# Local secrets - contienen cadenas de conexión/credenciales reales,
+# no deben versionarse. Ver appsettings.Development.json.example.
+appsettings.Development.json
+appsettings.*.local.json
