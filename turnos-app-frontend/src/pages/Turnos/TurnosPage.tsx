@@ -199,6 +199,7 @@ export function TurnosPage() {
 
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [detalleOpened, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
+  const [filtrosOpened, { open: openFiltros, close: closeFiltros }] = useDisclosure(false);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<Turno | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -450,6 +451,154 @@ export function TurnosPage() {
     setServiciosFiltro((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
   };
 
+  const hayFiltrosActivos = Boolean(recursoFiltro) || serviciosFiltro.length > 0;
+
+  const filtrosPanel = (
+    <div>
+      <h2 className="font-title-md text-title-md text-on-surface mb-4 flex items-center gap-2">
+        <span className="material-symbols-outlined">filter_list</span> Filtros
+      </h2>
+
+      <div className="space-y-6">
+        {/* Mini calendario */}
+        <div className="bg-surface-bright rounded-lg p-3 border border-outline-variant">
+          <div className="flex justify-between items-center mb-2">
+            <button
+              type="button"
+              onClick={() => setFechaCalendario((d) => subMonths(d, 1))}
+              className="text-secondary hover:text-primary"
+              aria-label="Mes anterior"
+            >
+              <span className="material-symbols-outlined text-sm">chevron_left</span>
+            </button>
+            <span className="font-label-md text-label-md capitalize">
+              {format(fechaCalendario, 'MMMM yyyy', { locale: es })}
+            </span>
+            <button
+              type="button"
+              onClick={() => setFechaCalendario((d) => addMonths(d, 1))}
+              className="text-secondary hover:text-primary"
+              aria-label="Mes siguiente"
+            >
+              <span className="material-symbols-outlined text-sm">chevron_right</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center font-label-md text-label-md text-secondary mb-1">
+            <div>L</div>
+            <div>M</div>
+            <div>M</div>
+            <div>J</div>
+            <div>V</div>
+            <div>S</div>
+            <div>D</div>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center font-body-sm text-body-sm">
+            {diasMiniCalendario.map((dia) => {
+              const esDelMes = isSameMonth(dia, fechaCalendario);
+              const esSeleccionado = isSameDay(dia, fechaCalendario);
+              return (
+                <button
+                  type="button"
+                  key={dia.toISOString()}
+                  onClick={() => setFechaCalendario(dia)}
+                  className={`w-6 h-6 rounded-full mx-auto flex items-center justify-center transition-colors ${
+                    esSeleccionado
+                      ? 'bg-primary text-on-primary'
+                      : esDelMes
+                        ? 'text-on-surface hover:bg-surface-container'
+                        : 'text-outline hover:bg-surface-container'
+                  }`}
+                >
+                  {dia.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Servicios */}
+        {servicios.length > 0 && (
+          <div>
+            <h3 className="font-label-md text-label-md text-secondary mb-2 uppercase">Servicios</h3>
+            <div className="space-y-2">
+              {servicios.map((s) => {
+                const activo = serviciosFiltro.includes(s.id.toString());
+                return (
+                  <label key={s.id} className="flex items-center gap-2 cursor-pointer group">
+                    <span
+                      onClick={() => toggleServicioFiltro(s.id.toString())}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                        activo
+                          ? 'bg-primary text-on-primary border-primary'
+                          : 'border-outline-variant group-hover:border-primary'
+                      }`}
+                    >
+                      {activo && <span className="material-symbols-outlined text-[12px]">check</span>}
+                    </span>
+                    <span
+                      onClick={() => toggleServicioFiltro(s.id.toString())}
+                      className="font-body-sm text-body-sm select-none"
+                    >
+                      {s.nombre}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Personal (recursos) */}
+        {recursos.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-label-md text-label-md text-secondary uppercase">Personal</h3>
+              {recursoFiltro && (
+                <button
+                  type="button"
+                  onClick={() => setRecursoFiltro(null)}
+                  className="font-label-md text-label-md text-primary hover:underline"
+                >
+                  Ver todos
+                </button>
+              )}
+            </div>
+            <div className="space-y-1">
+              {recursos.map((r) => {
+                const activo = recursoFiltro === r.id.toString();
+                const color = coloresPorRecurso.get(r.id.toString()) ?? '#ccc';
+                const iniciales = r.nombre
+                  .split(' ')
+                  .map((p) => p[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase();
+                return (
+                  <button
+                    type="button"
+                    key={r.id}
+                    onClick={() => setRecursoFiltro(activo ? null : r.id.toString())}
+                    className={`w-full flex items-center gap-3 p-1.5 rounded-lg transition-colors ${
+                      activo ? 'bg-surface-container' : 'hover:bg-surface-bright'
+                    }`}
+                  >
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center font-title-md text-sm shrink-0"
+                      style={{ backgroundColor: color, color: getContrastTextColor(color) }}
+                    >
+                      {iniciales}
+                    </div>
+                    <span className="font-body-sm text-body-sm text-on-surface truncate">{r.nombre}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -462,13 +611,25 @@ export function TurnosPage() {
     <div className="flex flex-col gap-4 pb-12">
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-headline-lg text-headline-lg text-on-surface">Agenda de turnos</h1>
-        <button
-          onClick={() => abrirDrawerNuevoTurno()}
-          className="lg:hidden flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full font-title-md text-title-md hover:bg-primary-container transition-colors shadow-sm"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          Nuevo turno
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <button
+            onClick={openFiltros}
+            className="relative flex items-center gap-2 bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2.5 rounded-full font-title-md text-title-md hover:bg-surface-bright transition-colors shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[20px]">filter_list</span>
+            Filtros
+            {hayFiltrosActivos && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary border-2 border-surface-container-lowest" />
+            )}
+          </button>
+          <button
+            onClick={() => abrirDrawerNuevoTurno()}
+            className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full font-title-md text-title-md hover:bg-primary-container transition-colors shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+            Nuevo turno
+          </button>
+        </div>
       </div>
 
       {errorMessage && (
@@ -482,151 +643,9 @@ export function TurnosPage() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-gutter lg:h-[calc(100vh-220px)] lg:min-h-[600px]">
-        {/* Sidebar de filtros */}
+        {/* Sidebar de filtros (solo desktop) */}
         <aside className="hidden lg:flex w-64 shrink-0 flex-col gap-6 bg-surface-container-lowest rounded-xl soft-elevation p-6 h-full overflow-y-auto">
-          <div>
-            <h2 className="font-title-md text-title-md text-on-surface mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined">filter_list</span> Filtros
-            </h2>
-
-            <div className="space-y-6">
-              {/* Mini calendario */}
-              <div className="bg-surface-bright rounded-lg p-3 border border-outline-variant">
-                <div className="flex justify-between items-center mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setFechaCalendario((d) => subMonths(d, 1))}
-                    className="text-secondary hover:text-primary"
-                    aria-label="Mes anterior"
-                  >
-                    <span className="material-symbols-outlined text-sm">chevron_left</span>
-                  </button>
-                  <span className="font-label-md text-label-md capitalize">
-                    {format(fechaCalendario, 'MMMM yyyy', { locale: es })}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setFechaCalendario((d) => addMonths(d, 1))}
-                    className="text-secondary hover:text-primary"
-                    aria-label="Mes siguiente"
-                  >
-                    <span className="material-symbols-outlined text-sm">chevron_right</span>
-                  </button>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center font-label-md text-label-md text-secondary mb-1">
-                  <div>L</div>
-                  <div>M</div>
-                  <div>M</div>
-                  <div>J</div>
-                  <div>V</div>
-                  <div>S</div>
-                  <div>D</div>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center font-body-sm text-body-sm">
-                  {diasMiniCalendario.map((dia) => {
-                    const esDelMes = isSameMonth(dia, fechaCalendario);
-                    const esSeleccionado = isSameDay(dia, fechaCalendario);
-                    return (
-                      <button
-                        type="button"
-                        key={dia.toISOString()}
-                        onClick={() => setFechaCalendario(dia)}
-                        className={`w-6 h-6 rounded-full mx-auto flex items-center justify-center transition-colors ${
-                          esSeleccionado
-                            ? 'bg-primary text-on-primary'
-                            : esDelMes
-                              ? 'text-on-surface hover:bg-surface-container'
-                              : 'text-outline hover:bg-surface-container'
-                        }`}
-                      >
-                        {dia.getDate()}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Servicios */}
-              {servicios.length > 0 && (
-                <div>
-                  <h3 className="font-label-md text-label-md text-secondary mb-2 uppercase">Servicios</h3>
-                  <div className="space-y-2">
-                    {servicios.map((s) => {
-                      const activo = serviciosFiltro.includes(s.id.toString());
-                      return (
-                        <label key={s.id} className="flex items-center gap-2 cursor-pointer group">
-                          <span
-                            onClick={() => toggleServicioFiltro(s.id.toString())}
-                            className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                              activo
-                                ? 'bg-primary text-on-primary border-primary'
-                                : 'border-outline-variant group-hover:border-primary'
-                            }`}
-                          >
-                            {activo && <span className="material-symbols-outlined text-[12px]">check</span>}
-                          </span>
-                          <span
-                            onClick={() => toggleServicioFiltro(s.id.toString())}
-                            className="font-body-sm text-body-sm select-none"
-                          >
-                            {s.nombre}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Personal (recursos) */}
-              {recursos.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-label-md text-label-md text-secondary uppercase">Personal</h3>
-                    {recursoFiltro && (
-                      <button
-                        type="button"
-                        onClick={() => setRecursoFiltro(null)}
-                        className="font-label-md text-label-md text-primary hover:underline"
-                      >
-                        Ver todos
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    {recursos.map((r) => {
-                      const activo = recursoFiltro === r.id.toString();
-                      const color = coloresPorRecurso.get(r.id.toString()) ?? '#ccc';
-                      const iniciales = r.nombre
-                        .split(' ')
-                        .map((p) => p[0])
-                        .slice(0, 2)
-                        .join('')
-                        .toUpperCase();
-                      return (
-                        <button
-                          type="button"
-                          key={r.id}
-                          onClick={() => setRecursoFiltro(activo ? null : r.id.toString())}
-                          className={`w-full flex items-center gap-3 p-1.5 rounded-lg transition-colors ${
-                            activo ? 'bg-surface-container' : 'hover:bg-surface-bright'
-                          }`}
-                        >
-                          <div
-                            className="w-8 h-8 rounded-full flex items-center justify-center font-title-md text-sm shrink-0"
-                            style={{ backgroundColor: color, color: getContrastTextColor(color) }}
-                          >
-                            {iniciales}
-                          </div>
-                          <span className="font-body-sm text-body-sm text-on-surface truncate">{r.nombre}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          {filtrosPanel}
 
           <button
             onClick={() => abrirDrawerNuevoTurno()}
@@ -669,6 +688,18 @@ export function TurnosPage() {
           />
         </section>
       </div>
+
+      {/* DRAWER DE FILTROS (mobile) */}
+      <Drawer
+        opened={filtrosOpened}
+        onClose={closeFiltros}
+        title={<Text fw={600} size="lg">Filtros</Text>}
+        position="left"
+        size="xs"
+        padding="lg"
+      >
+        {filtrosPanel}
+      </Drawer>
 
       {/* DRAWER DE CREACIÓN */}
       <Drawer

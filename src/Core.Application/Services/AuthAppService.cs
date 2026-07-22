@@ -70,7 +70,7 @@ public class AuthAppService : IAuthAppService
         if (usuario is null || !_passwordHasher.VerifyPassword(usuario.PasswordHash, dto.Password))
             throw new BusinessException(code: "CREDENCIALES_INVALIDAS", message: "Email o contraseña incorrectos.");
 
-        var token = _jwtTokenService.GenerateToken(usuario);
+        var token = _jwtTokenService.GenerateToken(usuario, dto.RecordarMe);
 
         return new LoginResponseDTO(token, usuario.TenantId, usuario.Email);
     }
