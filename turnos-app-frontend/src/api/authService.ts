@@ -3,6 +3,7 @@ import httpClient from './httpClient';
 export interface LoginRequest {
   email: string;
   password: string;
+  recordarme?: boolean;
 }
 
 export interface LoginResponse {

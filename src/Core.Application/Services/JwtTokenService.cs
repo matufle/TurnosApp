@@ -19,7 +19,7 @@ public class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(Usuario usuario)
+    public string GenerateToken(Usuario usuario, bool recordarme = false)
     {
         var claims = new List<Claim>
         {
@@ -33,11 +33,13 @@ public class JwtTokenService : IJwtTokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var vigencia = recordarme ? TimeSpan.FromDays(30) : TimeSpan.FromHours(8);
+
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.Add(vigencia),
             signingCredentials: creds
         );
 

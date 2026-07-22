@@ -51,20 +51,22 @@ export function LandingPage() {
             >
               Beneficios
             </a>
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-3">
             <Link
               to="/login"
-              className="text-secondary font-body-lg text-body-lg hover:text-primary-container transition-colors duration-200"
+              className="border border-primary-container text-primary-container px-4 py-2.5 md:px-6 md:py-3 rounded-full font-title-md text-title-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-300"
             >
               Iniciar sesión
             </Link>
+            <Link
+              to="/registro"
+              className="bg-primary-container text-on-primary-container px-4 py-2.5 md:px-6 md:py-3 rounded-full font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-colors duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.2)]"
+            >
+              Comenzar Gratis
+            </Link>
           </div>
-
-          <Link
-            to="/registro"
-            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-colors duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.2)]"
-          >
-            Comenzar Gratis
-          </Link>
         </div>
       </header>
 
