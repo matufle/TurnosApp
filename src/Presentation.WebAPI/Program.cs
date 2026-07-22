@@ -19,6 +19,22 @@ using TurnosApp.Presentation.WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Validación de configuración crítica ────────────────────────────────────
+// La clave del appsettings.json versionado es sólo un placeholder de desarrollo.
+// Si en producción no se seteó Jwt__Key por variable de entorno, cortamos el
+// arranque: correr con esa clave conocida permitiría a cualquiera forjar JWTs.
+const string DefaultJwtKeyPlaceholder =
+    "una-clave-secreta-larga-de-al-menos-32-caracteres-cambiar-en-produccion";
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (!builder.Environment.IsDevelopment() &&
+    (string.IsNullOrWhiteSpace(jwtKey) || jwtKey == DefaultJwtKeyPlaceholder || jwtKey.Length < 32))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key no está configurada de forma segura para este entorno. " +
+        "Configurá la variable de entorno Jwt__Key con un secreto único y aleatorio.");
+}
+
 // ── Servicios de infraestructura ───────────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -61,11 +77,22 @@ builder.Services.AddProblemDetails();
 var allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? "")
     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+// Los preview deploys de Vercel (por rama/commit) generan una URL random distinta
+// cada vez (https://<proyecto>-<hash>-matuflesolutions.vercel.app). En vez de ir
+// agregando cada una a mano en AllowedOrigins, permitimos cualquier subdominio
+// bajo nuestro propio scope de Vercel — sigue acotado a deploys nuestros, no abre
+// CORS a cualquier sitio de vercel.app.
+var vercelPreviewPattern = new System.Text.RegularExpressions.Regex(
+    @"^https://[a-z0-9-]+-matuflesolutions\.vercel\.app$",
+    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(origin =>
+                  allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase) ||
+                  vercelPreviewPattern.IsMatch(origin))
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -117,8 +144,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication();

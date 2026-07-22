@@ -7,6 +7,6 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Host=<tu-endpoint-de-branch-dev>.neon.tech;Port=5432;Database=neondb;Username=<usuario>;Password=<password>;Ssl Mode=Require;Trust Server Certificate=true;"
+    "DefaultConnection": "Host=ep-icy-bonus-av8d8zzf-pooler.c-11.us-east-1.aws.neon.tech;Port=5432;Database=neondb;Username=neondb_owner;Password=npg_yYMI1X0loAHw;Ssl Mode=Require;Trust Server Certificate=true;"
   }
 }
