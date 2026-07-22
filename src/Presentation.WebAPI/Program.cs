@@ -19,6 +19,22 @@ using TurnosApp.Presentation.WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Validación de configuración crítica ────────────────────────────────────
+// La clave del appsettings.json versionado es sólo un placeholder de desarrollo.
+// Si en producción no se seteó Jwt__Key por variable de entorno, cortamos el
+// arranque: correr con esa clave conocida permitiría a cualquiera forjar JWTs.
+const string DefaultJwtKeyPlaceholder =
+    "una-clave-secreta-larga-de-al-menos-32-caracteres-cambiar-en-produccion";
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (!builder.Environment.IsDevelopment() &&
+    (string.IsNullOrWhiteSpace(jwtKey) || jwtKey == DefaultJwtKeyPlaceholder || jwtKey.Length < 32))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key no está configurada de forma segura para este entorno. " +
+        "Configurá la variable de entorno Jwt__Key con un secreto único y aleatorio.");
+}
+
 // ── Servicios de infraestructura ───────────────────────────────────────────
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -117,8 +133,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 }
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication();

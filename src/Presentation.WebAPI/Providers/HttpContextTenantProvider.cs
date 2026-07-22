@@ -3,7 +3,11 @@
 namespace TurnosApp.Presentation.WebAPI.Providers;
 
 /// <summary>
-/// Resuelve el TenantId actual leyendo el header HTTP "X-Tenant-Id".
+/// Resuelve el TenantId actual a partir del claim "TenantId" del JWT autenticado.
+/// El header HTTP "X-Tenant-Id" (validado por TenantMiddleware) sólo se usa como
+/// chequeo de forma en la request; NUNCA como fuente de autorización, porque es
+/// un valor que controla el cliente y podría manipularse para acceder a datos
+/// de otro tenant (IDOR). El TenantId real sale del token firmado por el server.
 /// Se registra como Scoped: una instancia por request, igual que el DbContext
 /// que la consume — garantiza consistencia dentro del mismo ciclo de vida.
 /// </summary>
@@ -27,14 +31,11 @@ public class HttpContextTenantProvider : ITenantProvider
                 "HttpContext no disponible. ITenantProvider solo puede " +
                 "usarse dentro del contexto de una request HTTP.");
 
-        var headerValue = context.Request.Headers[HeaderName].FirstOrDefault();
+        var tenantClaim = context.User?.FindFirst("TenantId")?.Value;
 
-        // El TenantMiddleware ya validó que el header existe y es un int válido.
-        // Si llegamos aquí sin middleware (tests, etc.), fallamos con mensaje claro.
-        if (!int.TryParse(headerValue, out var tenantId) || tenantId <= 0)
+        if (string.IsNullOrEmpty(tenantClaim) || !int.TryParse(tenantClaim, out var tenantId) || tenantId <= 0)
             throw new InvalidOperationException(
-                $"El header '{HeaderName}' no contiene un TenantId válido. " +
-                $"Valor recibido: '{headerValue}'.");
+                "No se pudo identificar el TenantId a partir del token autenticado.");
 
         return tenantId;
     }
