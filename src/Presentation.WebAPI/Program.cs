@@ -77,11 +77,22 @@ builder.Services.AddProblemDetails();
 var allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? "")
     .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
+// Los preview deploys de Vercel (por rama/commit) generan una URL random distinta
+// cada vez (https://<proyecto>-<hash>-matuflesolutions.vercel.app). En vez de ir
+// agregando cada una a mano en AllowedOrigins, permitimos cualquier subdominio
+// bajo nuestro propio scope de Vercel — sigue acotado a deploys nuestros, no abre
+// CORS a cualquier sitio de vercel.app.
+var vercelPreviewPattern = new System.Text.RegularExpressions.Regex(
+    @"^https://[a-z0-9-]+-matuflesolutions\.vercel\.app$",
+    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(origin =>
+                  allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase) ||
+                  vercelPreviewPattern.IsMatch(origin))
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
