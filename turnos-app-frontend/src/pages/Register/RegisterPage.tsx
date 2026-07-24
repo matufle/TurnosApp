@@ -24,7 +24,7 @@ export function RegisterPage() {
     validate: {
       nombreNegocio: isNotEmpty('Ingresá el nombre de tu negocio'),
       email: isEmail('Ingresá un email válido'),
-      password: hasLength({ min: 6 }, 'La contraseña debe tener al menos 6 caracteres'),
+      password: hasLength({ min: 8 }, 'La contraseña debe tener al menos 8 caracteres'),
       confirmarPassword: matchesField('password', 'Las contraseñas no coinciden'),
       aceptaTerminos: (value) => (value ? null : 'Tenés que aceptar los términos para continuar'),
     },
@@ -42,8 +42,17 @@ export function RegisterPage() {
 
       navigate('/app', { replace: true });
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setErrorMessage('Ya existe una cuenta con ese email.');
+      if (axios.isAxiosError(error) && error.response) {
+        const status = error.response.status;
+        if (status === 409) {
+          setErrorMessage('Ya existe una cuenta con ese email.');
+        } else if (status === 400) {
+          const validationErrors = error.response.data?.errors as Record<string, string[]> | undefined;
+          const firstMessage = validationErrors ? Object.values(validationErrors)[0]?.[0] : undefined;
+          setErrorMessage(firstMessage ?? 'Revisá los datos ingresados e intentá de nuevo.');
+        } else {
+          setErrorMessage('No pudimos conectar con el servidor. Intentá de nuevo en unos segundos.');
+        }
       } else {
         setErrorMessage('No pudimos conectar con el servidor. Intentá de nuevo en unos segundos.');
       }
