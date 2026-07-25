@@ -7,6 +7,7 @@ using TurnosApp.Core.Application.Interfaces;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
+using TurnosApp.Core.Domain.Enums;
 using TurnosApp.Core.Exceptions;
 
 namespace TurnosApp.Core.Application.Services;
@@ -43,8 +44,11 @@ public class AuthAppService : IAuthAppService
         await _unitOfWork.Tenants.AddAsync(tenant, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken); // necesario: EF recién asigna tenant.Id acá
 
+        var rolAdmin = await SeedearRolesAsync(tenant.Id, cancellationToken);
+
         var passwordHash = _passwordHasher.HashPassword(dto.Password);
-        var usuario = new Usuario(dto.Email, passwordHash, tenant.Id);
+        var nombre = dto.Email.Split('@')[0];
+        var usuario = new Usuario(nombre, dto.Email, passwordHash, tenant.Id, rolAdmin.Id);
 
         await _unitOfWork.Usuarios.AddAsync(usuario, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -52,6 +56,35 @@ public class AuthAppService : IAuthAppService
         var token = _jwtTokenService.GenerateToken(usuario);
 
         return new LoginResponseDTO(token, usuario.TenantId, usuario.Email);
+    }
+
+    // Seedea los 3 roles default de un tenant nuevo. Las entidades Rol traen el TenantId
+    // ya asignado a mano: el registro es un flujo anónimo, todavía no hay ITenantProvider
+    // que resolver (ver el chequeo "TenantId == 0" en GenericRepository.AddAsync).
+    private async Task<Rol> SeedearRolesAsync(int tenantId, CancellationToken cancellationToken)
+    {
+        var admin = new Rol { TenantId = tenantId, Nombre = "Admin", EsSistema = true, Permisos = Permiso.Todos };
+        var empleado = new Rol
+        {
+            TenantId = tenantId,
+            Nombre = "Empleado",
+            EsSistema = false,
+            Permisos = Permiso.GestionarTurnos | Permiso.CrearCobros
+        };
+        var recepcionista = new Rol
+        {
+            TenantId = tenantId,
+            Nombre = "Recepcionista",
+            EsSistema = false,
+            Permisos = Permiso.VerAgendaCompleta | Permiso.GestionarTurnos | Permiso.GestionarClientes | Permiso.CrearCobros
+        };
+
+        await _unitOfWork.Roles.AddAsync(admin, cancellationToken);
+        await _unitOfWork.Roles.AddAsync(empleado, cancellationToken);
+        await _unitOfWork.Roles.AddAsync(recepcionista, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken); // necesario: EF recién asigna admin.Id acá
+
+        return admin;
     }
 
     private static string GenerarSlug(string nombre)
@@ -69,6 +102,9 @@ public class AuthAppService : IAuthAppService
 
         if (usuario is null || !_passwordHasher.VerifyPassword(usuario.PasswordHash, dto.Password))
             throw new BusinessException(code: "CREDENCIALES_INVALIDAS", message: "Email o contraseña incorrectos.");
+
+        if (!usuario.Activo)
+            throw new BusinessException(code: "USUARIO_INACTIVO", message: "Tu usuario fue desactivado. Contactá al administrador de tu negocio.");
 
         var token = _jwtTokenService.GenerateToken(usuario, dto.RecordarMe);
 

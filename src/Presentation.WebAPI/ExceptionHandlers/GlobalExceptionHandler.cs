@@ -62,6 +62,8 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "No autorizado", exception.Message),
 
+        ForbiddenException => (StatusCodes.Status403Forbidden, "Acceso denegado", exception.Message),
+
         DbUpdateException dbEx => (
             StatusCodes.Status409Conflict,
             "No se pudo guardar el cambio",

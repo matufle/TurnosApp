@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Servicios;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -39,6 +41,7 @@ public class ServiciosController : ControllerBase
 
     /// <summary>Crea un nuevo servicio.</summary>
     [HttpPost]
+    [RequierePermiso(Permiso.GestionarServicios)]
     [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -55,6 +58,7 @@ public class ServiciosController : ControllerBase
 
     /// <summary>Actualiza un servicio existente.</summary>
     [HttpPut("{id:int}")]
+    [RequierePermiso(Permiso.GestionarServicios)]
     [ProducesResponseType(typeof(ServicioDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
@@ -68,6 +72,7 @@ public class ServiciosController : ControllerBase
 
     /// <summary>Elimina un servicio.</summary>
     [HttpDelete("{id:int}")]
+    [RequierePermiso(Permiso.GestionarServicios)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

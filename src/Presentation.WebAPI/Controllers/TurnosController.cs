@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Turnos;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -34,6 +36,7 @@ public class TurnosController : ControllerBase
     /// Retorna 409 si el horario no está disponible para el recurso.
     /// </summary>
     [HttpPost]
+    [RequierePermiso(Permiso.GestionarTurnos)]
     [ProducesResponseType(typeof(TurnoDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -50,6 +53,7 @@ public class TurnosController : ControllerBase
     /// El registro se conserva en la base de datos para auditoría.
     /// </summary>
     [HttpDelete("{id:int}")]
+    [RequierePermiso(Permiso.GestionarTurnos)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -64,6 +68,7 @@ public class TurnosController : ControllerBase
     /// Para cancelar un turno usar el endpoint de cancelación, no este.
     /// </summary>
     [HttpPatch("{id:int}/estado")]
+    [RequierePermiso(Permiso.GestionarTurnos)]
     [ProducesResponseType(typeof(TurnoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]

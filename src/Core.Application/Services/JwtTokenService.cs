@@ -27,7 +27,10 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Email, usuario.Email),
             new("tenantId", usuario.TenantId.ToString()), // claim custom, clave para el multi-tenant
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new("TenantId", usuario.TenantId.ToString())
+            new("TenantId", usuario.TenantId.ToString()),
+            // Claim custom (no "sub"): el JwtBearerHandler remapea "sub" a ClaimTypes.NameIdentifier
+            // por el inbound claim mapping default — leerlo de vuelta como "sub" sería ambiguo.
+            new("UsuarioId", usuario.Id.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));

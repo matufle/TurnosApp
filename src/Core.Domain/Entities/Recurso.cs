@@ -14,6 +14,11 @@ public class Recurso : TenantEntity
 
     public string ColorHex { get; set; } = "#0EA5E9";
 
+    // Vínculo opcional: un Recurso puede no tener usuario logueable (ej. "Sala 3"),
+    // y un Usuario (Admin/Recepcionista) puede no estar atado a ningún Recurso.
+    public int? UsuarioId { get; set; }
+    public Usuario? Usuario { get; set; }
+
     // Navegación
     public ICollection<Turno> Turnos { get; set; } = [];
 }

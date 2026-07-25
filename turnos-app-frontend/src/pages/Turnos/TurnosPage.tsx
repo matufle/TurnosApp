@@ -45,6 +45,7 @@ import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
 import { serviciosService } from '../../api/servicioService';
 import { RegistrarCobroModal } from './RegistrarCobroModal';
+import { usePermission } from '../../hooks/usePermission';
 import type { Turno, EstadoTurnoEditable } from '../../types/Turno';
 import type { Cliente } from '../../types/Cliente';
 import type { Recurso } from '../../types/Recurso';
@@ -196,6 +197,7 @@ function CalendarToolbar({ label, onNavigate, onView, view }: ToolbarProps<Turno
 }
 
 export function TurnosPage() {
+  const puedeVerAgendaCompleta = usePermission('VerAgendaCompleta');
   const [turnos, setTurnos] = useState<Turno[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
@@ -565,8 +567,9 @@ export function TurnosPage() {
           </div>
         )}
 
-        {/* Personal (recursos) */}
-        {recursos.length > 0 && (
+        {/* Personal (recursos) — sin VerAgendaCompleta, el backend ya acota a la agenda propia,
+            así que filtrar por otro recurso no tendría sentido (siempre daría vacío). */}
+        {puedeVerAgendaCompleta && recursos.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-label-md text-label-md text-secondary uppercase">Personal</h3>

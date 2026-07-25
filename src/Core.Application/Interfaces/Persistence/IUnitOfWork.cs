@@ -18,6 +18,7 @@ public interface IUnitOfWork : IDisposable
     IUsuarioRepository Usuarios { get; }
     IMetodoPagoRepository MetodoPagos { get; }
     ICobroRepository Cobros { get; }
+    IRolRepository Roles { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.

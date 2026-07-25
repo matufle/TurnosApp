@@ -6,6 +6,7 @@ import { useForm, isNotEmpty } from '@mantine/form';
 import { IconEdit, IconX } from '@tabler/icons-react';
 import { metodosPagoService } from '../../api/metodosPagoService';
 import { cobrosService } from '../../api/cobrosService';
+import { usePermission } from '../../hooks/usePermission';
 import type { Turno } from '../../types/Turno';
 import type { MetodoPago } from '../../types/MetodoPago';
 import type { Cobro } from '../../types/Cobro';
@@ -36,6 +37,7 @@ function calcularPreview(precioBase: number, metodo: MetodoPago) {
 }
 
 export function RegistrarCobroModal({ opened, onClose, turno, onCobroGuardado }: RegistrarCobroModalProps) {
+  const puedeVerGananciaNeta = usePermission('VerGananciaNeta');
   const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([]);
   const [cobros, setCobros] = useState<Cobro[]>([]);
   const [cargandoDatos, setCargandoDatos] = useState(true);
@@ -152,7 +154,10 @@ export function RegistrarCobroModal({ opened, onClose, turno, onCobroGuardado }:
                         {cobro.nombreMetodoPagoSnapshot} — ${formatMonto(cobro.precioFinal)}
                       </Text>
                       <Text size="xs" c="dimmed">
-                        Base ${formatMonto(cobro.precioBase)} · Ganancia ${formatMonto(cobro.gananciaNeta)}
+                        Base ${formatMonto(cobro.precioBase)}
+                        {puedeVerGananciaNeta && cobro.gananciaNeta !== null
+                          ? ` · Ganancia ${formatMonto(cobro.gananciaNeta)}`
+                          : ''}
                       </Text>
                     </div>
                     <ActionIcon variant="subtle" aria-label="Editar cobro" onClick={() => abrirEditar(cobro)}>
@@ -223,20 +228,24 @@ export function RegistrarCobroModal({ opened, onClose, turno, onCobroGuardado }:
                               ${formatMonto(preview.precioFinal)}
                             </Text>
                           </Group>
-                          <Group justify="space-between">
-                            <Text size="xs" c="dimmed">
-                              Comisión del medio de pago
-                            </Text>
-                            <Text size="xs">-${formatMonto(preview.montoComision)}</Text>
-                          </Group>
-                          <Group justify="space-between">
-                            <Text size="sm" fw={600} c="teal">
-                              Ganancia neta
-                            </Text>
-                            <Text size="sm" fw={600} c="teal">
-                              ${formatMonto(preview.gananciaNeta)}
-                            </Text>
-                          </Group>
+                          {puedeVerGananciaNeta && (
+                            <>
+                              <Group justify="space-between">
+                                <Text size="xs" c="dimmed">
+                                  Comisión del medio de pago
+                                </Text>
+                                <Text size="xs">-${formatMonto(preview.montoComision)}</Text>
+                              </Group>
+                              <Group justify="space-between">
+                                <Text size="sm" fw={600} c="teal">
+                                  Ganancia neta
+                                </Text>
+                                <Text size="sm" fw={600} c="teal">
+                                  ${formatMonto(preview.gananciaNeta)}
+                                </Text>
+                              </Group>
+                            </>
+                          )}
                         </div>
                       )}
 

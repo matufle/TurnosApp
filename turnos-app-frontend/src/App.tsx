@@ -7,6 +7,7 @@ import { theme as turnifyTheme } from './theme/turnifyTheme';
 import { generateShades } from './theme/generateShades';
 import { TenantThemeProvider } from './context/TenantThemeContext';
 import { useTenantTheme } from './context/useTenantTheme';
+import { AuthProvider } from './context/AuthContext';
 import { tenantService } from './api/tenantService';
 
 import { LandingPage } from './pages/Landing/LandindPage';
@@ -22,6 +23,8 @@ import { ClientesPage } from './pages/Clientes/ClientesPage';
 import { ConfigurationPage } from './pages/Configuration/ConfigurationPage';
 import { MetodosPagoPage } from './pages/MetodosPago/MetodosPagoPage';
 import { HistorialCobrosPage } from './pages/Cobros/HistorialCobrosPage';
+import { UsuariosPage } from './pages/Usuarios/UsuariosPage';
+import { RolesPage } from './pages/Roles/RolesPage';
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
@@ -64,9 +67,39 @@ const finalTheme =
             <Route path="servicios" element={<ServiciosPage />} />
             <Route path="clientes" element={<ClientesPage />} />
             <Route path="turnos" element={<TurnosPage />} />
-            <Route path="metodos-pago" element={<MetodosPagoPage />} />
+            <Route
+              path="metodos-pago"
+              element={
+                <ProtectedRoute permiso="GestionarMetodosPago">
+                  <MetodosPagoPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="cobros" element={<HistorialCobrosPage />} />
-            <Route path="configuracion" element={<ConfigurationPage />} />
+            <Route
+              path="configuracion"
+              element={
+                <ProtectedRoute permiso="GestionarConfiguracionNegocio">
+                  <ConfigurationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="usuarios"
+              element={
+                <ProtectedRoute permiso="GestionarUsuarios">
+                  <UsuariosPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="roles"
+              element={
+                <ProtectedRoute permiso="GestionarRoles">
+                  <RolesPage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route path="*" element={<div>Página no encontrada</div>} />
@@ -116,7 +149,9 @@ export default function App() {
 
   return (
     <TenantThemeProvider initialColorHex={colorHexInicial}>
-      <ThemedApp />
+      <AuthProvider>
+        <ThemedApp />
+      </AuthProvider>
     </TenantThemeProvider>
   );
 }

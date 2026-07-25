@@ -38,7 +38,9 @@ public class GenericRepository<T> : IRepository<T> where T : class
     {
         // Si la entidad pertenece a un tenant, asignamos el TenantId aquí —
         // Application no debe conocer este detalle de infraestructura.
-        if (entity is TenantEntity tenantEntity)
+        // Excepción: si el caller ya lo asignó a mano (ej. seedear Roles durante el registro,
+        // un flujo anónimo donde ITenantProvider todavía no tiene nada que resolver), lo respetamos.
+        if (entity is TenantEntity tenantEntity && tenantEntity.TenantId == 0)
         {
             // ITenantProvider está disponible vía el DbContext que ya lo recibe.
             tenantEntity.TenantId = _context.CurrentTenantId;

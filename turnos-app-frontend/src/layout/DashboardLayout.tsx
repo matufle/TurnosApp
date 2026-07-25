@@ -25,21 +25,26 @@ import {
   IconLogout,
   IconLayoutDashboard,
   IconCreditCard,
-  IconReceipt2
+  IconReceipt2,
+  IconUsersGroup,
+  IconShieldLock
 } from '@tabler/icons-react';
 
 // Servicios y Contextos
 import { tenantService } from '../api/tenantService';
 import { useTenantTheme } from '../context/useTenantTheme';
+import { useAuth } from '../context/useAuth';
 
 const navLinks = [
   { icon: IconCalendarEvent, label: 'Turnos', path: '/app/turnos' },
   { icon: IconUsers, label: 'Clientes', path: '/app/clientes' },
   { icon: IconUserCog, label: 'Recursos', path: '/app/recursos' },
   { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
-  { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago' },
+  { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago', permiso: 'GestionarMetodosPago' },
   { icon: IconReceipt2, label: 'Historial de Cobros', path: '/app/cobros' },
-  { icon: IconSettings, label: 'Configuración', path: '/app/configuracion' },
+  { icon: IconUsersGroup, label: 'Usuarios', path: '/app/usuarios', permiso: 'GestionarUsuarios' },
+  { icon: IconShieldLock, label: 'Roles y Permisos', path: '/app/roles', permiso: 'GestionarRoles' },
+  { icon: IconSettings, label: 'Configuración', path: '/app/configuracion', permiso: 'GestionarConfiguracionNegocio' },
 ];
 
 export function DashboardLayout() {
@@ -49,6 +54,8 @@ export function DashboardLayout() {
   
   // 1. Traemos tanto el color actual como la función para actualizarlo
   const { colorHex, setColorHex } = useTenantTheme();
+  const { hasPermission, logout } = useAuth();
+  const navLinksVisibles = navLinks.filter((link) => !link.permiso || hasPermission(link.permiso));
 
   // 2. Creamos un estado de carga inteligente.
   // Si 'colorHex' ya existe (ej. al presionar F5 en una página privada), no mostramos carga.
@@ -132,8 +139,7 @@ export function DashboardLayout() {
                 color="red"
                 leftSection={<IconLogout size={14} />}
                 onClick={() => {
-                  localStorage.removeItem('turnify_token');
-                  localStorage.removeItem('turnify_tenant_id');
+                  logout();
                   navigate('/login');
                 }}
               >
@@ -147,7 +153,7 @@ export function DashboardLayout() {
       {/* 🟢 NAVBAR */}
       <AppShell.Navbar p="md">
         <Stack gap="xs">
-          {navLinks.map((link) => (
+          {navLinksVisibles.map((link) => (
             <NavLink
               key={link.path}
               label={link.label}

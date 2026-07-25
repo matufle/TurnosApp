@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Tenant;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -34,6 +36,7 @@ public class TenantsController : ControllerBase
     }
 
     [HttpPut("config")]
+    [RequierePermiso(Permiso.GestionarConfiguracionNegocio)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> UpdateConfig(
         [FromBody] UpdateTenantConfigDto dto,

@@ -5,6 +5,7 @@ import { IconChevronLeft, IconChevronRight, IconReceipt2 } from '@tabler/icons-r
 import { cobrosService } from '../../api/cobrosService';
 import { SearchInput } from '../../components/SearchInput';
 import { EmptyState } from '../../components/EmptyState';
+import { usePermission } from '../../hooks/usePermission';
 import type { CobroListItem, HistorialCobros } from '../../types/Cobro';
 
 const TAMANO_PAGINA = 10;
@@ -30,6 +31,7 @@ function finDeDia(fecha: string): string {
 }
 
 export function HistorialCobrosPage() {
+  const puedeVerGananciaNeta = usePermission('VerGananciaNeta');
   const [historial, setHistorial] = useState<HistorialCobros | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -153,15 +155,17 @@ export function HistorialCobrosPage() {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest rounded-3xl p-6 soft-elevation border border-surface-variant flex flex-col gap-2 relative overflow-hidden">
-          <div className="flex justify-between items-center">
-            <span className="font-body-sm text-body-sm text-secondary">Comisiones Totales (período)</span>
-            <span className="material-symbols-outlined text-tertiary bg-tertiary/10 p-2 rounded-full">receipt_long</span>
+        {puedeVerGananciaNeta && (
+          <div className="bg-surface-container-lowest rounded-3xl p-6 soft-elevation border border-surface-variant flex flex-col gap-2 relative overflow-hidden">
+            <div className="flex justify-between items-center">
+              <span className="font-body-sm text-body-sm text-secondary">Comisiones Totales (período)</span>
+              <span className="material-symbols-outlined text-tertiary bg-tertiary/10 p-2 rounded-full">receipt_long</span>
+            </div>
+            <div className="font-display-lg text-display-lg text-on-background">
+              ${historial ? formatMonto(historial.comisionesTotalesPeriodo ?? 0) : '—'}
+            </div>
           </div>
-          <div className="font-display-lg text-display-lg text-on-background">
-            ${historial ? formatMonto(historial.comisionesTotalesPeriodo) : '—'}
-          </div>
-        </div>
+        )}
       </section>
 
       <section className="bg-surface-container-lowest rounded-3xl soft-elevation overflow-hidden border border-surface-variant">
@@ -194,8 +198,12 @@ export function HistorialCobrosPage() {
                     <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Precio Base</th>
                     <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Modificador</th>
                     <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Precio Final</th>
-                    <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Comisión</th>
-                    <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Ganancia</th>
+                    {puedeVerGananciaNeta && (
+                      <>
+                        <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Comisión</th>
+                        <th className="py-4 px-6 font-label-md text-label-md text-secondary text-right">Ganancia</th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-variant">
@@ -234,12 +242,16 @@ export function HistorialCobrosPage() {
                       <td className="py-4 px-6 font-title-md text-body-sm text-on-background text-right">
                         ${formatMonto(item.precioFinal)}
                       </td>
-                      <td className="py-4 px-6 font-body-sm text-body-sm text-tertiary text-right">
-                        -${formatMonto(item.montoComision)}
-                      </td>
-                      <td className="py-4 px-6 font-title-md text-body-sm text-primary text-right">
-                        ${formatMonto(item.gananciaNeta)}
-                      </td>
+                      {puedeVerGananciaNeta && (
+                        <>
+                          <td className="py-4 px-6 font-body-sm text-body-sm text-tertiary text-right">
+                            -${formatMonto(item.montoComision ?? 0)}
+                          </td>
+                          <td className="py-4 px-6 font-title-md text-body-sm text-primary text-right">
+                            ${formatMonto(item.gananciaNeta ?? 0)}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

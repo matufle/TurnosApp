@@ -3,10 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useForm, isEmail, isNotEmpty, hasLength, matchesField } from '@mantine/form';
 import { authService } from '../../api/authService';
+import { useAuth } from '../../context/useAuth';
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const emailPrecargado = (location.state as { email?: string } | null)?.email ?? '';
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -37,8 +39,7 @@ export function RegisterPage() {
     try {
       const response = await authService.register(values);
 
-      localStorage.setItem('turnify_token', response.token);
-      localStorage.setItem('turnify_tenant_id', response.tenantId.toString());
+      await login(response.token, response.tenantId);
 
       navigate('/app', { replace: true });
     } catch (error) {

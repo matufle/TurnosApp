@@ -7,4 +7,5 @@ namespace TurnosApp.Core.Application.Interfaces.Persistence;
 
 public interface IRecursoRepository : IRepository<Recurso>
 {
+    Task<Recurso?> GetByUsuarioIdAsync(int usuarioId, CancellationToken cancellationToken = default);
 }

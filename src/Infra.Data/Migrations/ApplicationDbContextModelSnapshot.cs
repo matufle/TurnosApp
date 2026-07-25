@@ -195,11 +195,49 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Property<int>("TenantId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
 
+                    b.HasIndex("UsuarioId")
+                        .IsUnique()
+                        .HasFilter("\"UsuarioId\" IS NOT NULL");
+
                     b.ToTable("Recursos", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("EsSistema")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("PermisosMask")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Servicio", b =>
@@ -367,14 +405,27 @@ namespace TurnosApp.Infra.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("RolId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("TenantId")
                         .HasColumnType("integer");
@@ -383,6 +434,8 @@ namespace TurnosApp.Infra.Data.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("RolId");
 
                     b.HasIndex("TenantId");
 
@@ -441,6 +494,24 @@ namespace TurnosApp.Infra.Data.Migrations
                 {
                     b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
                         .WithMany("Recursos")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Rol", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -507,11 +578,19 @@ namespace TurnosApp.Infra.Data.Migrations
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Usuario", b =>
                 {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Rol", "Rol")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", null)
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Rol");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Cliente", b =>
@@ -527,6 +606,11 @@ namespace TurnosApp.Infra.Data.Migrations
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Recurso", b =>
                 {
                     b.Navigation("Turnos");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Rol", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Servicio", b =>

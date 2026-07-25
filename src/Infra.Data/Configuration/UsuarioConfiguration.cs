@@ -21,6 +21,10 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         builder.HasKey(u => u.Id);
 
+        builder.Property(u => u.Nombre)
+            .IsRequired()
+            .HasMaxLength(200);
+
         builder.Property(u => u.Email)
             .IsRequired()
             .HasMaxLength(256);
@@ -30,6 +34,20 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         builder.Property(u => u.TenantId)
             .IsRequired();
+
+        builder.Property(u => u.RolId)
+            .IsRequired();
+
+        builder.Property(u => u.Activo)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        // Restrict: no se puede borrar un Rol que todavía tiene usuarios asignados
+        // (misma regla ya se valida antes en RolAppService, esto es la red de seguridad a nivel DB).
+        builder.HasOne(u => u.Rol)
+            .WithMany(r => r.Usuarios)
+            .HasForeignKey(u => u.RolId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Único GLOBAL (no compuesto con TenantId): el login busca por email
         // antes de conocer el tenant, así que dos tenants no pueden compartir email.

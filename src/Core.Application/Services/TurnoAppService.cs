@@ -13,21 +13,32 @@ public class TurnoAppService : ITurnoAppService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ICurrentUserService _currentUserService;
     private readonly SolapamientoValidator _solapamientoValidator;
 
     public TurnoAppService(
         IUnitOfWork unitOfWork,
         ITenantProvider tenantProvider,
+        ICurrentUserService currentUserService,
         SolapamientoValidator solapamientoValidator)
     {
         _unitOfWork = unitOfWork;
         _tenantProvider = tenantProvider;
+        _currentUserService = currentUserService;
         _solapamientoValidator = solapamientoValidator;
     }
 
     public async Task<IReadOnlyList<TurnoDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var turnos = await _unitOfWork.Turnos.GetAllConDetallesAsync(cancellationToken);
+
+        // Sin VerAgendaCompleta, el usuario queda acotado a los turnos de su propio Recurso vinculado.
+        var permisos = await _currentUserService.GetCurrentPermisosAsync(cancellationToken);
+        if (!permisos.HasFlag(Permiso.VerAgendaCompleta))
+        {
+            var recursoId = await _currentUserService.GetCurrentRecursoIdAsync(cancellationToken);
+            turnos = turnos.Where(t => t.RecursoId == recursoId).ToList();
+        }
 
         return turnos
             .Where(t => t.Estado != EstadoTurno.Cancelado)

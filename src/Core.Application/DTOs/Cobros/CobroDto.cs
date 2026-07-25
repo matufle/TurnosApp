@@ -15,8 +15,10 @@ public record CobroDto(
     decimal PrecioBase,
     decimal MontoModificadorCliente,
     decimal PrecioFinal,
-    decimal MontoComision,
-    decimal GananciaNeta,
+    // null cuando el caller no tiene el permiso VerGananciaNeta (ej. Recepcionista):
+    // necesita listar/crear cobros, pero no ver la utilidad neta del negocio.
+    decimal? MontoComision,
+    decimal? GananciaNeta,
     DateTime CreadoEn,
     string? CreadoPor,
     DateTime? ModificadoEn,

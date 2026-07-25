@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Cobros;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
 using TurnosApp.Core.Exceptions;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -45,6 +47,7 @@ public class CobrosController : ControllerBase
 
     /// <summary>Registra un cobro (total o parcial) sobre un turno.</summary>
     [HttpPost]
+    [RequierePermiso(Permiso.CrearCobros)]
     [ProducesResponseType(typeof(CobroDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,6 +66,7 @@ public class CobrosController : ControllerBase
 
     /// <summary>Edita un cobro existente (re-toma el % vigente del método seleccionado).</summary>
     [HttpPut("{id:int}")]
+    [RequierePermiso(Permiso.CrearCobros)]
     [ProducesResponseType(typeof(CobroDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
