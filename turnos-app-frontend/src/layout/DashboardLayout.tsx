@@ -23,7 +23,9 @@ import {
   IconSettings,
   IconChevronDown,
   IconLogout,
-  IconLayoutDashboard
+  IconLayoutDashboard,
+  IconCreditCard,
+  IconReceipt2
 } from '@tabler/icons-react';
 
 // Servicios y Contextos
@@ -35,6 +37,8 @@ const navLinks = [
   { icon: IconUsers, label: 'Clientes', path: '/app/clientes' },
   { icon: IconUserCog, label: 'Recursos', path: '/app/recursos' },
   { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
+  { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago' },
+  { icon: IconReceipt2, label: 'Historial de Cobros', path: '/app/cobros' },
   { icon: IconSettings, label: 'Configuración', path: '/app/configuracion' },
 ];
 

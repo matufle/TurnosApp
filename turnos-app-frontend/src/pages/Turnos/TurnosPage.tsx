@@ -44,6 +44,7 @@ import { turnosService } from '../../api/turnosService';
 import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
 import { serviciosService } from '../../api/servicioService';
+import { RegistrarCobroModal } from './RegistrarCobroModal';
 import type { Turno, EstadoTurnoEditable } from '../../types/Turno';
 import type { Cliente } from '../../types/Cliente';
 import type { Recurso } from '../../types/Recurso';
@@ -81,6 +82,12 @@ const COLOR_POR_ESTADO: Record<string, string> = {
   Completado: 'green',
   Ausente: 'orange',
   Cancelado: 'red',
+};
+
+const COLOR_POR_ESTADO_PAGO: Record<string, string> = {
+  SinCobrar: 'gray',
+  Parcial: 'yellow',
+  Pagado: 'green',
 };
 
 // Un turno "vencido" es uno cuya hora de fin ya pasó pero sigue en un estado
@@ -199,6 +206,7 @@ export function TurnosPage() {
 
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const [detalleOpened, { open: openDetalle, close: closeDetalle }] = useDisclosure(false);
+  const [cobroModalOpened, { open: openCobroModal, close: closeCobroModal }] = useDisclosure(false);
   const [filtrosOpened, { open: openFiltros, close: closeFiltros }] = useDisclosure(false);
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<Turno | null>(null);
 
@@ -272,6 +280,15 @@ export function TurnosPage() {
   const recargarTurnos = async () => {
     const data = await turnosService.getAll();
     setTurnos(data);
+  };
+
+  const handleCobroGuardado = async () => {
+    const data = await turnosService.getAll();
+    setTurnos(data);
+    setTurnoSeleccionado((actual) => {
+      if (!actual) return actual;
+      return data.find((t) => t.id === actual.id) ?? actual;
+    });
   };
 
   const ahora = useMemo(() => new Date(), []);
@@ -826,6 +843,25 @@ export function TurnosPage() {
               </Text>
             </Group>
 
+            <Group gap="xs">
+              <Badge color={COLOR_POR_ESTADO_PAGO[turnoSeleccionado.estadoPago] ?? 'gray'} variant="light">
+                {turnoSeleccionado.estadoPago === 'SinCobrar'
+                  ? 'Sin cobrar'
+                  : turnoSeleccionado.estadoPago === 'Parcial'
+                    ? 'Cobro parcial'
+                    : 'Pagado'}
+              </Badge>
+              {turnoSeleccionado.saldoPendiente > 0 && (
+                <Text size="sm" c="dimmed">
+                  Saldo pendiente: ${turnoSeleccionado.saldoPendiente}
+                </Text>
+              )}
+            </Group>
+
+            <Button variant="light" color="teal" fullWidth onClick={openCobroModal}>
+              {turnoSeleccionado.estadoPago === 'SinCobrar' ? 'Registrar cobro' : 'Ver / registrar cobros'}
+            </Button>
+
             {esTurnoVencido(turnoSeleccionado, ahora) && (
               <Alert icon={<IconAlertCircle size={16} />} color="gray" variant="light">
                 La hora de este turno ya pasó y nadie lo marcó como completado o ausente. Actualizá el
@@ -860,6 +896,15 @@ export function TurnosPage() {
           </Stack>
         )}
       </Modal>
+
+      {turnoSeleccionado && (
+        <RegistrarCobroModal
+          opened={cobroModalOpened}
+          onClose={closeCobroModal}
+          turno={turnoSeleccionado}
+          onCobroGuardado={handleCobroGuardado}
+        />
+      )}
 
       <style>{`
         .rbc-toolbar { display: none; }

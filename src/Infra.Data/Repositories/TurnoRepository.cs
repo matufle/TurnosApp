@@ -37,6 +37,7 @@ public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
             .Include(t => t.Cliente)
             .Include(t => t.TurnoServicios)
                 .ThenInclude(ts => ts.Servicio)
+            .Include(t => t.Cobros)
             .ToListAsync(cancellationToken);
     }
 
@@ -47,6 +48,7 @@ public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
             .Include(t => t.Cliente)
             .Include(t => t.TurnoServicios)
                 .ThenInclude(ts => ts.Servicio)
+            .Include(t => t.Cobros)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 }

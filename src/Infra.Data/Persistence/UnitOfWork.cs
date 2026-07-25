@@ -18,6 +18,8 @@ public class UnitOfWork : IUnitOfWork
     public ITurnoRepository Turnos { get; }
     public IRecursoRepository Recursos { get; }
     public IUsuarioRepository Usuarios { get; }
+    public IMetodoPagoRepository MetodoPagos { get; }
+    public ICobroRepository Cobros { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -26,7 +28,9 @@ public class UnitOfWork : IUnitOfWork
         IClienteRepository clientes,
         IRecursoRepository recursos,
         IUsuarioRepository usuarios,
-        ITurnoRepository turnos)
+        ITurnoRepository turnos,
+        IMetodoPagoRepository metodoPagos,
+        ICobroRepository cobros)
     {
         _context = context;
         Tenants = tenants;
@@ -35,7 +39,8 @@ public class UnitOfWork : IUnitOfWork
         Turnos = turnos;
         Recursos = recursos;
         Usuarios = usuarios;
-
+        MetodoPagos = metodoPagos;
+        Cobros = cobros;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

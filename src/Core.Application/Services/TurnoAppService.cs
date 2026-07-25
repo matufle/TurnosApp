@@ -190,17 +190,33 @@ public class TurnoAppService : ITurnoAppService
         return MapToDto(turnoCompleto!);
     }
 
-    private static TurnoDto MapToDto(Turno turno) => new(
-        Id: turno.Id,
-        RecursoId: turno.RecursoId,
-        RecursoNombre: turno.Recurso?.Nombre ?? string.Empty,
-        ClienteId: turno.ClienteId,
-        ClienteNombreCompleto: $"{turno.Cliente?.Nombre} {turno.Cliente?.Apellido}".Trim(),
-        FechaHoraInicio: turno.FechaHoraInicio,
-        FechaHoraFin: turno.FechaHoraInicio.AddMinutes(
-            turno.TurnoServicios.Sum(ts => ts.Servicio?.DuracionMinutos ?? 0)),
-        Estado: turno.Estado.ToString(),
-        Servicios: turno.TurnoServicios.Select(ts => ts.Servicio?.Nombre ?? string.Empty).ToList(),
-        PrecioTotal: turno.TurnoServicios.Sum(ts => ts.PrecioAplicado)
-    );
+    private static TurnoDto MapToDto(Turno turno)
+    {
+        var precioTotal = turno.TurnoServicios.Sum(ts => ts.PrecioAplicado);
+        var montoCobrado = turno.Cobros.Sum(c => c.PrecioBase);
+        var saldoPendiente = precioTotal - montoCobrado;
+
+        var estadoPago = montoCobrado <= 0
+            ? EstadoPagoTurno.SinCobrar
+            : saldoPendiente <= 0
+                ? EstadoPagoTurno.Pagado
+                : EstadoPagoTurno.Parcial;
+
+        return new TurnoDto(
+            Id: turno.Id,
+            RecursoId: turno.RecursoId,
+            RecursoNombre: turno.Recurso?.Nombre ?? string.Empty,
+            ClienteId: turno.ClienteId,
+            ClienteNombreCompleto: $"{turno.Cliente?.Nombre} {turno.Cliente?.Apellido}".Trim(),
+            FechaHoraInicio: turno.FechaHoraInicio,
+            FechaHoraFin: turno.FechaHoraInicio.AddMinutes(
+                turno.TurnoServicios.Sum(ts => ts.Servicio?.DuracionMinutos ?? 0)),
+            Estado: turno.Estado.ToString(),
+            Servicios: turno.TurnoServicios.Select(ts => ts.Servicio?.Nombre ?? string.Empty).ToList(),
+            PrecioTotal: precioTotal,
+            MontoCobrado: montoCobrado,
+            SaldoPendiente: saldoPendiente,
+            EstadoPago: estadoPago.ToString()
+        );
+    }
 }

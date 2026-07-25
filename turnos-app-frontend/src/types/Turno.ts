@@ -10,6 +10,9 @@ export interface Turno {
   estado: string;
   servicios: string[];
   precioTotal: number;
+  montoCobrado: number;
+  saldoPendiente: number;
+  estadoPago: 'SinCobrar' | 'Parcial' | 'Pagado';
 }
 
 export interface ClienteInlineDTO {
