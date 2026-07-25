@@ -368,3 +368,6 @@ FodyWeavers.xsd
 # no deben versionarse. Ver appsettings.Development.json.example.
 appsettings.Development.json
 appsettings.*.local.json
+
+# Contexto local para Claude Code - no se versiona
+CLAUDE.md

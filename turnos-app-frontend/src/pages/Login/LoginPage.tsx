@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm, isEmail, isNotEmpty } from '@mantine/form';
 import { authService } from '../../api/authService';
+import { useAuth } from '../../context/useAuth';
 import axios from 'axios';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -26,8 +28,7 @@ export function LoginPage() {
     try {
       const response = await authService.login(values);
 
-      localStorage.setItem('turnify_token', response.token);
-      localStorage.setItem('turnify_tenant_id', response.tenantId.toString());
+      await login(response.token, response.tenantId);
 
       navigate('/app', { replace: true });
     } catch (error) {

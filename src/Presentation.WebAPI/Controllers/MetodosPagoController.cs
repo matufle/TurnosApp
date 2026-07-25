@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.MetodosPago;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -39,6 +41,7 @@ public class MetodosPagoController : ControllerBase
 
     /// <summary>Crea un nuevo método de pago.</summary>
     [HttpPost]
+    [RequierePermiso(Permiso.GestionarMetodosPago)]
     [ProducesResponseType(typeof(MetodoPagoDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -55,6 +58,7 @@ public class MetodosPagoController : ControllerBase
 
     /// <summary>Actualiza un método de pago existente.</summary>
     [HttpPut("{id:int}")]
+    [RequierePermiso(Permiso.GestionarMetodosPago)]
     [ProducesResponseType(typeof(MetodoPagoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
@@ -71,6 +75,7 @@ public class MetodosPagoController : ControllerBase
     /// romper la FK histórica de Cobro.MetodoPagoId destruiría el snapshot de cobros pasados.
     /// </summary>
     [HttpPatch("{id:int}/desactivar")]
+    [RequierePermiso(Permiso.GestionarMetodosPago)]
     [ProducesResponseType(typeof(MetodoPagoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Desactivar(int id, CancellationToken cancellationToken)

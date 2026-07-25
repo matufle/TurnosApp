@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Clientes;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
@@ -39,6 +41,7 @@ public class ClientesController : ControllerBase
 
     /// <summary>Crea un nuevo cliente.</summary>
     [HttpPost]
+    [RequierePermiso(Permiso.GestionarClientes)]
     [ProducesResponseType(typeof(ClienteDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create(
@@ -55,6 +58,7 @@ public class ClientesController : ControllerBase
 
     /// <summary>Actualiza un cliente existente.</summary>
     [HttpPut("{id:int}")]
+    [RequierePermiso(Permiso.GestionarClientes)]
     [ProducesResponseType(typeof(ClienteDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
@@ -68,6 +72,7 @@ public class ClientesController : ControllerBase
 
     /// <summary>Elimina un cliente.</summary>
     [HttpDelete("{id:int}")]
+    [RequierePermiso(Permiso.GestionarClientes)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

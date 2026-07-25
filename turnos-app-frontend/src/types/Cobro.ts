@@ -12,8 +12,9 @@ export interface Cobro {
   precioBase: number;
   montoModificadorCliente: number;
   precioFinal: number;
-  montoComision: number;
-  gananciaNeta: number;
+  // null cuando el usuario no tiene el permiso VerGananciaNeta (ej. Recepcionista).
+  montoComision: number | null;
+  gananciaNeta: number | null;
   creadoEn: string;
   creadoPor: string | null;
   modificadoEn: string | null;
@@ -44,8 +45,9 @@ export interface CobroListItem {
   precioBase: number;
   montoModificadorCliente: number;
   precioFinal: number;
-  montoComision: number;
-  gananciaNeta: number;
+  // null cuando el usuario no tiene el permiso VerGananciaNeta (ej. Recepcionista).
+  montoComision: number | null;
+  gananciaNeta: number | null;
   creadoEn: string;
 }
 
@@ -63,6 +65,7 @@ export interface HistorialCobros {
   pagina: number;
   tamanoPagina: number;
   totalCobradoPeriodo: number;
-  comisionesTotalesPeriodo: number;
+  // null cuando el usuario no tiene el permiso VerGananciaNeta (ej. Recepcionista).
+  comisionesTotalesPeriodo: number | null;
   saldoPendienteGlobal: number;
 }

@@ -17,7 +17,8 @@ public record CobroListItemDto(
     decimal PrecioBase,
     decimal MontoModificadorCliente,
     decimal PrecioFinal,
-    decimal MontoComision,
-    decimal GananciaNeta,
+    // null cuando el caller no tiene el permiso VerGananciaNeta (ej. Recepcionista).
+    decimal? MontoComision,
+    decimal? GananciaNeta,
     DateTime CreadoEn
 );

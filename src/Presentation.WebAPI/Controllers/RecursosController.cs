@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TurnosApp.Core.Application.DTOs.Recursos;
 using TurnosApp.Core.Application.Interfaces.Services;
+using TurnosApp.Core.Domain.Enums;
+using TurnosApp.Presentation.WebAPI.Authorization;
 namespace TurnosApp.Presentation.WebAPI.Controllers;
 
 [ApiController]
@@ -35,6 +37,7 @@ public class RecursosController : ControllerBase
     }
 
     [HttpPost]
+    [RequierePermiso(Permiso.GestionarRecursos)]
     [ProducesResponseType(typeof(RecursoDto), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create(
         [FromBody] CreateRecursoDto dto,
@@ -46,6 +49,7 @@ public class RecursosController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [RequierePermiso(Permiso.GestionarRecursos)]
     [ProducesResponseType(typeof(RecursoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(
@@ -58,6 +62,7 @@ public class RecursosController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [RequierePermiso(Permiso.GestionarRecursos)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

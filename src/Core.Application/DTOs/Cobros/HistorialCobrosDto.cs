@@ -10,6 +10,7 @@ public record HistorialCobrosDto(
     int Pagina,
     int TamanoPagina,
     decimal TotalCobradoPeriodo,
-    decimal ComisionesTotalesPeriodo,
+    // null cuando el caller no tiene el permiso VerGananciaNeta (ej. Recepcionista).
+    decimal? ComisionesTotalesPeriodo,
     decimal SaldoPendienteGlobal
 );

@@ -34,5 +34,16 @@ public class RecursoConfiguration : IEntityTypeConfiguration<Recurso>
             .WithMany(t => t.Recursos)
             .HasForeignKey(r => r.TenantId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Vínculo opcional: no todo Recurso tiene un Usuario logueable, y no todo Usuario
+        // (Admin/Recepcionista) está atado a un Recurso. Único filtrado: solo cuando no es null.
+        builder.HasIndex(r => r.UsuarioId)
+            .IsUnique()
+            .HasFilter("\"UsuarioId\" IS NOT NULL");
+
+        builder.HasOne(r => r.Usuario)
+            .WithMany()
+            .HasForeignKey(r => r.UsuarioId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

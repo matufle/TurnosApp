@@ -15,11 +15,13 @@ public class CobroAppService : ICobroAppService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ICurrentUserService _currentUserService;
 
-    public CobroAppService(IUnitOfWork unitOfWork, ITenantProvider tenantProvider)
+    public CobroAppService(IUnitOfWork unitOfWork, ITenantProvider tenantProvider, ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _tenantProvider = tenantProvider;
+        _currentUserService = currentUserService;
     }
 
     public async Task<CobroDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -29,7 +31,8 @@ public class CobroAppService : ICobroAppService
         if (cobro is null)
             throw new NotFoundException(nameof(Cobro), id);
 
-        return MapToDto(cobro);
+        var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
+        return MapToDto(cobro, puedeVerGananciaNeta);
     }
 
     public async Task<IReadOnlyList<CobroDto>> GetAllByTurnoIdAsync(int turnoId, CancellationToken cancellationToken = default)
@@ -41,7 +44,8 @@ public class CobroAppService : ICobroAppService
 
         var cobros = await _unitOfWork.Cobros.GetAllByTurnoIdAsync(turnoId, cancellationToken);
 
-        return cobros.OrderBy(c => c.CreadoEn).Select(MapToDto).ToList();
+        var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
+        return cobros.OrderBy(c => c.CreadoEn).Select(c => MapToDto(c, puedeVerGananciaNeta)).ToList();
     }
 
     public async Task<CobroDto> CrearCobroAsync(CreateCobroDto dto, CancellationToken cancellationToken = default)
@@ -101,7 +105,8 @@ public class CobroAppService : ICobroAppService
         await _unitOfWork.Cobros.AddAsync(cobro, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return MapToDto(cobro);
+        var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
+        return MapToDto(cobro, puedeVerGananciaNeta);
     }
 
     public async Task<CobroDto> ActualizarCobroAsync(int id, UpdateCobroDto dto, CancellationToken cancellationToken = default)
@@ -158,7 +163,8 @@ public class CobroAppService : ICobroAppService
         _unitOfWork.Cobros.Update(cobro);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return MapToDto(cobro);
+        var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
+        return MapToDto(cobro, puedeVerGananciaNeta);
     }
 
     public async Task<HistorialCobrosDto> GetHistorialAsync(
@@ -182,18 +188,26 @@ public class CobroAppService : ICobroAppService
             .Where(t => t.Estado is not (EstadoTurno.Cancelado or EstadoTurno.Ausente))
             .Sum(t => t.TurnoServicios.Sum(ts => ts.PrecioAplicado) - t.Cobros.Sum(c => c.PrecioBase));
 
+        var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
+
         return new HistorialCobrosDto(
-            Items: items.Select(MapToListItemDto).ToList(),
+            Items: items.Select(c => MapToListItemDto(c, puedeVerGananciaNeta)).ToList(),
             TotalCount: totalCount,
             Pagina: pagina,
             TamanoPagina: tamanoPagina,
             TotalCobradoPeriodo: sumaPrecioFinal,
-            ComisionesTotalesPeriodo: sumaComision,
+            ComisionesTotalesPeriodo: puedeVerGananciaNeta ? sumaComision : null,
             SaldoPendienteGlobal: saldoPendienteGlobal
         );
     }
 
-    private static CobroListItemDto MapToListItemDto(Cobro c) => new(
+    private async Task<bool> PuedeVerGananciaNetaAsync(CancellationToken cancellationToken)
+    {
+        var permisos = await _currentUserService.GetCurrentPermisosAsync(cancellationToken);
+        return permisos.HasFlag(Permiso.VerGananciaNeta);
+    }
+
+    private static CobroListItemDto MapToListItemDto(Cobro c, bool puedeVerGananciaNeta) => new(
         Id: c.Id,
         TurnoId: c.TurnoId,
         ClienteNombreCompleto: $"{c.Turno.Cliente?.Nombre} {c.Turno.Cliente?.Apellido}".Trim(),
@@ -206,12 +220,12 @@ public class CobroAppService : ICobroAppService
         PrecioBase: c.PrecioBase,
         MontoModificadorCliente: c.MontoModificadorCliente,
         PrecioFinal: c.PrecioFinal,
-        MontoComision: c.MontoComision,
-        GananciaNeta: c.GananciaNeta,
+        MontoComision: puedeVerGananciaNeta ? c.MontoComision : null,
+        GananciaNeta: puedeVerGananciaNeta ? c.GananciaNeta : null,
         CreadoEn: c.CreadoEn
     );
 
-    private static CobroDto MapToDto(Cobro c) => new(
+    private static CobroDto MapToDto(Cobro c, bool puedeVerGananciaNeta) => new(
         Id: c.Id,
         TurnoId: c.TurnoId,
         MetodoPagoId: c.MetodoPagoId,
@@ -222,8 +236,8 @@ public class CobroAppService : ICobroAppService
         PrecioBase: c.PrecioBase,
         MontoModificadorCliente: c.MontoModificadorCliente,
         PrecioFinal: c.PrecioFinal,
-        MontoComision: c.MontoComision,
-        GananciaNeta: c.GananciaNeta,
+        MontoComision: puedeVerGananciaNeta ? c.MontoComision : null,
+        GananciaNeta: puedeVerGananciaNeta ? c.GananciaNeta : null,
         CreadoEn: c.CreadoEn,
         CreadoPor: c.CreadoPor,
         ModificadoEn: c.ModificadoEn,
