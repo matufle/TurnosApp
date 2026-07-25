@@ -46,5 +46,20 @@ public class AuditInterceptor : SaveChangesInterceptor
                     break;
             }
         }
+
+        foreach (var entry in context.ChangeTracker.Entries<Cobro>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CreadoEn = now;
+                    break;
+
+                case EntityState.Modified:
+                    entry.Property(c => c.CreadoEn).IsModified = false;
+                    entry.Entity.ModificadoEn = now;
+                    break;
+            }
+        }
     }
 }

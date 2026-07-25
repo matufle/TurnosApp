@@ -22,4 +22,6 @@ public class Tenant : BaseEntity
     public ICollection<Cliente> Clientes { get; set; } = [];
     public ICollection<Servicio> Servicios { get; set; } = [];
     public ICollection<Turno> Turnos { get; set; } = [];
+    public ICollection<MetodoPago> MetodosPago { get; set; } = [];
+    public ICollection<Cobro> Cobros { get; set; } = [];
 }

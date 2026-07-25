@@ -20,4 +20,7 @@ public record TurnoDto(
     DateTime FechaHoraFin,
     string Estado,
     List<string> Servicios,
-    decimal PrecioTotal);
+    decimal PrecioTotal,
+    decimal MontoCobrado,
+    decimal SaldoPendiente,
+    string EstadoPago);

@@ -37,4 +37,5 @@ public class Turno : TenantEntity
     public Recurso Recurso { get; set; } = null!;
     public Cliente Cliente { get; set; } = null!;
     public ICollection<TurnoServicio> TurnoServicios { get; set; } = [];
+    public ICollection<Cobro> Cobros { get; set; } = [];
 }

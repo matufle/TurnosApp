@@ -31,6 +31,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<TurnoServicio> TurnoServicios => Set<TurnoServicio>();
 
     public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<MetodoPago> MetodosPago => Set<MetodoPago>();
+    public DbSet<Cobro> Cobros => Set<Cobro>();
 
     // Exponemos el TenantId resuelto para que las configuraciones lo capturen
     // en el closure del Global Query Filter.
@@ -63,6 +65,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ServicioConfiguration(this));
         modelBuilder.ApplyConfiguration(new TurnoConfiguration(this));
         modelBuilder.ApplyConfiguration(new UsuarioConfiguration(this));
+        modelBuilder.ApplyConfiguration(new MetodoPagoConfiguration(this));
+        modelBuilder.ApplyConfiguration(new CobroConfiguration(this));
         // Estas no necesitan contexto — se registran solas vía assembly scan:
         // TenantConfiguration, TurnoServicioConfiguration
 

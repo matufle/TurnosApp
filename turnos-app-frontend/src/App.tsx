@@ -20,6 +20,8 @@ import { ServiciosPage } from './pages/Servicios/ServiciosPage';
 import { TurnosPage } from './pages/Turnos/TurnosPage';
 import { ClientesPage } from './pages/Clientes/ClientesPage';
 import { ConfigurationPage } from './pages/Configuration/ConfigurationPage';
+import { MetodosPagoPage } from './pages/MetodosPago/MetodosPagoPage';
+import { HistorialCobrosPage } from './pages/Cobros/HistorialCobrosPage';
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
@@ -62,6 +64,8 @@ const finalTheme =
             <Route path="servicios" element={<ServiciosPage />} />
             <Route path="clientes" element={<ClientesPage />} />
             <Route path="turnos" element={<TurnosPage />} />
+            <Route path="metodos-pago" element={<MetodosPagoPage />} />
+            <Route path="cobros" element={<HistorialCobrosPage />} />
             <Route path="configuracion" element={<ConfigurationPage />} />
           </Route>
 
