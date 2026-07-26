@@ -27,7 +27,8 @@ import {
   IconCreditCard,
   IconReceipt2,
   IconUsersGroup,
-  IconShieldLock
+  IconShieldLock,
+  IconChartBar
 } from '@tabler/icons-react';
 
 // Servicios y Contextos
@@ -42,6 +43,7 @@ const navLinks = [
   { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
   { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago', permiso: 'GestionarMetodosPago' },
   { icon: IconReceipt2, label: 'Historial de Cobros', path: '/app/cobros' },
+  { icon: IconChartBar, label: 'Métricas', path: '/app/metricas', permiso: 'VerReportes' },
   { icon: IconUsersGroup, label: 'Usuarios', path: '/app/usuarios', permiso: 'GestionarUsuarios' },
   { icon: IconShieldLock, label: 'Roles y Permisos', path: '/app/roles', permiso: 'GestionarRoles' },
   { icon: IconSettings, label: 'Configuración', path: '/app/configuracion', permiso: 'GestionarConfiguracionNegocio' },
