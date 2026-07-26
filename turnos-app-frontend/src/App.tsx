@@ -25,6 +25,7 @@ import { MetodosPagoPage } from './pages/MetodosPago/MetodosPagoPage';
 import { HistorialCobrosPage } from './pages/Cobros/HistorialCobrosPage';
 import { UsuariosPage } from './pages/Usuarios/UsuariosPage';
 import { RolesPage } from './pages/Roles/RolesPage';
+import { MetricasPage } from './pages/Metricas/MetricasPage';
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
@@ -76,6 +77,14 @@ const finalTheme =
               }
             />
             <Route path="cobros" element={<HistorialCobrosPage />} />
+            <Route
+              path="metricas"
+              element={
+                <ProtectedRoute permiso="VerReportes">
+                  <MetricasPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="configuracion"
               element={

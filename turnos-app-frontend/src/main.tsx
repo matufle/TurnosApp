@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@mantine/core/styles.css';
+import '@mantine/charts/styles.css';
 import './tailwind.css';
 import App from './App';
 
