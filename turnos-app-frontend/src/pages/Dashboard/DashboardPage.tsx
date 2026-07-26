@@ -3,25 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { format, isSameDay, isWithinInterval, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import { turnosService } from '../../api/turnosService';
-import { tenantService } from '../../api/tenantService';
+import { useAuth } from '../../context/useAuth';
 import type { Turno } from '../../types/Turno';
 
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [turnos, setTurnos] = useState<Turno[]>([]);
-  const [nombreNegocio, setNombreNegocio] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let activo = true;
     const cargar = async () => {
       try {
-        const [turnosData, config] = await Promise.all([turnosService.getAll(), tenantService.getConfig()]);
+        const turnosData = await turnosService.getAll();
         if (activo) {
           setTurnos(turnosData);
-          setNombreNegocio(config.nombre ?? null);
         }
       } finally {
         if (activo) setLoading(false);
@@ -100,7 +99,7 @@ export function DashboardPage() {
         <div>
           <p className="text-secondary font-body-lg text-body-lg mb-1">Resumen general</p>
           <h1 className="font-display-lg text-display-lg text-on-surface">
-            Hola{nombreNegocio ? `, ${nombreNegocio}` : ''}
+            Hola{user?.nombre ? `, ${user.nombre}` : ''}
           </h1>
         </div>
         <button

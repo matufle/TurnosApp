@@ -41,28 +41,28 @@ export function LandingPage() {
           <div className="hidden md:flex gap-8 items-center">
             <a
               href="#features"
-              className="text-secondary font-body-lg text-body-lg hover:text-primary-container transition-colors duration-200"
+              className="text-secondary font-body-lg text-body-lg no-underline hover:text-primary-container transition-colors duration-200"
             >
               Características
             </a>
             <a
               href="#beneficios"
-              className="text-secondary font-body-lg text-body-lg hover:text-primary-container transition-colors duration-200"
+              className="text-secondary font-body-lg text-body-lg no-underline hover:text-primary-container transition-colors duration-200"
             >
               Beneficios
             </a>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 md:gap-3">
             <Link
               to="/login"
-              className="border border-primary-container text-primary-container px-4 py-2.5 md:px-6 md:py-3 rounded-full font-title-md text-title-md hover:bg-primary-container hover:text-on-primary-container transition-colors duration-300"
+              className="whitespace-nowrap border border-primary-container text-primary-container px-2.5 py-1.5 text-xs font-semibold no-underline md:px-6 md:py-3 md:font-title-md md:text-title-md rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors duration-300"
             >
               Iniciar sesión
             </Link>
             <Link
               to="/registro"
-              className="bg-primary-container text-on-primary-container px-4 py-2.5 md:px-6 md:py-3 rounded-full font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-colors duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.2)]"
+              className="whitespace-nowrap bg-primary-container text-on-primary-container px-2.5 py-1.5 text-xs font-semibold no-underline md:px-6 md:py-3 md:font-title-md md:text-title-md rounded-full hover:bg-primary hover:text-on-primary transition-colors duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.2)]"
             >
               Comenzar Gratis
             </Link>
@@ -105,14 +105,14 @@ export function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4 mt-4">
                 <Link
                   to="/registro"
-                  className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-title-md text-title-md hover:bg-primary hover:text-on-primary transition-all duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.3)] hover:shadow-[0px_6px_24px_rgba(0,188,212,0.4)] flex items-center justify-center gap-2"
+                  className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-title-md text-title-md no-underline hover:bg-primary hover:text-on-primary transition-all duration-300 shadow-[0px_4px_20px_rgba(0,188,212,0.3)] hover:shadow-[0px_6px_24px_rgba(0,188,212,0.4)] flex items-center justify-center gap-2"
                 >
                   Crear mi cuenta
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
                 <a
                   href="#features"
-                  className="bg-surface-container text-on-surface px-8 py-4 rounded-full font-title-md text-title-md hover:bg-surface-variant transition-colors duration-300 flex items-center justify-center gap-2 border border-outline-variant"
+                  className="bg-surface-container text-on-surface px-8 py-4 rounded-full font-title-md text-title-md no-underline hover:bg-surface-variant transition-colors duration-300 flex items-center justify-center gap-2 border border-outline-variant"
                 >
                   <span className="material-symbols-outlined">visibility</span>
                   Ver funciones
@@ -205,7 +205,7 @@ export function LandingPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-auto md:auto-rows-[250px]">
               {/* Item grande: Agenda visual */}
               <div className="md:col-span-2 md:row-span-2 bg-surface-bright rounded-3xl p-8 border border-surface-container relative overflow-hidden group hover:shadow-[0px_8px_30px_rgba(0,188,212,0.06)] transition-all duration-300">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary-container opacity-5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
@@ -335,7 +335,7 @@ export function LandingPage() {
               href="#"
               onClick={(e) => e.preventDefault()}
               title="Próximamente"
-              className="text-on-secondary-container font-body-sm text-body-sm hover:text-primary underline underline-offset-4 transition-all duration-300"
+              className="text-on-secondary-container font-body-sm text-body-sm no-underline hover:text-primary hover:underline underline-offset-4 transition-all duration-300"
             >
               {label}
             </a>

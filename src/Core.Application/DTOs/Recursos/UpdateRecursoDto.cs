@@ -8,5 +8,6 @@ public record UpdateRecursoDto(
     string Nombre,
     string? Descripcion,
     bool Activo,
-    string? ColorHex
+    string? ColorHex,
+    int? UsuarioId
 );

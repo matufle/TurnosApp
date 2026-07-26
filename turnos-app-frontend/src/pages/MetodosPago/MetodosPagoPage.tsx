@@ -123,14 +123,14 @@ export function MetodosPagoPage() {
 
   return (
     <div className="flex flex-col gap-10 pb-12">
-      <header className="flex justify-between items-center">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Métodos de Pago</h1>
           <p className="font-body-lg text-body-lg text-secondary mt-2">Configura cómo cobras a tus clientes.</p>
         </div>
         <button
           onClick={abrirCrear}
-          className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full soft-elevation hover:bg-primary-container hover:shadow-lg transition-all duration-200 flex items-center gap-2 whitespace-nowrap"
+          className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full soft-elevation hover:bg-primary-container hover:shadow-lg transition-all duration-200 flex items-center gap-2 whitespace-nowrap w-full md:w-auto justify-center"
         >
           <span className="material-symbols-outlined">add</span> Añadir Método de Pago
         </button>

@@ -36,6 +36,19 @@ public class RecursosController : ControllerBase
         return Ok(recurso);
     }
 
+    /// <summary>
+    /// Usuarios que se pueden vincular a un Recurso (activos y sin otro Recurso ya asociado).
+    /// Al editar, pasar recursoIdActual para que el usuario ya vinculado a ese mismo Recurso siga apareciendo.
+    /// </summary>
+    [HttpGet("usuarios-disponibles")]
+    [RequierePermiso(Permiso.GestionarRecursos)]
+    [ProducesResponseType(typeof(IReadOnlyList<UsuarioParaVincularDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUsuariosDisponibles([FromQuery] int? recursoIdActual, CancellationToken cancellationToken)
+    {
+        var usuarios = await _recursoAppService.GetUsuariosDisponiblesAsync(recursoIdActual, cancellationToken);
+        return Ok(usuarios);
+    }
+
     [HttpPost]
     [RequierePermiso(Permiso.GestionarRecursos)]
     [ProducesResponseType(typeof(RecursoDto), StatusCodes.Status201Created)]
