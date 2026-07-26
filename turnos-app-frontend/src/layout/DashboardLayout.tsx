@@ -54,7 +54,7 @@ export function DashboardLayout() {
   
   // 1. Traemos tanto el color actual como la función para actualizarlo
   const { colorHex, setColorHex } = useTenantTheme();
-  const { hasPermission, logout } = useAuth();
+  const { user, hasPermission, logout } = useAuth();
   const navLinksVisibles = navLinks.filter((link) => !link.permiso || hasPermission(link.permiso));
 
   // 2. Creamos un estado de carga inteligente.
@@ -119,8 +119,10 @@ export function DashboardLayout() {
             <Menu.Target>
               <UnstyledButton>
                 <Group gap={7}>
-                  <Avatar radius="xl" size="sm" color="brand">M</Avatar>
-                  <Text fw={500} size="sm">Mi negocio</Text>
+                  <Avatar radius="xl" size="sm" color="brand">
+                    {(user?.nombre?.[0] ?? '?').toUpperCase()}
+                  </Avatar>
+                  <Text fw={500} size="sm">{user?.nombre ?? 'Mi cuenta'}</Text>
                   <IconChevronDown size={14} stroke={1.5} />
                 </Group>
               </UnstyledButton>

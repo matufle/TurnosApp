@@ -1,6 +1,6 @@
 // src/api/recursosService.ts
 import httpClient from './httpClient';
-import type { Recurso, RecursoCreateDTO } from '../types/Recurso';
+import type { Recurso, RecursoCreateDTO, RecursoUpdateDTO, UsuarioParaVincular } from '../types/Recurso';
 
 export const recursosService = {
   getAll: async (): Promise<Recurso[]> => {
@@ -17,14 +17,20 @@ export const recursosService = {
     const response = await httpClient.post<Recurso>('/recursos', dto);
     return response.data;
   },
-  
-  update: async (id: number, data: RecursoCreateDTO) => {
-    // CAMBIO ACÁ: Usamos httpClient y le sacamos el /api/
-    const response = await httpClient.put(`/recursos/${id}`, data);
+
+  update: async (id: number, data: RecursoUpdateDTO): Promise<Recurso> => {
+    const response = await httpClient.put<Recurso>(`/recursos/${id}`, data);
     return response.data;
   },
-    delete: async (id: number): Promise<void> => {
+
+  delete: async (id: number): Promise<void> => {
     await httpClient.delete(`/recursos/${id}`);
   },
 
+  getUsuariosDisponibles: async (recursoIdActual?: number): Promise<UsuarioParaVincular[]> => {
+    const response = await httpClient.get<UsuarioParaVincular[]>('/recursos/usuarios-disponibles', {
+      params: recursoIdActual ? { recursoIdActual } : undefined,
+    });
+    return response.data;
+  },
 };

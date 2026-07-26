@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { Select } from '@mantine/core';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { recursosService } from '../../api/recursosService';
 import { turnosService } from '../../api/turnosService';
-import type { Recurso } from '../../types/Recurso';
+import type { Recurso, UsuarioParaVincular } from '../../types/Recurso';
 import type { Turno } from '../../types/Turno';
 import { getContrastTextColor } from '../../utils/colorContrast';
 
@@ -31,8 +32,11 @@ export function RecursosPage() {
   const [recursoAEliminar, setRecursoAEliminar] = useState<Recurso | null>(null);
   const [eliminando, setEliminando] = useState(false);
 
+  const [usuariosDisponibles, setUsuariosDisponibles] = useState<UsuarioParaVincular[]>([]);
+  const [recursoActivoEditando, setRecursoActivoEditando] = useState(true);
+
   const form = useForm({
-    initialValues: { nombre: '', descripcion: '', colorHex: '#0EA5E9' },
+    initialValues: { nombre: '', descripcion: '', colorHex: '#0EA5E9', usuarioId: '' },
     validate: {
       nombre: isNotEmpty('El nombre es obligatorio'),
     },
@@ -76,11 +80,22 @@ export function RecursosPage() {
     return set;
   }, [turnos]);
 
+  const cargarUsuariosDisponibles = async (recursoIdActual?: number) => {
+    try {
+      const usuarios = await recursosService.getUsuariosDisponibles(recursoIdActual);
+      setUsuariosDisponibles(usuarios);
+    } catch {
+      setUsuariosDisponibles([]);
+    }
+  };
+
   const abrirNuevo = () => {
     form.reset();
     form.setFieldValue('colorHex', '#0EA5E9');
     setRecursoEditandoId(null);
+    setRecursoActivoEditando(true);
     setModalAbierto(true);
+    void cargarUsuariosDisponibles();
   };
 
   const abrirEdicion = (r: Recurso) => {
@@ -88,18 +103,22 @@ export function RecursosPage() {
       nombre: r.nombre,
       descripcion: r.descripcion || '',
       colorHex: r.colorHex || '#0EA5E9',
+      usuarioId: r.usuarioId ? String(r.usuarioId) : '',
     });
     setRecursoEditandoId(r.id);
+    setRecursoActivoEditando(r.activo);
     setModalAbierto(true);
+    void cargarUsuariosDisponibles(r.id);
   };
 
   const handleSubmit = async (values: typeof form.values) => {
     setSubmitting(true);
     try {
+      const usuarioId = values.usuarioId ? Number(values.usuarioId) : null;
       if (recursoEditandoId) {
-        await recursosService.update(recursoEditandoId, values);
+        await recursosService.update(recursoEditandoId, { ...values, usuarioId, activo: recursoActivoEditando });
       } else {
-        await recursosService.create(values);
+        await recursosService.create({ ...values, usuarioId });
       }
       setModalAbierto(false);
       form.reset();
@@ -107,7 +126,7 @@ export function RecursosPage() {
       await cargarRecursos();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
-        form.setFieldError('nombre', error.response.data.detail);
+        form.setFieldError('usuarioId', error.response.data.detail);
       } else {
         setErrorMessage('No pudimos guardar el recurso.');
       }
@@ -224,6 +243,12 @@ export function RecursosPage() {
                       <p className="font-body-sm text-body-sm text-secondary truncate">
                         {r.descripcion || 'Sin descripción'}
                       </p>
+                      {r.usuarioNombre && (
+                        <p className="font-label-md text-[10px] text-primary uppercase tracking-wider truncate mt-0.5 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">link</span>
+                          {r.usuarioNombre}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <span
@@ -327,6 +352,21 @@ export function RecursosPage() {
                     {...form.getInputProps('colorHex')}
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-label-md text-label-md text-secondary mb-1">
+                  Vincular a un usuario (opcional)
+                </label>
+                <Select
+                  placeholder="Sin usuario vinculado"
+                  clearable
+                  data={usuariosDisponibles.map((u) => ({ value: String(u.id), label: u.nombre }))}
+                  {...form.getInputProps('usuarioId')}
+                />
+                <p className="font-body-sm text-body-sm text-secondary mt-1">
+                  Si esta persona también inicia sesión en Turnify, vinculá su usuario para no duplicar la carga.
+                </p>
               </div>
 
               <button

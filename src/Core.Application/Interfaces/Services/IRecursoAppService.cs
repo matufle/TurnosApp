@@ -14,4 +14,5 @@ public interface IRecursoAppService
     Task<RecursoDto> CreateAsync(CreateRecursoDto dto, CancellationToken cancellationToken = default);
     Task<RecursoDto> UpdateAsync(int id, UpdateRecursoDto dto, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<UsuarioParaVincularDto>> GetUsuariosDisponiblesAsync(int? recursoIdActual, CancellationToken cancellationToken = default);
 }
