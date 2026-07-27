@@ -35,7 +35,7 @@ export function ReservarPage() {
       ([servicios, recursosData]) => {
         setServicio(servicios.find((s) => s.id === servicioId) ?? null);
         setRecursos(recursosData);
-        if (recursosData.length === 1) setRecursoId(String(recursosData[0].id));
+        if (recursosData.length > 0) setRecursoId(String(recursosData[0].id));
       }
     );
   }, [slug, servicioId]);

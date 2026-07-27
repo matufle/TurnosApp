@@ -13,9 +13,13 @@ import {
   Switch,
   ColorInput,
   Divider,
+  TextInput,
+  CopyButton,
+  ActionIcon,
+  Tooltip,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconAlertCircle, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconAlertCircle, IconDeviceFloppy, IconCopy, IconCheck } from '@tabler/icons-react';
 import { tenantService } from '../../api/tenantService';
 import { useTenantTheme } from '../../context/useTenantTheme';
 
@@ -26,6 +30,7 @@ export function ConfigurationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [slug, setSlug] = useState<string | null>(null);
 
   const form = useForm({
     initialValues: {
@@ -47,8 +52,9 @@ export function ConfigurationPage() {
             colorPrimario: data.colorPrimario || '#0EA5E9',
             permiteReservasPublicas: data.permiteReservasPublicas || false,
             // Aquí usamos 'permiteSolapamiento' para que coincida con la propiedad
-            permiteSolapamiento: data.permiteSolapamiento || false, 
+            permiteSolapamiento: data.permiteSolapamiento || false,
           });
+          setSlug(data.slug ?? null);
           setErrorMessage(null);
         }
       } catch {
@@ -143,6 +149,31 @@ export function ConfigurationPage() {
                     size="md"
                     {...form.getInputProps('permiteReservasPublicas', { type: 'checkbox' })}
                   />
+
+                  {slug && (
+                    <TextInput
+                      label="Link de reservas"
+                      description={
+                        form.values.permiteReservasPublicas
+                          ? 'Compartí este link con tus clientes para que reserven online.'
+                          : 'Activá "Permitir Reservas Públicas" para que este link funcione.'
+                      }
+                      readOnly
+                      value={`${window.location.origin}/reservas/${slug}`}
+                      rightSection={
+                        <CopyButton value={`${window.location.origin}/reservas/${slug}`} timeout={1500}>
+                          {({ copied, copy }) => (
+                            <Tooltip label={copied ? 'Copiado' : 'Copiar'} withArrow>
+                              <ActionIcon color={copied ? 'teal' : 'gray'} variant="subtle" onClick={copy}>
+                                {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                              </ActionIcon>
+                            </Tooltip>
+                          )}
+                        </CopyButton>
+                      }
+                    />
+                  )}
+
                   <Switch
                     data-tour="config-solapamiento"
                     label="Permitir turnos en simultáneo (Solapamiento)"
