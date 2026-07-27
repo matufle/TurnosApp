@@ -32,6 +32,7 @@ public class TenantAppService : ITenantAppService
 
         return new TenantConfigDto(
             Nombre: tenant.Nombre,
+            Slug: tenant.Slug,
             PermiteSolapamiento: tenant.PermiteSolapamiento,
             ColorPrimario: tenant.ColorPrimario,
             PermiteReservasPublicas: tenant.PermiteReservasPublicas
