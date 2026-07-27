@@ -20,8 +20,10 @@ public enum Permiso : long
     GestionarUsuarios = 1L << 9,
     GestionarRoles = 1L << 10,
     GestionarConfiguracionNegocio = 1L << 11,
+    GestionarListaEspera = 1L << 12,
 
     Todos = VerAgendaCompleta | GestionarTurnos | GestionarClientes | GestionarServicios
         | GestionarRecursos | GestionarMetodosPago | CrearCobros | VerGananciaNeta
         | VerReportes | GestionarUsuarios | GestionarRoles | GestionarConfiguracionNegocio
+        | GestionarListaEspera
 }

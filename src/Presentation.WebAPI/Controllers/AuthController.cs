@@ -29,6 +29,14 @@ public class AuthController : ControllerBase
         var me = await _usuarioAppService.GetMeAsync(cancellationToken);
         return Ok(me);
     }
+
+    /// <summary>Marca el onboarding del usuario autenticado como completado (fin o skip del tour).</summary>
+    [HttpPatch("onboarding")]
+    public async Task<IActionResult> CompletarOnboarding(CancellationToken cancellationToken)
+    {
+        await _usuarioAppService.CompletarOnboardingAsync(cancellationToken);
+        return NoContent();
+    }
     //Estos son los endpoints de autenticación, que permiten a los usuarios iniciar sesión y registrarse en la aplicación.
     [HttpPost("login")]
     [AllowAnonymous] // clave: este endpoint no requiere JWT (obviamente, todavía no lo tiene)

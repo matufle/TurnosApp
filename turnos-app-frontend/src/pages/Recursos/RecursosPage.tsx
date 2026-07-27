@@ -181,6 +181,7 @@ export function RecursosPage() {
             />
           </div>
           <button
+            data-tour="recursos-nuevo"
             onClick={abrirNuevo}
             className="shrink-0 bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors px-6 py-3 rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
           >

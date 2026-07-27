@@ -28,6 +28,7 @@ public static class PermisoCatalogo
         Permiso.GestionarUsuarios,
         Permiso.GestionarRoles,
         Permiso.GestionarConfiguracionNegocio,
+        Permiso.GestionarListaEspera,
     };
 
     public static IReadOnlyList<string> ToNombres(Permiso permisos) =>

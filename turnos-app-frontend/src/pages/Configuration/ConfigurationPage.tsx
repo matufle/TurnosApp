@@ -121,6 +121,7 @@ export function ConfigurationPage() {
                   Personalizá el color principal que verán tus clientes.
                 </Text>
                 <ColorInput
+                  data-tour="config-color"
                   label="Color Primario"
                   format="hex"
                   swatches={['#0EA5E9', '#12b886', '#fab005', '#fd7e14', '#fa5252', '#be4bdb', '#7950f2']}
@@ -143,6 +144,7 @@ export function ConfigurationPage() {
                     {...form.getInputProps('permiteReservasPublicas', { type: 'checkbox' })}
                   />
                   <Switch
+                    data-tour="config-solapamiento"
                     label="Permitir turnos en simultáneo (Solapamiento)"
                     description="Si está activo, permitirá múltiples turnos en el mismo horario."
                     size="md"

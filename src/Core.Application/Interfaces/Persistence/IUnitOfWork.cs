@@ -20,6 +20,7 @@ public interface IUnitOfWork : IDisposable
     ICobroRepository Cobros { get; }
     IRolRepository Roles { get; }
     IMetricasRepository Metricas { get; }
+    IListaEsperaRepository ListasEspera { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.

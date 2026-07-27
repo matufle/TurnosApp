@@ -131,8 +131,20 @@ public class UsuarioAppService : IUsuarioAppService
             RolId: usuario.RolId,
             RolNombre: usuario.Rol.Nombre,
             Permisos: PermisoCatalogo.ToNombres(usuario.Rol.Permisos),
-            RecursoId: recurso?.Id
+            RecursoId: recurso?.Id,
+            OnboardingCompletado: usuario.OnboardingCompletado
         );
+    }
+
+    public async Task CompletarOnboardingAsync(CancellationToken cancellationToken = default)
+    {
+        var usuarioId = _currentUserService.GetCurrentUsuarioId();
+
+        var usuario = await _unitOfWork.Usuarios.GetByIdAsync(usuarioId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Usuario), usuarioId);
+
+        usuario.CompletarOnboarding();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     // -------------------------------------------------------------------------

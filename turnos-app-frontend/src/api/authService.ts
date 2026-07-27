@@ -21,6 +21,7 @@ export interface MeResponse {
   rolNombre: string;
   permisos: string[];
   recursoId: number | null;
+  onboardingCompletado: boolean;
 }
 
 export const authService = {
@@ -37,5 +38,9 @@ register: async (credentials: LoginRequest): Promise<LoginResponse> => {
   me: async (): Promise<MeResponse> => {
     const response = await httpClient.get<MeResponse>('/auth/me');
     return response.data;
+  },
+
+  completarOnboarding: async (): Promise<void> => {
+    await httpClient.patch('/auth/onboarding');
   },
 };

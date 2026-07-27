@@ -676,7 +676,10 @@ export function TurnosPage() {
         </aside>
 
         {/* Calendario */}
-        <section className="grow flex flex-col bg-surface-container-lowest rounded-xl soft-elevation overflow-hidden min-h-[600px]">
+        <section
+          data-tour="turnos-calendario"
+          className="grow flex flex-col bg-surface-container-lowest rounded-xl soft-elevation overflow-hidden min-h-[600px]"
+        >
           <Calendar
             localizer={localizer}
             events={eventosCalendario}

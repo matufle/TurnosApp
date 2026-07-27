@@ -16,5 +16,6 @@ public record MeDto(
     int RolId,
     string RolNombre,
     IReadOnlyList<string> Permisos,
-    int? RecursoId
+    int? RecursoId,
+    bool OnboardingCompletado
 );

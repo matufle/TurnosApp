@@ -42,6 +42,10 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
             .IsRequired()
             .HasDefaultValue(true);
 
+        builder.Property(u => u.OnboardingCompletado)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         // Restrict: no se puede borrar un Rol que todavía tiene usuarios asignados
         // (misma regla ya se valida antes en RolAppService, esto es la red de seguridad a nivel DB).
         builder.HasOne(u => u.Rol)

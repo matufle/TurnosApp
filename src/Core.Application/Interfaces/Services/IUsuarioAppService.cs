@@ -15,4 +15,5 @@ public interface IUsuarioAppService
     Task<UsuarioDto> ActivarAsync(int id, CancellationToken cancellationToken = default);
     Task<UsuarioDto> DesactivarAsync(int id, CancellationToken cancellationToken = default);
     Task<MeDto> GetMeAsync(CancellationToken cancellationToken = default);
+    Task CompletarOnboardingAsync(CancellationToken cancellationToken = default);
 }

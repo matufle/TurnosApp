@@ -175,6 +175,7 @@ export function ClientesPage() {
             />
           </div>
           <button
+            data-tour="clientes-nuevo"
             onClick={abrirNuevo}
             className="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm whitespace-nowrap flex items-center gap-2"
           >

@@ -10,6 +10,7 @@ public class Usuario
     public int RolId { get; private set; }
     public Rol Rol { get; private set; } = null!;
     public bool Activo { get; private set; } = true;
+    public bool OnboardingCompletado { get; private set; } = false;
 
     private Usuario() { } // EF Core
 
@@ -42,4 +43,6 @@ public class Usuario
     public void Activar() => Activo = true;
 
     public void Desactivar() => Activo = false;
+
+    public void CompletarOnboarding() => OnboardingCompletado = true;
 }

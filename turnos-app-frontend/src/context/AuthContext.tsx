@@ -11,6 +11,7 @@ export interface AuthUser {
   rolNombre: string;
   permisos: string[];
   recursoId: number | null;
+  onboardingCompletado: boolean;
 }
 
 export interface AuthContextValue {
@@ -19,6 +20,7 @@ export interface AuthContextValue {
   hasPermission: (permiso: string) => boolean;
   login: (token: string, tenantId: number) => Promise<void>;
   logout: () => void;
+  completarOnboarding: () => Promise<void>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -34,6 +36,7 @@ function mapMeToUser(me: MeResponse): AuthUser {
     rolNombre: me.rolNombre,
     permisos: me.permisos,
     recursoId: me.recursoId,
+    onboardingCompletado: me.onboardingCompletado,
   };
 }
 
@@ -84,7 +87,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasPermission = useCallback((permiso: string) => user?.permisos.includes(permiso) ?? false, [user]);
 
+  const completarOnboarding = useCallback(async () => {
+    await authService.completarOnboarding();
+    setUser((prev) => (prev ? { ...prev, onboardingCompletado: true } : prev));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, hasPermission, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, hasPermission, login, logout, completarOnboarding }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
