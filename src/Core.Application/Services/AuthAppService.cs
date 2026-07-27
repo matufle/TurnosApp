@@ -69,7 +69,7 @@ public class AuthAppService : IAuthAppService
             TenantId = tenantId,
             Nombre = "Empleado",
             EsSistema = false,
-            Permisos = Permiso.GestionarTurnos | Permiso.CrearCobros
+            Permisos = Permiso.GestionarTurnos | Permiso.CrearCobros | Permiso.GestionarListaEspera
         };
         var recepcionista = new Rol
         {
@@ -77,6 +77,7 @@ public class AuthAppService : IAuthAppService
             Nombre = "Recepcionista",
             EsSistema = false,
             Permisos = Permiso.VerAgendaCompleta | Permiso.GestionarTurnos | Permiso.GestionarClientes | Permiso.CrearCobros
+                | Permiso.GestionarListaEspera
         };
 
         await _unitOfWork.Roles.AddAsync(admin, cancellationToken);

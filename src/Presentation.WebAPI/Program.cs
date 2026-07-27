@@ -66,6 +66,7 @@ builder.Services.AddScoped<ITenantProvider, HttpContextTenantProvider>();
 builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthAppService, AuthAppService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddHttpContextAccessor();

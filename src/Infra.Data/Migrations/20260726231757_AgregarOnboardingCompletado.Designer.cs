@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TurnosApp.Infra.Data.Context;
@@ -11,9 +12,11 @@ using TurnosApp.Infra.Data.Context;
 namespace TurnosApp.Infra.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726231757_AgregarOnboardingCompletado")]
+    partial class AgregarOnboardingCompletado
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,53 +130,6 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasIndex("TurnoId");
 
                     b.ToTable("Cobros", (string)null);
-                });
-
-            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClienteId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.Property<DateTime>("FechaDesde")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("FechaHasta")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("NotificadoEn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("RecursoId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ServicioId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClienteId");
-
-                    b.HasIndex("ServicioId");
-
-                    b.HasIndex("TenantId");
-
-                    b.HasIndex("RecursoId", "Estado");
-
-                    b.ToTable("ListasEspera", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.MetodoPago", b =>
@@ -529,40 +485,6 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Navigation("Tenant");
 
                     b.Navigation("Turno");
-                });
-
-            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
-                {
-                    b.HasOne("TurnosApp.Core.Domain.Entities.Cliente", "Cliente")
-                        .WithMany()
-                        .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TurnosApp.Core.Domain.Entities.Recurso", "Recurso")
-                        .WithMany()
-                        .HasForeignKey("RecursoId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TurnosApp.Core.Domain.Entities.Servicio", "Servicio")
-                        .WithMany()
-                        .HasForeignKey("ServicioId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Cliente");
-
-                    b.Navigation("Recurso");
-
-                    b.Navigation("Servicio");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.MetodoPago", b =>

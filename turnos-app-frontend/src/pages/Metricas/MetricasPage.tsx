@@ -71,7 +71,7 @@ export function MetricasPage() {
       </div>
 
       <Tabs value={tabActual} onChange={cambiarTab} keepMounted={false}>
-        <Tabs.List>
+        <Tabs.List data-tour="metricas-tabs">
           <Tabs.Tab value="resumen">Resumen</Tabs.Tab>
           <Tabs.Tab value="ingresos">Ingresos</Tabs.Tab>
           <Tabs.Tab value="turnos">Turnos</Tabs.Tab>

@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<MetodoPago> MetodosPago => Set<MetodoPago>();
     public DbSet<Cobro> Cobros => Set<Cobro>();
     public DbSet<Rol> Roles => Set<Rol>();
+    public DbSet<ListaEspera> ListasEspera => Set<ListaEspera>();
 
     // Exponemos el TenantId resuelto para que las configuraciones lo capturen
     // en el closure del Global Query Filter.
@@ -69,6 +70,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new MetodoPagoConfiguration(this));
         modelBuilder.ApplyConfiguration(new CobroConfiguration(this));
         modelBuilder.ApplyConfiguration(new RolConfiguration(this));
+        modelBuilder.ApplyConfiguration(new ListaEsperaConfiguration(this));
         // Estas no necesitan contexto — se registran solas vía assembly scan:
         // TenantConfiguration, TurnoServicioConfiguration
 

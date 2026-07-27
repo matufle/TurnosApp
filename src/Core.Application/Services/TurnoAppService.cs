@@ -1,4 +1,5 @@
-﻿using TurnosApp.Core.Application.DTOs.Turnos;
+﻿using Microsoft.Extensions.Logging;
+using TurnosApp.Core.Application.DTOs.Turnos;
 using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -15,17 +16,23 @@ public class TurnoAppService : ITurnoAppService
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUserService _currentUserService;
     private readonly SolapamientoValidator _solapamientoValidator;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<TurnoAppService> _logger;
 
     public TurnoAppService(
         IUnitOfWork unitOfWork,
         ITenantProvider tenantProvider,
         ICurrentUserService currentUserService,
-        SolapamientoValidator solapamientoValidator)
+        SolapamientoValidator solapamientoValidator,
+        IEmailService emailService,
+        ILogger<TurnoAppService> logger)
     {
         _unitOfWork = unitOfWork;
         _tenantProvider = tenantProvider;
         _currentUserService = currentUserService;
         _solapamientoValidator = solapamientoValidator;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<TurnoDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -152,7 +159,9 @@ public class TurnoAppService : ITurnoAppService
 
     public async Task CancelarTurnoAsync(int id, CancellationToken cancellationToken = default)
     {
-        var turno = await _unitOfWork.Turnos.GetByIdAsync(id, cancellationToken);
+        // Con detalles: necesitamos TurnoServicios/Recurso para el rango real del turno y
+        // para el matching/aviso de lista de espera hecho a continuación.
+        var turno = await _unitOfWork.Turnos.GetByIdConDetallesAsync(id, cancellationToken);
 
         if (turno is null)
             throw new NotFoundException(nameof(Turno), id);
@@ -167,6 +176,56 @@ public class TurnoAppService : ITurnoAppService
 
         _unitOfWork.Turnos.Update(turno);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await NotificarListaEsperaAsync(turno, cancellationToken);
+    }
+
+    // El slot ya vuelve a estar disponible solo con la cancelación de arriba (Solapamiento
+    // Validator/ExisteTurnoEnRangoAsync ya excluyen turnos Cancelado). Acá solo avisamos a
+    // quienes esperaban ese horario.
+    private async Task NotificarListaEsperaAsync(Turno turno, CancellationToken cancellationToken)
+    {
+        var servicioIds = turno.TurnoServicios.Select(ts => ts.ServicioId).ToList();
+        var fechaHoraFin = turno.FechaHoraInicio.AddMinutes(
+            turno.TurnoServicios.Sum(ts => ts.Servicio?.DuracionMinutos ?? 0));
+
+        var coincidencias = await _unitOfWork.ListasEspera.BuscarCoincidenciasAsync(
+            turno.RecursoId, servicioIds, turno.FechaHoraInicio, fechaHoraFin, cancellationToken);
+
+        if (coincidencias.Count == 0)
+            return;
+
+        var recursoNombre = turno.Recurso?.Nombre ?? "el recurso solicitado";
+
+        foreach (var entrada in coincidencias)
+        {
+            entrada.Estado = EstadoListaEspera.Notificada;
+            entrada.NotificadoEn = DateTime.UtcNow;
+            _unitOfWork.ListasEspera.Update(entrada);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        foreach (var entrada in coincidencias)
+        {
+            if (string.IsNullOrWhiteSpace(entrada.Cliente?.Email))
+                continue;
+
+            try
+            {
+                await _emailService.EnviarAsync(
+                    entrada.Cliente.Email,
+                    "¡Se liberó un turno que estabas esperando!",
+                    $"Hola {entrada.Cliente.Nombre}, se liberó un horario con {recursoNombre} " +
+                    $"el {turno.FechaHoraInicio:dd/MM/yyyy HH:mm}. Contactanos para reservarlo antes de que se ocupe.",
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Un fallo de SMTP no debe revertir ni afectar la cancelación del turno, ya persistida.
+                _logger.LogError(ex, "Fallo al notificar a la lista de espera {ListaEsperaId}", entrada.Id);
+            }
+        }
     }
 
     public async Task<TurnoDto> CambiarEstadoTurnoAsync(int id, CambiarEstadoTurnoDto dto, CancellationToken cancellationToken = default)

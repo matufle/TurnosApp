@@ -126,6 +126,7 @@ export function ServiciosPage() {
           </p>
         </div>
         <button
+          data-tour="servicios-nuevo"
           onClick={irAlFormulario}
           className="bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors soft-elevation flex items-center gap-2 whitespace-nowrap"
         >

@@ -137,6 +137,7 @@ export function UsuariosPage() {
           </p>
         </div>
         <button
+          data-tour="usuarios-nuevo"
           onClick={abrirCrear}
           className="bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full soft-elevation hover:bg-primary-container hover:shadow-lg transition-all duration-200 flex items-center gap-2 whitespace-nowrap"
         >

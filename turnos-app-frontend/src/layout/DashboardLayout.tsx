@@ -16,38 +16,18 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
-  IconCalendarEvent,
-  IconUsers,
-  IconUserCog,
-  IconBriefcase,
-  IconSettings,
   IconChevronDown,
   IconLogout,
   IconLayoutDashboard,
-  IconCreditCard,
-  IconReceipt2,
-  IconUsersGroup,
-  IconShieldLock,
-  IconChartBar
+  IconSettings,
 } from '@tabler/icons-react';
 
 // Servicios y Contextos
 import { tenantService } from '../api/tenantService';
 import { useTenantTheme } from '../context/useTenantTheme';
 import { useAuth } from '../context/useAuth';
-
-const navLinks = [
-  { icon: IconCalendarEvent, label: 'Turnos', path: '/app/turnos' },
-  { icon: IconUsers, label: 'Clientes', path: '/app/clientes' },
-  { icon: IconUserCog, label: 'Recursos', path: '/app/recursos' },
-  { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
-  { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago', permiso: 'GestionarMetodosPago' },
-  { icon: IconReceipt2, label: 'Historial de Cobros', path: '/app/cobros' },
-  { icon: IconChartBar, label: 'Métricas', path: '/app/metricas', permiso: 'VerReportes' },
-  { icon: IconUsersGroup, label: 'Usuarios', path: '/app/usuarios', permiso: 'GestionarUsuarios' },
-  { icon: IconShieldLock, label: 'Roles y Permisos', path: '/app/roles', permiso: 'GestionarRoles' },
-  { icon: IconSettings, label: 'Configuración', path: '/app/configuracion', permiso: 'GestionarConfiguracionNegocio' },
-];
+import { OnboardingTour } from '../components/OnboardingTour/OnboardingTour';
+import { navLinks } from './navLinks';
 
 export function DashboardLayout() {
   const [opened, { toggle }] = useDisclosure();
@@ -100,13 +80,15 @@ export function DashboardLayout() {
   return (
     <AppShell
       header={{ height: 60 }}
-      navbar={{ 
-        width: 250, 
-        breakpoint: 'sm', 
-        collapsed: { mobile: !opened } 
+      navbar={{
+        width: 250,
+        breakpoint: 'sm',
+        collapsed: { mobile: !opened }
       }}
       padding="md"
     >
+      <OnboardingTour />
+
       {/* 🟢 HEADER */}
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
@@ -160,6 +142,7 @@ export function DashboardLayout() {
           {navLinksVisibles.map((link) => (
             <NavLink
               key={link.path}
+              data-tour={`nav-${link.path.split('/').pop()}`}
               label={link.label}
               leftSection={<link.icon size={20} stroke={1.5} />}
               active={location.pathname.startsWith(link.path)}

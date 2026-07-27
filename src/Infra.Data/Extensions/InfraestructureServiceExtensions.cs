@@ -46,6 +46,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ICobroRepository, CobroRepository>();
         services.AddScoped<IRolRepository, RolRepository>();
         services.AddScoped<IMetricasRepository, MetricasRepository>();
+        services.AddScoped<IListaEsperaRepository, ListaEsperaRepository>();
 
         // Los repositorios no se registran individualmente en DI —
         // se accede a ellos exclusivamente a través de IUnitOfWork,

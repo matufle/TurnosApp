@@ -92,7 +92,7 @@ export function HistorialCobrosPage() {
           <h1 className="font-headline-lg text-headline-lg text-on-background">Historial de Cobros</h1>
           <p className="font-body-lg text-body-lg text-secondary mt-2">Visión financiera consolidada de tus turnos.</p>
         </div>
-        <div className="flex flex-wrap gap-4 w-full md:w-auto">
+        <div data-tour="cobros-filtros" className="flex flex-wrap gap-4 w-full md:w-auto">
           <SearchInput
             className="flex-grow md:w-64"
             placeholder="Buscar cliente o turno..."
