@@ -51,6 +51,10 @@ namespace TurnosApp.Infra.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("Telefono")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
@@ -60,7 +64,9 @@ namespace TurnosApp.Infra.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TenantId");
+                    b.HasIndex("TenantId", "Email")
+                        .IsUnique()
+                        .HasFilter("\"PasswordHash\" IS NOT NULL AND \"Email\" IS NOT NULL");
 
                     b.ToTable("Clientes", (string)null);
                 });
@@ -127,6 +133,38 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasIndex("TurnoId");
 
                     b.ToTable("Cobros", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.HorarioAtencion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly>("HoraFin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("RecursoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("RecursoId", "DiaSemana");
+
+                    b.ToTable("HorariosAtencion", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
@@ -213,6 +251,92 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("MetodosPago", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Notificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Asunto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CuerpoHtml")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DestinatarioEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<DateTime?>("EnviadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EstadoEnvio")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("IntentosEnvio")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ListaEsperaId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ProgramadaPara")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ReclamadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReclamadaPorRunId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int?>("TurnoId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UltimoError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("ListaEsperaId");
+
+                    b.HasIndex("ReclamadaPorRunId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("EstadoEnvio", "ProgramadaPara");
+
+                    b.HasIndex("TurnoId", "EstadoEnvio");
+
+                    b.ToTable("Notificaciones", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Recurso", b =>
@@ -531,6 +655,25 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Navigation("Turno");
                 });
 
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.HorarioAtencion", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Recurso", "Recurso")
+                        .WithMany()
+                        .HasForeignKey("RecursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Recurso");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
                 {
                     b.HasOne("TurnosApp.Core.Domain.Entities.Cliente", "Cliente")
@@ -574,6 +717,39 @@ namespace TurnosApp.Infra.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Notificacion", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.ListaEspera", "ListaEspera")
+                        .WithMany()
+                        .HasForeignKey("ListaEsperaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Turno", "Turno")
+                        .WithMany()
+                        .HasForeignKey("TurnoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("ListaEspera");
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("Turno");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Recurso", b =>

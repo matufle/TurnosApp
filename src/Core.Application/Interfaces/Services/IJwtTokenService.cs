@@ -8,4 +8,5 @@ namespace TurnosApp.Core.Application.Interfaces.Services;
 public interface IJwtTokenService
 {
     string GenerateToken(Usuario usuario, bool recordarme = false);
+    string GenerateToken(Cliente cliente, bool recordarme = false);
 }

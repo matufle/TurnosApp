@@ -12,4 +12,9 @@ namespace TurnosApp.Core.Application.Interfaces.Persistence;
 /// </summary>
 public interface IServicioRepository : IRepository<Servicio>
 {
+    /// <summary>Cross-tenant a propósito: catálogo público, sin JWT que resolver.</summary>
+    Task<IReadOnlyList<Servicio>> GetActivosCrossTenantAsync(int tenantId, CancellationToken cancellationToken = default);
+
+    /// <summary>Cross-tenant a propósito: resolver duración para el cálculo de disponibilidad pública.</summary>
+    Task<Servicio?> GetByIdCrossTenantAsync(int tenantId, int servicioId, CancellationToken cancellationToken = default);
 }

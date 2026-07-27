@@ -34,6 +34,16 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.Property(c => c.Telefono)
             .HasMaxLength(30);
 
+        builder.Property(c => c.PasswordHash)
+            .HasMaxLength(500);
+
+        // Índice único parcial: sólo exige unicidad de email entre los Cliente que ya
+        // tienen cuenta (self-service). Los walk-in cargados por staff sin login pueden
+        // seguir repitiendo o no teniendo email, como hoy.
+        builder.HasIndex(c => new { c.TenantId, c.Email })
+            .IsUnique()
+            .HasFilter("\"PasswordHash\" IS NOT NULL AND \"Email\" IS NOT NULL");
+
         // Columna JSON: nvarchar(max) que almacena el JSON arbitrario por rubro.
         // No usamos .ToJson() (que es para owned entities),
         // sino la columna string directa — máxima flexibilidad sin schema fijo.

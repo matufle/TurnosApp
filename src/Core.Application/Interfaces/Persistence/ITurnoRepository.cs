@@ -17,4 +17,10 @@ public interface ITurnoRepository : IRepository<Turno>
     // Nuevos: traen las navegaciones necesarias para mapear a TurnoDto
     Task<IReadOnlyList<Turno>> GetAllConDetallesAsync(CancellationToken cancellationToken = default);
     Task<Turno?> GetByIdConDetallesAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cross-tenant a propósito: usado por el cálculo de disponibilidad pública (sin JWT
+    /// que resolver). Turnos activos (Pendiente/Confirmado) de un recurso en una fecha dada.
+    /// </summary>
+    Task<IReadOnlyList<Turno>> GetTurnosDelDiaCrossTenantAsync(int tenantId, int recursoId, DateOnly fecha, CancellationToken cancellationToken = default);
 }

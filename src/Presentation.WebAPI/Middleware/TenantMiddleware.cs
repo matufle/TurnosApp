@@ -71,7 +71,9 @@ public class TenantMiddleware
                pathValue.StartsWith("/health", StringComparison.OrdinalIgnoreCase) ||
                pathValue.StartsWith("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
                pathValue.StartsWith("/api/tenants", StringComparison.OrdinalIgnoreCase) ||
-               pathValue.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase);
+               pathValue.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/api/public", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/api/cliente-auth", StringComparison.OrdinalIgnoreCase);
     }
 
 }

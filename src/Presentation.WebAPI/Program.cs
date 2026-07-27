@@ -14,6 +14,7 @@ using TurnosApp.Presentation.WebAPI.Filters;
 using TurnosApp.Presentation.WebAPI.Middleware;
 using TurnosApp.Presentation.WebAPI.Providers;
 using TurnosApp.Presentation.WebAPI.Services;
+using TurnosApp.Presentation.WebAPI.Workers;
 
 
 
@@ -67,10 +68,20 @@ builder.Services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthAppService, AuthAppService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPublicAppService, PublicAppService>();
+builder.Services.AddScoped<IClienteAuthAppService, ClienteAuthAppService>();
+builder.Services.AddScoped<ICurrentClienteService, CurrentClienteService>();
+builder.Services.AddScoped<IHorarioAtencionAppService, HorarioAtencionAppService>();
+builder.Services.AddScoped<IDisponibilidadAppService, DisponibilidadAppService>();
+builder.Services.AddScoped<IPublicCatalogoAppService, PublicCatalogoAppService>();
 builder.Services.AddScoped<IRecursoRepository, RecursoRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+// ── Worker de notificaciones (outbox in-process) ───────────────────────────
+builder.Services.AddHostedService<NotificacionDispatcherWorker>();
+
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

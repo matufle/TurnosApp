@@ -21,6 +21,8 @@ public interface IUnitOfWork : IDisposable
     IRolRepository Roles { get; }
     IMetricasRepository Metricas { get; }
     IListaEsperaRepository ListasEspera { get; }
+    INotificacionRepository Notificaciones { get; }
+    IHorarioAtencionRepository HorariosAtencion { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.
