@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Domain.Entities;
 using TurnosApp.Infra.Data.Context;
@@ -13,8 +14,18 @@ public class ServicioRepository : GenericRepository<Servicio>, IServicioReposito
     {
     }
 
-    // Aquí irán métodos específicos de Servicio cuando los necesitemos.
-    // Ejemplo futuro:
-    // public async Task<IReadOnlyList<Servicio>> GetActivosAsync(CancellationToken ct)
-    //     => await _dbSet.Where(s => s.Activo).AsNoTracking().ToListAsync(ct);
+    public async Task<IReadOnlyList<Servicio>> GetActivosCrossTenantAsync(int tenantId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .IgnoreQueryFilters()
+            .Where(s => s.TenantId == tenantId && s.Activo)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Servicio?> GetByIdCrossTenantAsync(int tenantId, int servicioId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.Id == servicioId, cancellationToken);
+    }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using TurnosApp.Core.Application.DTOs.Turnos;
+﻿using TurnosApp.Core.Application.DTOs.Turnos;
 using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -16,23 +15,20 @@ public class TurnoAppService : ITurnoAppService
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUserService _currentUserService;
     private readonly SolapamientoValidator _solapamientoValidator;
-    private readonly IEmailService _emailService;
-    private readonly ILogger<TurnoAppService> _logger;
+    private readonly INotificacionAppService _notificacionAppService;
 
     public TurnoAppService(
         IUnitOfWork unitOfWork,
         ITenantProvider tenantProvider,
         ICurrentUserService currentUserService,
         SolapamientoValidator solapamientoValidator,
-        IEmailService emailService,
-        ILogger<TurnoAppService> logger)
+        INotificacionAppService notificacionAppService)
     {
         _unitOfWork = unitOfWork;
         _tenantProvider = tenantProvider;
         _currentUserService = currentUserService;
         _solapamientoValidator = solapamientoValidator;
-        _emailService = emailService;
-        _logger = logger;
+        _notificacionAppService = notificacionAppService;
     }
 
     public async Task<IReadOnlyList<TurnoDto>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -57,7 +53,8 @@ public class TurnoAppService : ITurnoAppService
     {
         var tenantId = _tenantProvider.GetCurrentTenantId();
 
-        // ── Paso 0: Resolver cliente (existente o inline) ─────────────────────
+        // ── Paso 0: Resolver cliente (existente o inline) — solo aplica al flujo de staff,
+        // el self-service ya conoce su ClienteId por el JWT (ver CrearTurnoPublicoAsync). ──
         int clienteId;
 
         if (dto.ClienteId is not null)
@@ -91,14 +88,42 @@ public class TurnoAppService : ITurnoAppService
                 message: "Debe indicar un cliente existente o los datos de un cliente nuevo.");
         }
 
+        return await ConstruirYPersistirTurnoAsync(
+            tenantId, clienteId, dto.RecursoId, dto.ServicioIds, dto.FechaHoraInicio, cancellationToken);
+    }
+
+    public async Task<TurnoDto> CrearTurnoPublicoAsync(int clienteId, CrearTurnoPublicoDto dto, CancellationToken cancellationToken = default)
+    {
+        var tenantId = _tenantProvider.GetCurrentTenantId();
+
+        var tenant = await _unitOfWork.Tenants.GetByIdAsync(tenantId, cancellationToken);
+        if (tenant is null)
+            throw new NotFoundException(nameof(Tenant), tenantId);
+
+        // El cliente ya está logueado (y las reservas públicas estaban habilitadas cuando se
+        // registró), pero el staff pudo haberlas desactivado desde entonces — re-chequear acá.
+        if (!tenant.PermiteReservasPublicas)
+            throw new BusinessException(
+                code: "RESERVAS_PUBLICAS_DESHABILITADAS",
+                message: "Este negocio no tiene reservas online habilitadas en este momento.");
+
+        return await ConstruirYPersistirTurnoAsync(
+            tenantId, clienteId, dto.RecursoId, dto.ServicioIds, dto.FechaHoraInicio, cancellationToken);
+    }
+
+    // Compartido por CrearTurnoAsync (staff) y CrearTurnoPublicoAsync (self-service): ambos ya
+    // resolvieron su ClienteId a su manera (Paso 0 de a mano vs JWT) antes de llegar acá.
+    private async Task<TurnoDto> ConstruirYPersistirTurnoAsync(
+        int tenantId, int clienteId, int recursoId, IReadOnlyList<int> servicioIds, DateTime fechaHoraInicio, CancellationToken cancellationToken)
+    {
         // ── Paso 1: Validar y obtener TODOS los servicios ─────────────────────
-        if (dto.ServicioIds is null || dto.ServicioIds.Count == 0)
+        if (servicioIds is null || servicioIds.Count == 0)
             throw new BusinessException(
                 code: "SERVICIOS_REQUERIDOS",
                 message: "El turno debe incluir al menos un servicio.");
 
         var servicios = new List<Servicio>();
-        foreach (var servicioId in dto.ServicioIds)
+        foreach (var servicioId in servicioIds)
         {
             var servicio = await _unitOfWork.Servicios.GetByIdAsync(servicioId, cancellationToken);
 
@@ -110,7 +135,7 @@ public class TurnoAppService : ITurnoAppService
 
         // ── Paso 2: Calcular FechaHoraFin (suma de todas las duraciones) ──────
         var duracionTotalMinutos = servicios.Sum(s => s.DuracionMinutos);
-        var fechaHoraFin = dto.FechaHoraInicio.AddMinutes(duracionTotalMinutos);
+        var fechaHoraFin = fechaHoraInicio.AddMinutes(duracionTotalMinutos);
 
         // ── Paso 3: Leer PermiteSolapamiento del Tenant ──────────────────────
         var tenant = await _unitOfWork.Tenants.GetByIdAsync(tenantId, cancellationToken);
@@ -120,8 +145,8 @@ public class TurnoAppService : ITurnoAppService
 
         // ── Paso 4: Validar solapamiento ──────────────────────────────────────
         await _solapamientoValidator.ValidarAsync(
-            recursoId: dto.RecursoId,
-            inicio: dto.FechaHoraInicio,
+            recursoId: recursoId,
+            inicio: fechaHoraInicio,
             fin: fechaHoraFin,
             permiteSolapamiento: tenant.PermiteSolapamiento,
             cancellationToken: cancellationToken);
@@ -131,8 +156,8 @@ public class TurnoAppService : ITurnoAppService
         {
             TenantId = tenantId,
             ClienteId = clienteId,
-            RecursoId = dto.RecursoId,
-            FechaHoraInicio = dto.FechaHoraInicio,
+            RecursoId = recursoId,
+            FechaHoraInicio = fechaHoraInicio,
             Estado = EstadoTurno.Pendiente,
             CreadoPor = tenantId.ToString()
         };
@@ -147,12 +172,15 @@ public class TurnoAppService : ITurnoAppService
             });
         }
 
-        // ── Paso 6: Persistir ───────────────────────────────────────────────── 
+        // ── Paso 6: Persistir ─────────────────────────────────────────────────
         await _unitOfWork.Turnos.AddAsync(turno, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Releemos con detalles para armar el DTO completo (nombres, precio total)
         var turnoCompleto = await _unitOfWork.Turnos.GetByIdConDetallesAsync(turno.Id, cancellationToken);
+
+        await _notificacionAppService.ProgramarConfirmacionAsync(turnoCompleto!, cancellationToken);
+        await _notificacionAppService.ProgramarRecordatorioAsync(turnoCompleto!, cancellationToken);
 
         return MapToDto(turnoCompleto!);
     }
@@ -171,12 +199,48 @@ public class TurnoAppService : ITurnoAppService
                 code: "TURNO_YA_CANCELADO",
                 message: $"El turno {id} ya se encuentra cancelado.");
 
+        await CancelarTurnoInternoAsync(turno, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<TurnoDto>> GetMisTurnosAsync(int clienteId, CancellationToken cancellationToken = default)
+    {
+        var turnos = await _unitOfWork.Turnos.GetAllConDetallesAsync(cancellationToken);
+
+        return turnos
+            .Where(t => t.ClienteId == clienteId)
+            .Select(MapToDto)
+            .ToList();
+    }
+
+    public async Task CancelarPropioAsync(int clienteId, int turnoId, CancellationToken cancellationToken = default)
+    {
+        var turno = await _unitOfWork.Turnos.GetByIdConDetallesAsync(turnoId, cancellationToken);
+
+        if (turno is null)
+            throw new NotFoundException(nameof(Turno), turnoId);
+
+        if (turno.ClienteId != clienteId)
+            throw new ForbiddenException("Este turno no te pertenece.");
+
+        if (turno.Estado == EstadoTurno.Cancelado)
+            throw new BusinessException(
+                code: "TURNO_YA_CANCELADO",
+                message: $"El turno {turnoId} ya se encuentra cancelado.");
+
+        await CancelarTurnoInternoAsync(turno, cancellationToken);
+    }
+
+    // Compartido por CancelarTurnoAsync (staff) y CancelarPropioAsync (self-service): cada
+    // caller valida existencia/estado/ownership a su manera antes de llegar acá.
+    private async Task CancelarTurnoInternoAsync(Turno turno, CancellationToken cancellationToken)
+    {
         turno.Estado = EstadoTurno.Cancelado;
         turno.ModificadoEn = DateTime.UtcNow;
 
         _unitOfWork.Turnos.Update(turno);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        await _notificacionAppService.CancelarPendientesDeTurnoAsync(turno.Id, cancellationToken);
         await NotificarListaEsperaAsync(turno, cancellationToken);
     }
 
@@ -195,8 +259,6 @@ public class TurnoAppService : ITurnoAppService
         if (coincidencias.Count == 0)
             return;
 
-        var recursoNombre = turno.Recurso?.Nombre ?? "el recurso solicitado";
-
         foreach (var entrada in coincidencias)
         {
             entrada.Estado = EstadoListaEspera.Notificada;
@@ -208,23 +270,7 @@ public class TurnoAppService : ITurnoAppService
 
         foreach (var entrada in coincidencias)
         {
-            if (string.IsNullOrWhiteSpace(entrada.Cliente?.Email))
-                continue;
-
-            try
-            {
-                await _emailService.EnviarAsync(
-                    entrada.Cliente.Email,
-                    "¡Se liberó un turno que estabas esperando!",
-                    $"Hola {entrada.Cliente.Nombre}, se liberó un horario con {recursoNombre} " +
-                    $"el {turno.FechaHoraInicio:dd/MM/yyyy HH:mm}. Contactanos para reservarlo antes de que se ocupe.",
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                // Un fallo de SMTP no debe revertir ni afectar la cancelación del turno, ya persistida.
-                _logger.LogError(ex, "Fallo al notificar a la lista de espera {ListaEsperaId}", entrada.Id);
-            }
+            await _notificacionAppService.ProgramarListaEsperaAsync(entrada, turno, cancellationToken);
         }
     }
 

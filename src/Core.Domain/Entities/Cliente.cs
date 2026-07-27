@@ -14,6 +14,10 @@ public class Cliente : TenantEntity
     public string? Telefono { get; set; }
     public bool Activo { get; set; } = true;
 
+    // Nullable: sólo los Cliente que se auto-registraron (self-service) tienen esto seteado.
+    // Un Cliente cargado a mano por el staff (walk-in) puede seguir sin cuenta indefinidamente.
+    public string? PasswordHash { get; set; }
+
     /// <summary>
     /// Campo flexible para metadatos específicos del rubro.
     /// Ejemplo radiología: { "obraSocial": "PAMI", "nroAfiliado": "123" }

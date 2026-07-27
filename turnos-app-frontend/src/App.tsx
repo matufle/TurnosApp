@@ -17,6 +17,7 @@ import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { RecursosPage } from './pages/Recursos/RecursosPage';
+import { HorariosPage } from './pages/Recursos/HorariosPage';
 import { ServiciosPage } from './pages/Servicios/ServiciosPage';
 import { TurnosPage } from './pages/Turnos/TurnosPage';
 import { ClientesPage } from './pages/Clientes/ClientesPage';
@@ -27,6 +28,13 @@ import { UsuariosPage } from './pages/Usuarios/UsuariosPage';
 import { RolesPage } from './pages/Roles/RolesPage';
 import { MetricasPage } from './pages/Metricas/MetricasPage';
 import { ListaEsperaPage } from './pages/ListaEspera/ListaEsperaPage';
+import { ReservaTenantLayout } from './pages/Reservas/ReservaTenantLayout';
+import { LoginClientePage } from './pages/Reservas/LoginClientePage';
+import { RegistroClientePage } from './pages/Reservas/RegistroClientePage';
+import { MisTurnosPage } from './pages/Reservas/MisTurnosPage';
+import { CatalogoPage } from './pages/Reservas/CatalogoPage';
+import { ReservarPage } from './pages/Reservas/ReservarPage';
+import { ClienteProtectedRoute } from './auth/ClienteProtectedRoute';
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
@@ -56,6 +64,30 @@ const finalTheme =
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
 
+          {/* Self-service de cara al cliente final: identidad y branding propios,
+              completamente separados del staff (ver ClienteAuthProvider). */}
+          <Route path="/reservas/:slug" element={<ReservaTenantLayout />}>
+            <Route index element={<CatalogoPage />} />
+            <Route path="login" element={<LoginClientePage />} />
+            <Route path="registro" element={<RegistroClientePage />} />
+            <Route
+              path="reservar"
+              element={
+                <ClienteProtectedRoute>
+                  <ReservarPage />
+                </ClienteProtectedRoute>
+              }
+            />
+            <Route
+              path="mis-turnos"
+              element={
+                <ClienteProtectedRoute>
+                  <MisTurnosPage />
+                </ClienteProtectedRoute>
+              }
+            />
+          </Route>
+
           <Route
             path="/app"
             element={
@@ -66,6 +98,14 @@ const finalTheme =
           >
             <Route index element={<DashboardPage />} />
             <Route path="recursos" element={<RecursosPage />} />
+            <Route
+              path="recursos/horarios"
+              element={
+                <ProtectedRoute permiso="GestionarRecursos">
+                  <HorariosPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="servicios" element={<ServiciosPage />} />
             <Route path="clientes" element={<ClientesPage />} />
             <Route path="turnos" element={<TurnosPage />} />
@@ -128,7 +168,11 @@ export default function App() {
   useEffect(() => {
     const cargarMarca = async () => {
       const rutasPublicas = ['/', '/login', '/registro'];
-      if (rutasPublicas.includes(window.location.pathname)) {
+      const esRutaPublica =
+        rutasPublicas.includes(window.location.pathname) ||
+        window.location.pathname.startsWith('/reservas/');
+
+      if (esRutaPublica) {
         setCargando(false);
         return;
       }

@@ -48,4 +48,34 @@ public class JwtTokenService : IJwtTokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public string GenerateToken(Cliente cliente, bool recordarme = false)
+    {
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, cliente.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, cliente.Email ?? string.Empty),
+            new("TenantId", cliente.TenantId.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            // Nunca "UsuarioId": es lo que evita que este token pase por endpoints de staff
+            // ([RequierePermiso] falla cerrado al no encontrar ese claim). Ver CLAUDE.md.
+            new("ClienteId", cliente.Id.ToString()),
+            new("TipoCuenta", "Cliente")
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var vigencia = recordarme ? TimeSpan.FromDays(30) : TimeSpan.FromHours(8);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.Add(vigencia),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

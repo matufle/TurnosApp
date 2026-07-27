@@ -18,4 +18,12 @@ public class RecursoRepository : GenericRepository<Recurso>, IRecursoRepository
         => await _context.Recursos
             .AsNoTracking()
             .FirstOrDefaultAsync(r => r.UsuarioId == usuarioId, cancellationToken);
+
+    public async Task<IReadOnlyList<Recurso>> GetActivosCrossTenantAsync(int tenantId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .IgnoreQueryFilters()
+            .Where(r => r.TenantId == tenantId && r.Activo)
+            .ToListAsync(cancellationToken);
+    }
 }

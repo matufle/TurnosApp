@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Domain.Entities;
 using TurnosApp.Infra.Data.Context;
@@ -13,7 +14,14 @@ public class ClienteRepository : GenericRepository<Cliente>, IClienteRepository
     {
     }
 
-    // Ejemplos de extensiones futuras:
-    // public async Task<Cliente?> GetByEmailAsync(string email, CancellationToken ct)
-    //     => await _dbSet.FirstOrDefaultAsync(c => c.Email == email, ct);
+    public async Task<Cliente?> GetByTenantYEmailAsync(int tenantId, string emailNormalizado, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c =>
+                c.TenantId == tenantId &&
+                c.Email != null &&
+                c.Email.ToLower() == emailNormalizado,
+                cancellationToken);
+    }
 }

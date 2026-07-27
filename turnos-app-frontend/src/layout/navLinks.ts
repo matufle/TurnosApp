@@ -11,6 +11,7 @@ import {
   IconShieldLock,
   IconChartBar,
   IconHourglassHigh,
+  IconClock,
 } from '@tabler/icons-react';
 
 // Compartido entre DashboardLayout (sidebar) y OnboardingTour (arma el tour en el mismo
@@ -21,6 +22,7 @@ export const navLinks = [
   { icon: IconUsers, label: 'Clientes', path: '/app/clientes' },
   { icon: IconHourglassHigh, label: 'Lista de Espera', path: '/app/lista-espera' },
   { icon: IconUserCog, label: 'Recursos', path: '/app/recursos' },
+  { icon: IconClock, label: 'Horarios de Atención', path: '/app/recursos/horarios', permiso: 'GestionarRecursos' },
   { icon: IconBriefcase, label: 'Servicios', path: '/app/servicios' },
   { icon: IconCreditCard, label: 'Métodos de Pago', path: '/app/metodos-pago', permiso: 'GestionarMetodosPago' },
   { icon: IconReceipt2, label: 'Historial de Cobros', path: '/app/cobros' },

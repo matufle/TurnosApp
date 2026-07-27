@@ -12,4 +12,9 @@ namespace TurnosApp.Core.Application.Interfaces.Persistence;
 /// </summary>
 public interface IClienteRepository : IRepository<Cliente>
 {
+    /// <summary>
+    /// Cross-tenant a propósito: se llama desde el flujo anónimo de registro/login de
+    /// cliente, sin JWT del que ITenantProvider pueda resolver un TenantId.
+    /// </summary>
+    Task<Cliente?> GetByTenantYEmailAsync(int tenantId, string emailNormalizado, CancellationToken cancellationToken = default);
 }
