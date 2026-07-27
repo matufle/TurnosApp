@@ -12,7 +12,8 @@ export type Permiso =
   | 'VerReportes'
   | 'GestionarUsuarios'
   | 'GestionarRoles'
-  | 'GestionarConfiguracionNegocio';
+  | 'GestionarConfiguracionNegocio'
+  | 'GestionarListaEspera';
 
 export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; label: string }[] }[] = [
   {
@@ -20,6 +21,7 @@ export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; labe
     permisos: [
       { valor: 'VerAgendaCompleta', label: 'Ver la agenda de todos los recursos (sin esto, solo ve la propia)' },
       { valor: 'GestionarTurnos', label: 'Crear, editar y cancelar turnos' },
+      { valor: 'GestionarListaEspera', label: 'Anotar y gestionar la lista de espera' },
     ],
   },
   {
