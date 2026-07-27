@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { Select } from '@mantine/core';
+import { Select, Switch } from '@mantine/core';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { recursosService } from '../../api/recursosService';
 import { turnosService } from '../../api/turnosService';
@@ -252,14 +252,21 @@ export function RecursosPage() {
                       )}
                     </div>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center gap-1 shrink-0 ${
-                      ocupado ? 'bg-error-container text-error' : 'bg-secondary-container text-primary'
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${ocupado ? 'bg-error' : 'bg-primary'}`} />
-                    {ocupado ? 'Ocupado ahora' : 'Disponible ahora'}
-                  </span>
+                  {r.activo ? (
+                    <span
+                      className={`px-3 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center gap-1 shrink-0 ${
+                        ocupado ? 'bg-error-container text-error' : 'bg-secondary-container text-primary'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${ocupado ? 'bg-error' : 'bg-primary'}`} />
+                      {ocupado ? 'Ocupado ahora' : 'Disponible ahora'}
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full font-label-md text-[10px] uppercase tracking-wider flex items-center gap-1 shrink-0 bg-surface-container-high text-secondary">
+                      <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                      Inactivo
+                    </span>
+                  )}
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-outline-variant/30 flex gap-2">
@@ -369,6 +376,15 @@ export function RecursosPage() {
                   Si esta persona también inicia sesión en Turnify, vinculá su usuario para no duplicar la carga.
                 </p>
               </div>
+
+              {recursoEditandoId && (
+                <Switch
+                  label="Recurso activo"
+                  description="Si lo desactivás, deja de aparecer para reservar (incluida la reserva pública)."
+                  checked={recursoActivoEditando}
+                  onChange={(e) => setRecursoActivoEditando(e.currentTarget.checked)}
+                />
+              )}
 
               <button
                 type="submit"
