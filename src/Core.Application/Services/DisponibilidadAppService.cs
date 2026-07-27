@@ -5,9 +5,6 @@ namespace TurnosApp.Core.Application.Services;
 
 public class DisponibilidadAppService : IDisponibilidadAppService
 {
-    // Fija, sin configuración por tenant — simplificación de esta primera versión.
-    private const int GranularidadMinutos = 15;
-
     private readonly IUnitOfWork _unitOfWork;
 
     public DisponibilidadAppService(IUnitOfWork unitOfWork)
@@ -48,7 +45,10 @@ public class DisponibilidadAppService : IDisponibilidadAppService
             var inicioMin = bloque.HoraInicio.Hour * 60 + bloque.HoraInicio.Minute;
             var finMin = bloque.HoraFin.Hour * 60 + bloque.HoraFin.Minute;
 
-            for (var candidatoMin = inicioMin; candidatoMin + duracionTotalMinutos <= finMin; candidatoMin += GranularidadMinutos)
+            // El paso entre horarios candidatos es la propia duración del servicio (no una
+            // grilla fija), para que la lista no muestre inicios que se pisan entre sí — un
+            // servicio de 30 min ofrece 09:00/09:30/10:00, uno de 45 ofrece 09:00/09:45/10:30.
+            for (var candidatoMin = inicioMin; candidatoMin + duracionTotalMinutos <= finMin; candidatoMin += duracionTotalMinutos)
             {
                 var candidato = new TimeOnly(candidatoMin / 60, candidatoMin % 60);
                 var candidatoFin = candidato.AddMinutes(duracionTotalMinutos);
