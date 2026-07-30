@@ -11,6 +11,9 @@ public class Usuario
     public Rol Rol { get; private set; } = null!;
     public bool Activo { get; private set; } = true;
     public bool OnboardingCompletado { get; private set; } = false;
+    public bool EmailConfirmado { get; private set; } = false;
+    public string? TokenConfirmacionEmail { get; private set; }
+    public DateTime? TokenConfirmacionExpira { get; private set; }
 
     private Usuario() { } // EF Core
 
@@ -45,4 +48,17 @@ public class Usuario
     public void Desactivar() => Activo = false;
 
     public void CompletarOnboarding() => OnboardingCompletado = true;
+
+    public void EstablecerTokenConfirmacion(string token, DateTime expira)
+    {
+        TokenConfirmacionEmail = token;
+        TokenConfirmacionExpira = expira;
+    }
+
+    public void ConfirmarEmail()
+    {
+        EmailConfirmado = true;
+        TokenConfirmacionEmail = null;
+        TokenConfirmacionExpira = null;
+    }
 }

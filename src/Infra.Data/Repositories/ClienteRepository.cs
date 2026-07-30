@@ -24,4 +24,14 @@ public class ClienteRepository : GenericRepository<Cliente>, IClienteRepository
                 c.Email.ToLower() == emailNormalizado,
                 cancellationToken);
     }
+
+    public async Task<Cliente?> GetByTenantYTokenConfirmacionAsync(int tenantId, string token, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(c =>
+                c.TenantId == tenantId &&
+                c.TokenConfirmacionEmail == token,
+                cancellationToken);
+    }
 }

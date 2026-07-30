@@ -13,6 +13,7 @@ import {
   IconHourglassHigh,
   IconClock,
   IconCashRegister,
+  IconWallet,
 } from '@tabler/icons-react';
 
 // Compartido entre DashboardLayout (sidebar) y OnboardingTour (arma el tour en el mismo
@@ -31,6 +32,7 @@ export const navLinks = [
   // y por lo tanto también necesita verla). Evita el caso de un admin que tilda "Gestionar
   // Caja" para un cajero y se olvida de tildar "Ver Caja" aparte, dejando la página inaccesible.
   { icon: IconCashRegister, label: 'Caja', path: '/app/caja', permiso: ['VerCaja', 'GestionarCaja'] },
+  { icon: IconWallet, label: 'Liquidaciones', path: '/app/liquidaciones', permiso: ['VerLiquidaciones', 'GestionarLiquidaciones'] },
   { icon: IconChartBar, label: 'Métricas', path: '/app/metricas', permiso: 'VerReportes' },
   { icon: IconUsersGroup, label: 'Usuarios', path: '/app/usuarios', permiso: 'GestionarUsuarios' },
   { icon: IconShieldLock, label: 'Roles y Permisos', path: '/app/roles', permiso: 'GestionarRoles' },

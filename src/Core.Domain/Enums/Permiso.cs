@@ -25,8 +25,14 @@ public enum Permiso : long
     ForzarCierreCaja = 1L << 14,
     VerCaja = 1L << 15,
 
+    // Sin este permiso (ni GestionarLiquidaciones), un Recurso vinculado a Usuario igual
+    // puede ver sus propias liquidaciones — es el mismo criterio de "mis turnos" self-service.
+    VerLiquidaciones = 1L << 16,
+    GestionarLiquidaciones = 1L << 17,
+
     Todos = VerAgendaCompleta | GestionarTurnos | GestionarClientes | GestionarServicios
         | GestionarRecursos | GestionarMetodosPago | CrearCobros | VerGananciaNeta
         | VerReportes | GestionarUsuarios | GestionarRoles | GestionarConfiguracionNegocio
         | GestionarListaEspera | GestionarCaja | ForzarCierreCaja | VerCaja
+        | VerLiquidaciones | GestionarLiquidaciones
 }

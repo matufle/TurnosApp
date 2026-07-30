@@ -26,4 +26,14 @@ public interface INotificacionAppService
     /// de 24hs) para que el worker nunca llegue a despacharla.
     /// </summary>
     Task CancelarPendientesDeTurnoAsync(int turnoId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Programa el email de confirmación de cuenta de un Usuario (staff) recién registrado.
+    /// </summary>
+    Task ProgramarConfirmacionEmailUsuarioAsync(Usuario usuario, string token, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Programa el email de confirmación de cuenta de un Cliente (self-service) recién registrado.
+    /// </summary>
+    Task ProgramarConfirmacionEmailClienteAsync(Cliente cliente, string tenantSlug, string token, CancellationToken cancellationToken = default);
 }

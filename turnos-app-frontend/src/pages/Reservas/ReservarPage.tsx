@@ -1,10 +1,11 @@
 // src/pages/Reservas/ReservarPage.tsx
 // Detrás de ClienteProtectedRoute: reserva obligatoria, como pide el enunciado original.
-// Simplificación deliberada de esta primera versión: un solo servicio por turno (no el
-// multi-servicio que sí soporta el flujo de staff en TurnosPage.tsx).
-import { useEffect, useState } from 'react';
+// El servicio ?servicioId= de la URL (elegido en CatalogoPage) es solo el punto de partida:
+// el cliente puede sumar más servicios al mismo turno acá, en paridad con el flujo de staff
+// en TurnosPage.tsx (que ya soportaba multi-servicio desde el principio).
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, Button, Center, Group, Loader, Select, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Alert, Button, Center, Group, Loader, MultiSelect, Select, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import axios from 'axios';
 import { publicCatalogoService } from '../../api/publicCatalogoService';
@@ -16,10 +17,11 @@ import type { RecursoPublico } from '../../types/ReservaPublica';
 export function ReservarPage() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const servicioId = Number(searchParams.get('servicioId'));
+  const servicioIdInicial = Number(searchParams.get('servicioId'));
   const navigate = useNavigate();
 
-  const [servicio, setServicio] = useState<Servicio | null>(null);
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [servicioIdsSeleccionados, setServicioIdsSeleccionados] = useState<string[]>([]);
   const [recursos, setRecursos] = useState<RecursoPublico[]>([]);
   const [recursoId, setRecursoId] = useState<string | null>(null);
   const [fecha, setFecha] = useState<string | null>(null);
@@ -31,36 +33,50 @@ export function ReservarPage() {
   const [errorCarga, setErrorCarga] = useState(false);
 
   useEffect(() => {
-    if (!slug || !servicioId) return;
+    if (!slug || !servicioIdInicial) return;
 
     setCargandoInicial(true);
     setErrorCarga(false);
 
     Promise.all([publicCatalogoService.getServicios(slug), publicCatalogoService.getRecursos(slug)])
-      .then(([servicios, recursosData]) => {
-        setServicio(servicios.find((s) => s.id === servicioId) ?? null);
+      .then(([serviciosData, recursosData]) => {
+        setServicios(serviciosData);
+        setServicioIdsSeleccionados(
+          serviciosData.some((s) => s.id === servicioIdInicial) ? [String(servicioIdInicial)] : []
+        );
         setRecursos(recursosData);
         if (recursosData.length > 0) setRecursoId(String(recursosData[0].id));
       })
       .catch(() => setErrorCarga(true))
       .finally(() => setCargandoInicial(false));
-  }, [slug, servicioId]);
+  }, [slug, servicioIdInicial]);
+
+  const servicioIds = useMemo(() => servicioIdsSeleccionados.map(Number), [servicioIdsSeleccionados]);
+
+  const { duracionTotal, precioTotal } = useMemo(() => {
+    const elegidos = servicios.filter((s) => servicioIds.includes(s.id));
+    return {
+      duracionTotal: elegidos.reduce((acc, s) => acc + s.duracionMinutos, 0),
+      precioTotal: elegidos.reduce((acc, s) => acc + s.precio, 0),
+    };
+  }, [servicios, servicioIds]);
 
   useEffect(() => {
-    if (!slug || !recursoId || !fecha) {
+    if (!slug || !recursoId || !fecha || servicioIds.length === 0) {
       setSlotsUtc([]);
       return;
     }
 
     setCargandoSlots(true);
     publicCatalogoService
-      .getDisponibilidad(slug, Number(recursoId), servicioId, fecha)
+      .getDisponibilidad(slug, Number(recursoId), servicioIds, fecha)
       .then(setSlotsUtc)
       .finally(() => setCargandoSlots(false));
-  }, [slug, recursoId, fecha, servicioId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, recursoId, fecha, servicioIds.join(',')]);
 
   const confirmar = async (slotUtc: string) => {
-    if (!slug || !recursoId || !fecha) return;
+    if (!slug || !recursoId || !fecha || servicioIds.length === 0) return;
 
     setErrorMessage(null);
     setSlotConfirmando(slotUtc);
@@ -70,7 +86,7 @@ export function ReservarPage() {
       // combinarlo directo con la fecha arma el instante UTC correcto (ver horarioTimezone.ts).
       await misTurnosService.crear({
         recursoId: Number(recursoId),
-        servicioIds: [servicioId],
+        servicioIds,
         fechaHoraInicio: `${fecha}T${slotUtc}:00.000Z`,
       });
       navigate(`/reservas/${slug}/mis-turnos`, { replace: true });
@@ -86,7 +102,7 @@ export function ReservarPage() {
     }
   };
 
-  if (!servicioId) {
+  if (!servicioIdInicial) {
     return (
       <Center py="xl">
         <Text c="dimmed">Elegí un servicio desde el catálogo para reservar.</Text>
@@ -117,7 +133,21 @@ export function ReservarPage() {
 
   return (
     <Stack maw={420} w="100%" mx="auto" py="xl" px="md" gap="md">
-      <Title order={3}>Reservar {servicio?.nombre ?? ''}</Title>
+      <Title order={3}>Reservar turno</Title>
+
+      <MultiSelect
+        label="Servicios"
+        placeholder="Elegí uno o más servicios"
+        data={servicios.map((s) => ({ value: String(s.id), label: `${s.nombre} (${s.duracionMinutos} min · $${s.precio})` }))}
+        value={servicioIdsSeleccionados}
+        onChange={setServicioIdsSeleccionados}
+      />
+
+      {servicioIds.length > 0 && (
+        <Text size="sm" c="dimmed">
+          Duración total: {duracionTotal} min · Precio total: ${precioTotal}
+        </Text>
+      )}
 
       {recursos.length > 1 && (
         <Select
@@ -132,13 +162,15 @@ export function ReservarPage() {
 
       {errorMessage && <Alert color="red">{errorMessage}</Alert>}
 
+      {servicioIds.length === 0 && <Text c="dimmed">Elegí al menos un servicio para ver los horarios disponibles.</Text>}
+
       {cargandoSlots && (
         <Center py="md">
           <Loader type="dots" />
         </Center>
       )}
 
-      {!cargandoSlots && recursoId && fecha && slotsUtc.length === 0 && (
+      {!cargandoSlots && recursoId && fecha && servicioIds.length > 0 && slotsUtc.length === 0 && (
         <Text c="dimmed">No hay horarios disponibles ese día.</Text>
       )}
 

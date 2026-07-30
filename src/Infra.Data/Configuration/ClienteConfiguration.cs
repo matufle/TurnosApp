@@ -37,6 +37,16 @@ public class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
         builder.Property(c => c.PasswordHash)
             .HasMaxLength(500);
 
+        // Mismo truco que Usuario.EmailConfirmado: HasDefaultValue(true) sólo backfillea
+        // el ALTER TABLE de la migración (cuentas Cliente existentes con PasswordHash ya
+        // seteado), las cuentas nuevas siempre entran en false vía el objeto C#.
+        builder.Property(c => c.EmailConfirmado)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        builder.Property(c => c.TokenConfirmacionEmail)
+            .HasMaxLength(100);
+
         // Índice único parcial: sólo exige unicidad de email entre los Cliente que ya
         // tienen cuenta (self-service). Los walk-in cargados por staff sin login pueden
         // seguir repitiendo o no teniendo email, como hoy.

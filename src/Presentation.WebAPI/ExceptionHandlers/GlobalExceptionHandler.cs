@@ -40,6 +40,9 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         problemDetails.Extensions["traceId"] = httpContext.TraceIdentifier;
 
+        if (exception is BusinessException businessException)
+            problemDetails.Extensions["code"] = businessException.Code;
+
         httpContext.Response.StatusCode = statusCode;
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 

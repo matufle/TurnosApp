@@ -17,4 +17,10 @@ public interface IClienteRepository : IRepository<Cliente>
     /// cliente, sin JWT del que ITenantProvider pueda resolver un TenantId.
     /// </summary>
     Task<Cliente?> GetByTenantYEmailAsync(int tenantId, string emailNormalizado, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cross-tenant a propósito, mismo motivo que GetByTenantYEmailAsync: la confirmación
+    /// de email de Cliente ocurre sin JWT.
+    /// </summary>
+    Task<Cliente?> GetByTenantYTokenConfirmacionAsync(int tenantId, string token, CancellationToken cancellationToken = default);
 }

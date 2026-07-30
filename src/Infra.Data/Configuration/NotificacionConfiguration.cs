@@ -48,6 +48,7 @@ public class NotificacionConfiguration : IEntityTypeConfiguration<Notificacion>
         builder.HasOne(n => n.Cliente)
             .WithMany()
             .HasForeignKey(n => n.ClienteId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(n => new { n.EstadoEnvio, n.ProgramadaPara });

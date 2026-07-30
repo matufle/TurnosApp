@@ -21,4 +21,7 @@ public class Recurso : TenantEntity
 
     // Navegación
     public ICollection<Turno> Turnos { get; set; } = [];
+    public ICollection<ReglaComision> ReglasComision { get; set; } = [];
+    public ICollection<Liquidacion> Liquidaciones { get; set; } = [];
+    public ICollection<AdelantoProfesional> AdelantosProfesional { get; set; } = [];
 }

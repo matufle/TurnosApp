@@ -1,4 +1,6 @@
 // src/types/Tenant.ts
+import type { FrecuenciaLiquidacion } from './Liquidacion';
+
 export interface TenantConfig {
   id?: number;
   nombre?: string;
@@ -6,4 +8,5 @@ export interface TenantConfig {
   colorPrimario: string;
   permiteReservasPublicas: boolean;
   permiteSolapamiento?: boolean;
+  frecuenciaLiquidacion: FrecuenciaLiquidacion;
 }

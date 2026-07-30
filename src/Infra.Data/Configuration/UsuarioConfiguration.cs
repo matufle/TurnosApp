@@ -46,6 +46,17 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
             .IsRequired()
             .HasDefaultValue(false);
 
+        // HasDefaultValue(true) sólo afecta el ALTER TABLE ADD COLUMN de la migración:
+        // backfillea las cuentas ya existentes como confirmadas para no dejarlas bloqueadas
+        // de un día para el otro. Las cuentas nuevas siguen entrando en false porque EF
+        // siempre manda el valor explícito del objeto C# (que arranca en false).
+        builder.Property(u => u.EmailConfirmado)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        builder.Property(u => u.TokenConfirmacionEmail)
+            .HasMaxLength(100);
+
         // Restrict: no se puede borrar un Rol que todavía tiene usuarios asignados
         // (misma regla ya se valida antes en RolAppService, esto es la red de seguridad a nivel DB).
         builder.HasOne(u => u.Rol)

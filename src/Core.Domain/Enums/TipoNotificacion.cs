@@ -4,5 +4,7 @@ public enum TipoNotificacion
 {
     ConfirmacionTurno,
     RecordatorioTurno,
-    ListaEspera
+    ListaEspera,
+    ConfirmacionEmailUsuario,
+    ConfirmacionEmailCliente
 }

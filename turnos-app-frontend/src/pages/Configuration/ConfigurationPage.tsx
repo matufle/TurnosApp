@@ -17,6 +17,7 @@ import {
   CopyButton,
   ActionIcon,
   Tooltip,
+  Select,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle, IconDeviceFloppy, IconCopy, IconCheck } from '@tabler/icons-react';
@@ -37,6 +38,7 @@ export function ConfigurationPage() {
       colorPrimario: '#0EA5E9',
       permiteReservasPublicas: false,
       permiteSolapamiento: false, // Unificado: usamos 'permite' en todo
+      frecuenciaLiquidacion: 'Mensual' as 'Semanal' | 'Quincenal' | 'Mensual',
     },
   });
 
@@ -53,6 +55,7 @@ export function ConfigurationPage() {
             permiteReservasPublicas: data.permiteReservasPublicas || false,
             // Aquí usamos 'permiteSolapamiento' para que coincida con la propiedad
             permiteSolapamiento: data.permiteSolapamiento || false,
+            frecuenciaLiquidacion: data.frecuenciaLiquidacion || 'Mensual',
           });
           setSlug(data.slug ?? null);
           setErrorMessage(null);
@@ -182,6 +185,25 @@ export function ConfigurationPage() {
                     {...form.getInputProps('permiteSolapamiento', { type: 'checkbox' })}
                   />
                 </Stack>
+              </div>
+
+              <Divider />
+
+              <div>
+                <Title order={4} mb="xs">Liquidaciones</Title>
+                <Text size="sm" c="dimmed" mb="md">
+                  Cada cuánto se generan automáticamente las liquidaciones de comisión de los profesionales.
+                </Text>
+                <Select
+                  label="Frecuencia de liquidación"
+                  data={[
+                    { value: 'Semanal', label: 'Semanal (lunes a domingo)' },
+                    { value: 'Quincenal', label: 'Quincenal (1-15 / 16-fin de mes)' },
+                    { value: 'Mensual', label: 'Mensual' },
+                  ]}
+                  allowDeselect={false}
+                  {...form.getInputProps('frecuenciaLiquidacion')}
+                />
               </div>
 
               <Button

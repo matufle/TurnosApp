@@ -73,4 +73,37 @@ public class TurnoRepository : GenericRepository<Turno>, ITurnoRepository
                 t.FechaHoraInicio >= inicioDia && t.FechaHoraInicio < finDia)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Turno>> GetElegiblesParaLiquidacionCrossTenantAsync(
+        int tenantId, DateTime hasta, CancellationToken cancellationToken = default)
+    {
+        // Cross-tenant a propósito: lo llama el worker de liquidaciones, sin JWT que resolver.
+        var candidatos = await _dbSet
+            .IgnoreQueryFilters()
+            .Include(t => t.TurnoServicios)
+            .Include(t => t.Cobros)
+            .Include(t => t.LiquidacionDetalles)
+                .ThenInclude(d => d.Liquidacion)
+            .Where(t =>
+                t.TenantId == tenantId &&
+                t.Estado == EstadoTurno.Completado &&
+                t.FechaHoraInicio <= hasta)
+            .ToListAsync(cancellationToken);
+
+        // "Completamente pagado" y "sin liquidar vigente" no se pueden traducir a SQL sobre
+        // columnas [NotMapped] — se filtra en memoria sobre el set ya acotado por
+        // tenant/estado/fecha (mismo criterio ya documentado para EstadoPago en Métricas).
+        return candidatos
+            .Where(t =>
+            {
+                var precioTotal = t.TurnoServicios.Sum(ts => ts.PrecioAplicado);
+                var montoCobrado = t.Cobros.Sum(c => c.PrecioBase);
+                var completamentePagado = montoCobrado >= precioTotal;
+
+                var yaLiquidado = t.LiquidacionDetalles.Any(d => d.Liquidacion.Estado != EstadoLiquidacion.Anulada);
+
+                return completamentePagado && !yaLiquidado;
+            })
+            .ToList();
+    }
 }

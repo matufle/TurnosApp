@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
@@ -8,10 +9,12 @@ namespace TurnosApp.Core.Application.Services;
 public class NotificacionAppService : INotificacionAppService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IConfiguration _configuration;
 
-    public NotificacionAppService(IUnitOfWork unitOfWork)
+    public NotificacionAppService(IUnitOfWork unitOfWork, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
+        _configuration = configuration;
     }
 
     public async Task ProgramarConfirmacionAsync(Turno turno, CancellationToken cancellationToken = default)
@@ -107,6 +110,51 @@ public class NotificacionAppService : INotificacionAppService
             notificacion.ModificadoEn = DateTime.UtcNow;
         }
 
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ProgramarConfirmacionEmailUsuarioAsync(Usuario usuario, string token, CancellationToken cancellationToken = default)
+    {
+        var baseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
+        var link = $"{baseUrl}/confirmar-email?token={token}";
+
+        var notificacion = new Notificacion
+        {
+            TenantId = usuario.TenantId, // flujo anónimo (registro): ITenantProvider no resuelve nada acá
+            Tipo = TipoNotificacion.ConfirmacionEmailUsuario,
+            ClienteId = null,
+            DestinatarioEmail = usuario.Email,
+            Asunto = "Confirmá tu cuenta en Turnify",
+            CuerpoHtml = $"Hola {usuario.Nombre}, confirmá tu cuenta para empezar a usar Turnify: " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 48 horas.",
+            ProgramadaPara = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Notificaciones.AddAsync(notificacion, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ProgramarConfirmacionEmailClienteAsync(Cliente cliente, string tenantSlug, string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(cliente.Email))
+            return;
+
+        var baseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
+        var link = $"{baseUrl}/reservas/{tenantSlug}/confirmar-email?token={token}";
+
+        var notificacion = new Notificacion
+        {
+            TenantId = cliente.TenantId, // flujo anónimo (registro): ITenantProvider no resuelve nada acá
+            Tipo = TipoNotificacion.ConfirmacionEmailCliente,
+            ClienteId = cliente.Id,
+            DestinatarioEmail = cliente.Email,
+            Asunto = "Confirmá tu cuenta",
+            CuerpoHtml = $"Hola {cliente.Nombre}, confirmá tu cuenta para poder reservar turnos: " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 48 horas.",
+            ProgramadaPara = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Notificaciones.AddAsync(notificacion, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

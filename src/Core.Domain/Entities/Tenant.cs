@@ -5,6 +5,7 @@ using System.Text;
 namespace TurnosApp.Core.Domain.Entities;
 
 using TurnosApp.Core.Domain.Common;
+using TurnosApp.Core.Domain.Enums;
 
 public class Tenant : BaseEntity
 {
@@ -12,10 +13,11 @@ public class Tenant : BaseEntity
     public string Slug { get; set; } = string.Empty;        // ej: "clinica-del-sur"
     public bool PermiteSolapamiento { get; set; } = false;
     public bool Activo { get; set; } = true;
-    
+
     public string ColorPrimario { get; set; } = "#0EA5E9";
     public bool PermiteReservasPublicas { get; set; } = false;
     public DateTime FechaAlta { get; set; } = DateTime.UtcNow;
+    public FrecuenciaLiquidacion FrecuenciaLiquidacion { get; set; } = FrecuenciaLiquidacion.Mensual;
 
     // Navegación
     public ICollection<Recurso> Recursos { get; set; } = [];
@@ -26,4 +28,7 @@ public class Tenant : BaseEntity
     public ICollection<Cobro> Cobros { get; set; } = [];
     public ICollection<SesionCaja> SesionesCaja { get; set; } = [];
     public ICollection<MovimientoCaja> MovimientosCaja { get; set; } = [];
+    public ICollection<ReglaComision> ReglasComision { get; set; } = [];
+    public ICollection<Liquidacion> Liquidaciones { get; set; } = [];
+    public ICollection<AdelantoProfesional> AdelantosProfesional { get; set; } = [];
 }

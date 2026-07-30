@@ -45,16 +45,27 @@ public class PublicCatalogoAppService : IPublicCatalogoAppService
     }
 
     public async Task<IReadOnlyList<string>> GetDisponibilidadAsync(
-        string tenantSlug, int recursoId, int servicioId, DateOnly fecha, CancellationToken cancellationToken = default)
+        string tenantSlug, int recursoId, IReadOnlyList<int> servicioIds, DateOnly fecha, CancellationToken cancellationToken = default)
     {
         var tenant = await _publicAppService.ResolverTenantPorSlugAsync(tenantSlug, cancellationToken);
 
-        var servicio = await _unitOfWork.Servicios.GetByIdCrossTenantAsync(tenant.TenantId, servicioId, cancellationToken);
-        if (servicio is null || !servicio.Activo)
-            throw new NotFoundException(nameof(Servicio), servicioId);
+        if (servicioIds.Count == 0)
+            throw new BadRequestException("Tenés que indicar al menos un servicio.");
+
+        // La duración total (suma de todos los servicios elegidos) es la que define el
+        // paso de la grilla de horarios — mismo motor que ya usa el flujo de staff.
+        var duracionTotalMinutos = 0;
+        foreach (var servicioId in servicioIds)
+        {
+            var servicio = await _unitOfWork.Servicios.GetByIdCrossTenantAsync(tenant.TenantId, servicioId, cancellationToken);
+            if (servicio is null || !servicio.Activo)
+                throw new NotFoundException(nameof(Servicio), servicioId);
+
+            duracionTotalMinutos += servicio.DuracionMinutos;
+        }
 
         var slots = await _disponibilidadAppService.GetSlotsDisponiblesAsync(
-            tenant.TenantId, recursoId, servicio.DuracionMinutos, fecha, cancellationToken);
+            tenant.TenantId, recursoId, duracionTotalMinutos, fecha, cancellationToken);
 
         return slots.Select(s => s.ToString("HH:mm")).ToList();
     }

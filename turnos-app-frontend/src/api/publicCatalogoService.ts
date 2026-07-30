@@ -15,10 +15,16 @@ export const publicCatalogoService = {
 
   // fecha: "YYYY-MM-DD" (fecha local, ver combinarFechaYHora en TurnosPage.tsx).
   // Devuelve horas UTC-equivalentes tal cual las manda el backend — ver horarioTimezone.ts.
-  getDisponibilidad: async (slug: string, recursoId: number, servicioId: number, fecha: string): Promise<string[]> => {
-    const response = await clienteHttpClient.get<string[]>(`/public/tenants/${slug}/disponibilidad`, {
-      params: { recursoId, servicioId, fecha },
-    });
+  // Query string armada a mano (en vez de dejar que axios serialice el array servicioIds):
+  // ASP.NET Core espera "servicioIds=1&servicioIds=2" (clave repetida, sin corchetes) para
+  // bindear un [FromQuery] int[] — así no depende de la serialización por default de axios.
+  getDisponibilidad: async (slug: string, recursoId: number, servicioIds: number[], fecha: string): Promise<string[]> => {
+    const params = new URLSearchParams();
+    params.set('recursoId', String(recursoId));
+    servicioIds.forEach((id) => params.append('servicioIds', String(id)));
+    params.set('fecha', fecha);
+
+    const response = await clienteHttpClient.get<string[]>(`/public/tenants/${slug}/disponibilidad?${params.toString()}`);
     return response.data;
   },
 };

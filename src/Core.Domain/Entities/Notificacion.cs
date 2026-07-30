@@ -14,8 +14,10 @@ public class Notificacion : TenantEntity
     public int? ListaEsperaId { get; set; }
     public ListaEspera? ListaEspera { get; set; }
 
-    public int ClienteId { get; set; }
-    public Cliente Cliente { get; set; } = null!;
+    // Nullable: outbox pensado originalmente para Cliente únicamente; se reusa para las
+    // notificaciones de confirmación de email de Usuario, que no tiene concepto de Cliente.
+    public int? ClienteId { get; set; }
+    public Cliente? Cliente { get; set; }
 
     // Snapshot congelado al programar la notificación (patrón historical snapshot): el
     // worker despacha estos valores tal cual, sin volver a leer Turno/Cliente/Recurso.
