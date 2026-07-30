@@ -7,6 +7,8 @@ import { turnosService } from '../../api/turnosService';
 import type { Recurso, UsuarioParaVincular } from '../../types/Recurso';
 import type { Turno } from '../../types/Turno';
 import { getContrastTextColor } from '../../utils/colorContrast';
+import { PageSpinner } from '../../components/PageSpinner';
+import { RequirePermission } from '../../auth/RequirePermission';
 
 function iniciales(nombre: string) {
   return nombre
@@ -151,9 +153,7 @@ export function RecursosPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 
@@ -180,14 +180,16 @@ export function RecursosPage() {
               className="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-3 pl-12 pr-4 font-body-sm text-body-sm focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
             />
           </div>
-          <button
-            data-tour="recursos-nuevo"
-            onClick={abrirNuevo}
-            className="shrink-0 bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors px-6 py-3 rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Añadir recurso
-          </button>
+          <RequirePermission permiso="GestionarRecursos">
+            <button
+              data-tour="recursos-nuevo"
+              onClick={abrirNuevo}
+              className="shrink-0 bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-colors px-6 py-3 rounded-full font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Añadir recurso
+            </button>
+          </RequirePermission>
         </div>
       </section>
 
@@ -208,12 +210,14 @@ export function RecursosPage() {
           <p className="font-body-sm text-body-sm text-secondary max-w-sm">
             Los recursos son los lugares o profesionales que se reservan. Creá el primero para armar tu agenda.
           </p>
-          <button
-            onClick={abrirNuevo}
-            className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
-          >
-            Agregar recurso
-          </button>
+          <RequirePermission permiso="GestionarRecursos">
+            <button
+              onClick={abrirNuevo}
+              className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
+            >
+              Agregar recurso
+            </button>
+          </RequirePermission>
         </div>
       ) : recursosFiltrados.length === 0 ? (
         <p className="font-body-lg text-body-lg text-secondary text-center py-8">
@@ -269,39 +273,43 @@ export function RecursosPage() {
                   )}
                 </div>
 
-                <div className="mt-auto pt-4 border-t border-outline-variant/30 flex gap-2">
-                  <button
-                    onClick={() => abrirEdicion(r)}
-                    className="flex-1 bg-surface text-primary border border-outline-variant hover:border-primary transition-colors py-2 rounded-full font-label-md text-label-md"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    aria-label="Eliminar"
-                    onClick={() => setRecursoAEliminar(r)}
-                    className="p-2 text-secondary hover:text-error hover:border-error transition-colors bg-surface border border-outline-variant rounded-full flex items-center justify-center"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
-                </div>
+                <RequirePermission permiso="GestionarRecursos">
+                  <div className="mt-auto pt-4 border-t border-outline-variant/30 flex gap-2">
+                    <button
+                      onClick={() => abrirEdicion(r)}
+                      className="flex-1 bg-surface text-primary border border-outline-variant hover:border-primary transition-colors py-2 rounded-full font-label-md text-label-md"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      aria-label="Eliminar"
+                      onClick={() => setRecursoAEliminar(r)}
+                      className="p-2 text-secondary hover:text-error hover:border-error transition-colors bg-surface border border-outline-variant rounded-full flex items-center justify-center"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                  </div>
+                </RequirePermission>
               </div>
             );
           })}
 
-          <button
-            onClick={abrirNuevo}
-            className="bg-surface-bright border-2 border-dashed border-outline-variant hover:border-primary transition-colors rounded-3xl p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] group"
-          >
-            <div className="w-16 h-16 rounded-full bg-surface-container-low group-hover:bg-primary-container transition-colors flex items-center justify-center text-primary group-hover:text-on-primary-container">
-              <span className="material-symbols-outlined text-[32px]">add</span>
-            </div>
-            <div className="text-center">
-              <h3 className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                Añadir nuevo recurso
-              </h3>
-              <p className="font-body-sm text-body-sm text-secondary mt-1">Personal, salas o equipos</p>
-            </div>
-          </button>
+          <RequirePermission permiso="GestionarRecursos">
+            <button
+              onClick={abrirNuevo}
+              className="bg-surface-bright border-2 border-dashed border-outline-variant hover:border-primary transition-colors rounded-3xl p-6 flex flex-col items-center justify-center gap-4 min-h-[220px] group"
+            >
+              <div className="w-16 h-16 rounded-full bg-surface-container-low group-hover:bg-primary-container transition-colors flex items-center justify-center text-primary group-hover:text-on-primary-container">
+                <span className="material-symbols-outlined text-[32px]">add</span>
+              </div>
+              <div className="text-center">
+                <h3 className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
+                  Añadir nuevo recurso
+                </h3>
+                <p className="font-body-sm text-body-sm text-secondary mt-1">Personal, salas o equipos</p>
+              </div>
+            </button>
+          </RequirePermission>
         </section>
       )}
 

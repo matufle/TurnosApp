@@ -43,8 +43,10 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { turnosService } from '../../api/turnosService';
 import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
+import { PageSpinner } from '../../components/PageSpinner';
 import { serviciosService } from '../../api/servicioService';
 import { RegistrarCobroModal } from './RegistrarCobroModal';
+import { RequirePermission } from '../../auth/RequirePermission';
 import { usePermission } from '../../hooks/usePermission';
 import type { Turno, EstadoTurnoEditable } from '../../types/Turno';
 import type { Cliente } from '../../types/Cliente';
@@ -621,9 +623,7 @@ export function TurnosPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 
@@ -864,9 +864,11 @@ export function TurnosPage() {
               )}
             </Group>
 
-            <Button variant="light" color="teal" fullWidth onClick={openCobroModal}>
-              {turnoSeleccionado.estadoPago === 'SinCobrar' ? 'Registrar cobro' : 'Ver / registrar cobros'}
-            </Button>
+            <RequirePermission permiso="CrearCobros">
+              <Button variant="light" color="teal" fullWidth onClick={openCobroModal}>
+                {turnoSeleccionado.estadoPago === 'SinCobrar' ? 'Registrar cobro' : 'Ver / registrar cobros'}
+              </Button>
+            </RequirePermission>
 
             {esTurnoVencido(turnoSeleccionado, ahora) && (
               <Alert icon={<IconAlertCircle size={16} />} color="gray" variant="light">

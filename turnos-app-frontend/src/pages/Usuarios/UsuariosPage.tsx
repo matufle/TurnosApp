@@ -8,6 +8,7 @@ import { IconDots, IconEdit, IconBan, IconRefresh, IconUsersGroup } from '@table
 import { usuariosService } from '../../api/usuariosService';
 import { rolesService } from '../../api/rolesService';
 import { EmptyState } from '../../components/EmptyState';
+import { PageSpinner } from '../../components/PageSpinner';
 import type { Usuario } from '../../types/Usuario';
 import type { Rol } from '../../types/Rol';
 
@@ -121,9 +122,7 @@ export function UsuariosPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 

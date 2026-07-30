@@ -1,7 +1,7 @@
 // src/theme/generateShades.ts
 import type { MantineColorsTuple } from '@mantine/core';
 
-function hexToHsl(hex: string): [number, number, number] {
+export function hexToHsl(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -26,7 +26,7 @@ function hexToHsl(hex: string): [number, number, number] {
   return [h * 360, s * 100, l * 100];
 }
 
-function hslToHex(h: number, s: number, l: number): string {
+export function hslToHex(h: number, s: number, l: number): string {
   s /= 100;
   l /= 100;
   const k = (n: number) => (n + h / 30) % 12;

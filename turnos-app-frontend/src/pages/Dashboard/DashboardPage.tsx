@@ -4,6 +4,7 @@ import { format, isSameDay, isWithinInterval, startOfWeek, endOfWeek } from 'dat
 import { es } from 'date-fns/locale/es';
 import { turnosService } from '../../api/turnosService';
 import { useAuth } from '../../context/useAuth';
+import { PageSpinner } from '../../components/PageSpinner';
 import type { Turno } from '../../types/Turno';
 
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -86,9 +87,7 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 

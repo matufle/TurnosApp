@@ -25,19 +25,25 @@ export function ReservarPage() {
   const [fecha, setFecha] = useState<string | null>(null);
   const [slotsUtc, setSlotsUtc] = useState<string[]>([]);
   const [cargandoSlots, setCargandoSlots] = useState(false);
-  const [confirmando, setConfirmando] = useState(false);
+  const [cargandoInicial, setCargandoInicial] = useState(true);
+  const [slotConfirmando, setSlotConfirmando] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorCarga, setErrorCarga] = useState(false);
 
   useEffect(() => {
     if (!slug || !servicioId) return;
 
-    Promise.all([publicCatalogoService.getServicios(slug), publicCatalogoService.getRecursos(slug)]).then(
-      ([servicios, recursosData]) => {
+    setCargandoInicial(true);
+    setErrorCarga(false);
+
+    Promise.all([publicCatalogoService.getServicios(slug), publicCatalogoService.getRecursos(slug)])
+      .then(([servicios, recursosData]) => {
         setServicio(servicios.find((s) => s.id === servicioId) ?? null);
         setRecursos(recursosData);
         if (recursosData.length > 0) setRecursoId(String(recursosData[0].id));
-      }
-    );
+      })
+      .catch(() => setErrorCarga(true))
+      .finally(() => setCargandoInicial(false));
   }, [slug, servicioId]);
 
   useEffect(() => {
@@ -57,7 +63,7 @@ export function ReservarPage() {
     if (!slug || !recursoId || !fecha) return;
 
     setErrorMessage(null);
-    setConfirmando(true);
+    setSlotConfirmando(slotUtc);
 
     try {
       // slotUtc ya viene en la misma convención "UTC-equivalente" que usa el backend —
@@ -76,7 +82,7 @@ export function ReservarPage() {
         setErrorMessage('No pudimos confirmar la reserva. Intentá de nuevo.');
       }
     } finally {
-      setConfirmando(false);
+      setSlotConfirmando(null);
     }
   };
 
@@ -84,6 +90,27 @@ export function ReservarPage() {
     return (
       <Center py="xl">
         <Text c="dimmed">Elegí un servicio desde el catálogo para reservar.</Text>
+      </Center>
+    );
+  }
+
+  if (cargandoInicial) {
+    return (
+      <Center py="xl">
+        <Loader type="dots" />
+      </Center>
+    );
+  }
+
+  if (errorCarga) {
+    return (
+      <Center py="xl">
+        <Stack align="center" gap="sm">
+          <Text c="dimmed">No pudimos cargar los datos de reserva. Intentá de nuevo.</Text>
+          <Button variant="light" onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </Stack>
       </Center>
     );
   }
@@ -122,7 +149,8 @@ export function ReservarPage() {
               key={slotUtc}
               variant="light"
               size="sm"
-              loading={confirmando}
+              loading={slotConfirmando === slotUtc}
+              disabled={slotConfirmando !== null && slotConfirmando !== slotUtc}
               onClick={() => confirmar(slotUtc)}
             >
               {horaUtcALocal(slotUtc)}

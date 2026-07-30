@@ -196,9 +196,18 @@ export function OnboardingTour() {
   // no-controlado (continuous + after/onEvent) como el controlado (stepIndex explícito) dejaban
   // de avanzar tras la primera transición entre páginas — un remontaje limpio por página evita
   // ese problema de sincronización interna por completo.
+  //
+  // Guardado por `.path` (no solo por deps) para no pelear con la navegación del propio usuario:
+  // sin este guard, cualquier re-render que recreara `user`/`paginaActual` (referencia nueva,
+  // mismo path) volvía a disparar el navigate y devolvía a la fuerza al usuario a la página del
+  // paso actual del tour ante CUALQUIER click de navegación mientras el onboarding no estuviera
+  // completo — incluyendo clicks normales en el sidebar, no solo un refresh de página.
+  const ultimaPaginaNavegadaRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!user || user.onboardingCompletado) return;
-    if (paginaActual && window.location.pathname !== paginaActual.path) {
+    if (!user || user.onboardingCompletado || !paginaActual) return;
+    if (ultimaPaginaNavegadaRef.current === paginaActual.path) return;
+    ultimaPaginaNavegadaRef.current = paginaActual.path;
+    if (window.location.pathname !== paginaActual.path) {
       navigate(paginaActual.path);
     }
   }, [user, paginaActual, navigate]);

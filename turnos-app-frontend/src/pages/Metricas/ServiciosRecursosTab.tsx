@@ -1,6 +1,7 @@
 // src/pages/Metricas/ServiciosRecursosTab.tsx
 import { useEffect, useState } from 'react';
 import { RankingList } from '../../components/RankingList';
+import { PageSpinner } from '../../components/PageSpinner';
 import { metricasService } from '../../api/metricasService';
 import { formatMonto } from '../../utils/format';
 import type { MetricasFiltro, RankingItem, ServiciosRecursosMetricas } from '../../types/Metricas';
@@ -54,9 +55,7 @@ export function ServiciosRecursosTab({ filtroBase }: ServiciosRecursosTabProps) 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 
