@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart, DonutChart } from '@mantine/charts';
 import { KpiCard } from '../../components/KpiCard';
+import { PageSpinner } from '../../components/PageSpinner';
 import { metricasService } from '../../api/metricasService';
 import { formatMonto } from '../../utils/format';
 import type { ClientesMetricas, MetricasFiltro } from '../../types/Metricas';
@@ -47,9 +48,7 @@ export function ClientesTab({ filtroBase }: ClientesTabProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 

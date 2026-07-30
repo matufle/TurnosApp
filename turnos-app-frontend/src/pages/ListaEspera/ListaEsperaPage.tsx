@@ -11,6 +11,7 @@ import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
 import { serviciosService } from '../../api/servicioService';
 import { EmptyState } from '../../components/EmptyState';
+import { PageSpinner } from '../../components/PageSpinner';
 import { RequirePermission } from '../../auth/RequirePermission';
 import type { ListaEsperaEntry } from '../../types/ListaEspera';
 import type { Cliente } from '../../types/Cliente';
@@ -129,9 +130,7 @@ export function ListaEsperaPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 
@@ -194,8 +193,8 @@ export function ListaEsperaPage() {
                     {entrada.servicioNombre ?? 'Cualquiera'}
                   </td>
                   <td className="py-4 px-6 font-body-sm text-body-sm text-on-surface-variant">
-                    {new Date(entrada.fechaDesde).toLocaleDateString('es-AR')} –{' '}
-                    {new Date(entrada.fechaHasta).toLocaleDateString('es-AR')}
+                    {new Date(entrada.fechaDesde).toLocaleDateString('es-AR', { timeZone: 'UTC' })} –{' '}
+                    {new Date(entrada.fechaHasta).toLocaleDateString('es-AR', { timeZone: 'UTC' })}
                   </td>
                   <td className="py-4 px-6">
                     <Badge color={ESTADO_COLOR[entrada.estado]} variant="light">

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { clientesService } from '../../api/clientesService';
 import { turnosService } from '../../api/turnosService';
+import { PageSpinner } from '../../components/PageSpinner';
+import { RequirePermission } from '../../auth/RequirePermission';
 import type { Cliente } from '../../types/Cliente';
 import type { Turno } from '../../types/Turno';
 
@@ -143,9 +145,7 @@ export function ClientesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 
@@ -174,14 +174,16 @@ export function ClientesPage() {
               className="w-full bg-surface-container-lowest border border-outline-variant text-on-surface rounded-full py-2.5 pl-10 pr-4 font-body-sm text-body-sm focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all"
             />
           </div>
-          <button
-            data-tour="clientes-nuevo"
-            onClick={abrirNuevo}
-            className="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm whitespace-nowrap flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Nuevo cliente
-          </button>
+          <RequirePermission permiso="GestionarClientes">
+            <button
+              data-tour="clientes-nuevo"
+              onClick={abrirNuevo}
+              className="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm whitespace-nowrap flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Nuevo cliente
+            </button>
+          </RequirePermission>
         </div>
       </div>
 
@@ -202,12 +204,14 @@ export function ClientesPage() {
           <p className="font-body-sm text-body-sm text-secondary max-w-sm">
             Agregá tu primer cliente para empezar a asignarle turnos.
           </p>
-          <button
-            onClick={abrirNuevo}
-            className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
-          >
-            Crear mi primer cliente
-          </button>
+          <RequirePermission permiso="GestionarClientes">
+            <button
+              onClick={abrirNuevo}
+              className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
+            >
+              Crear mi primer cliente
+            </button>
+          </RequirePermission>
         </div>
       ) : clientesFiltrados.length === 0 ? (
         <p className="font-body-lg text-body-lg text-secondary text-center py-8">
@@ -242,22 +246,24 @@ export function ClientesPage() {
                     </div>
                   </div>
 
-                  <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
-                    <button
-                      aria-label="Editar"
-                      onClick={() => abrirEdicion(c)}
-                      className="p-1.5 rounded-lg text-secondary hover:bg-surface-container hover:text-primary transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">edit</span>
-                    </button>
-                    <button
-                      aria-label="Eliminar"
-                      onClick={() => setClienteAEliminar(c)}
-                      className="p-1.5 rounded-lg text-secondary hover:bg-error-container hover:text-error transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">delete</span>
-                    </button>
-                  </div>
+                  <RequirePermission permiso="GestionarClientes">
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        aria-label="Editar"
+                        onClick={() => abrirEdicion(c)}
+                        className="p-1.5 rounded-lg text-secondary hover:bg-surface-container hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                      </button>
+                      <button
+                        aria-label="Eliminar"
+                        onClick={() => setClienteAEliminar(c)}
+                        className="p-1.5 rounded-lg text-secondary hover:bg-error-container hover:text-error transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  </RequirePermission>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-outline-variant/30">

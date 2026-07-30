@@ -1,43 +1,60 @@
 // src/App.tsx
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MantineProvider, createTheme, Loader, Center } from '@mantine/core';
 
 import { theme as turnifyTheme } from './theme/turnifyTheme';
 import { generateShades } from './theme/generateShades';
+import { applyTailwindBrandColor } from './theme/applyTailwindBrandColor';
 import { TenantThemeProvider } from './context/TenantThemeContext';
 import { useTenantTheme } from './context/useTenantTheme';
 import { AuthProvider } from './context/AuthContext';
 import { tenantService } from './api/tenantService';
 
 import { LandingPage } from './pages/Landing/LandindPage';
-import { DashboardLayout } from './layout/DashboardLayout';
-import { ProtectedRoute } from './auth/ProtectedRoute';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
-import { DashboardPage } from './pages/Dashboard/DashboardPage';
-import { RecursosPage } from './pages/Recursos/RecursosPage';
-import { HorariosPage } from './pages/Recursos/HorariosPage';
-import { ServiciosPage } from './pages/Servicios/ServiciosPage';
-import { TurnosPage } from './pages/Turnos/TurnosPage';
-import { ClientesPage } from './pages/Clientes/ClientesPage';
-import { ConfigurationPage } from './pages/Configuration/ConfigurationPage';
-import { MetodosPagoPage } from './pages/MetodosPago/MetodosPagoPage';
-import { HistorialCobrosPage } from './pages/Cobros/HistorialCobrosPage';
-import { UsuariosPage } from './pages/Usuarios/UsuariosPage';
-import { RolesPage } from './pages/Roles/RolesPage';
-import { MetricasPage } from './pages/Metricas/MetricasPage';
-import { ListaEsperaPage } from './pages/ListaEspera/ListaEsperaPage';
-import { ReservaTenantLayout } from './pages/Reservas/ReservaTenantLayout';
-import { LoginClientePage } from './pages/Reservas/LoginClientePage';
-import { RegistroClientePage } from './pages/Reservas/RegistroClientePage';
-import { MisTurnosPage } from './pages/Reservas/MisTurnosPage';
-import { CatalogoPage } from './pages/Reservas/CatalogoPage';
-import { ReservarPage } from './pages/Reservas/ReservarPage';
+import { ProtectedRoute } from './auth/ProtectedRoute';
 import { ClienteProtectedRoute } from './auth/ClienteProtectedRoute';
+
+// Todo lo que vive detrás de un login (staff o cliente) se carga de forma perezosa:
+// un visitante anónimo que solo ve la Landing no debería pagar el costo de descargar
+// el JS de Métricas (@mantine/charts), Turnos (react-big-calendar) ni del resto del panel.
+const DashboardLayout = lazy(() => import('./layout/DashboardLayout').then((m) => ({ default: m.DashboardLayout })));
+const DashboardPage = lazy(() => import('./pages/Dashboard/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const RecursosPage = lazy(() => import('./pages/Recursos/RecursosPage').then((m) => ({ default: m.RecursosPage })));
+const HorariosPage = lazy(() => import('./pages/Recursos/HorariosPage').then((m) => ({ default: m.HorariosPage })));
+const ServiciosPage = lazy(() => import('./pages/Servicios/ServiciosPage').then((m) => ({ default: m.ServiciosPage })));
+const TurnosPage = lazy(() => import('./pages/Turnos/TurnosPage').then((m) => ({ default: m.TurnosPage })));
+const ClientesPage = lazy(() => import('./pages/Clientes/ClientesPage').then((m) => ({ default: m.ClientesPage })));
+const ConfigurationPage = lazy(() => import('./pages/Configuration/ConfigurationPage').then((m) => ({ default: m.ConfigurationPage })));
+const MetodosPagoPage = lazy(() => import('./pages/MetodosPago/MetodosPagoPage').then((m) => ({ default: m.MetodosPagoPage })));
+const HistorialCobrosPage = lazy(() => import('./pages/Cobros/HistorialCobrosPage').then((m) => ({ default: m.HistorialCobrosPage })));
+const UsuariosPage = lazy(() => import('./pages/Usuarios/UsuariosPage').then((m) => ({ default: m.UsuariosPage })));
+const RolesPage = lazy(() => import('./pages/Roles/RolesPage').then((m) => ({ default: m.RolesPage })));
+const MetricasPage = lazy(() => import('./pages/Metricas/MetricasPage').then((m) => ({ default: m.MetricasPage })));
+const ListaEsperaPage = lazy(() => import('./pages/ListaEspera/ListaEsperaPage').then((m) => ({ default: m.ListaEsperaPage })));
+const ReservaTenantLayout = lazy(() => import('./pages/Reservas/ReservaTenantLayout').then((m) => ({ default: m.ReservaTenantLayout })));
+const LoginClientePage = lazy(() => import('./pages/Reservas/LoginClientePage').then((m) => ({ default: m.LoginClientePage })));
+const RegistroClientePage = lazy(() => import('./pages/Reservas/RegistroClientePage').then((m) => ({ default: m.RegistroClientePage })));
+const MisTurnosPage = lazy(() => import('./pages/Reservas/MisTurnosPage').then((m) => ({ default: m.MisTurnosPage })));
+const CatalogoPage = lazy(() => import('./pages/Reservas/CatalogoPage').then((m) => ({ default: m.CatalogoPage })));
+const ReservarPage = lazy(() => import('./pages/Reservas/ReservarPage').then((m) => ({ default: m.ReservarPage })));
+
+function RouteFallback() {
+  return (
+    <Center h="100vh">
+      <Loader type="dots" color="cyan" />
+    </Center>
+  );
+}
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
+
+  useEffect(() => {
+    applyTailwindBrandColor(colorHex && colorHex !== '#0EA5E9' ? colorHex : null);
+  }, [colorHex]);
 
 const finalTheme =
     colorHex && colorHex !== '#0EA5E9'
@@ -59,6 +76,7 @@ const finalTheme =
   return (
     <MantineProvider theme={finalTheme}>
       <BrowserRouter>
+        <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -155,6 +173,7 @@ const finalTheme =
 
           <Route path="*" element={<div>Página no encontrada</div>} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </MantineProvider>
   );

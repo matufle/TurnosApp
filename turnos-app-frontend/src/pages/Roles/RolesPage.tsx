@@ -7,6 +7,7 @@ import { useForm, isNotEmpty } from '@mantine/form';
 import { IconDots, IconEdit, IconTrash, IconShieldLock } from '@tabler/icons-react';
 import { rolesService } from '../../api/rolesService';
 import { EmptyState } from '../../components/EmptyState';
+import { PageSpinner } from '../../components/PageSpinner';
 import { PERMISOS_POR_AREA, type Permiso } from '../../types/Permiso';
 import type { Rol } from '../../types/Rol';
 
@@ -96,9 +97,7 @@ export function RolesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 

@@ -7,6 +7,7 @@ import { useForm, isNotEmpty } from '@mantine/form';
 import { IconDots, IconEdit, IconBan, IconCreditCard } from '@tabler/icons-react';
 import { metodosPagoService } from '../../api/metodosPagoService';
 import { EmptyState } from '../../components/EmptyState';
+import { PageSpinner } from '../../components/PageSpinner';
 import type { MetodoPago, TipoModificadorPago } from '../../types/MetodoPago';
 
 const TIPO_MODIFICADOR_DATA: { value: TipoModificadorPago; label: string }[] = [
@@ -115,9 +116,7 @@ export function MetodosPagoPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
+      <PageSpinner />
     );
   }
 

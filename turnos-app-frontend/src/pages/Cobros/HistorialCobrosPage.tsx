@@ -5,6 +5,7 @@ import { IconChevronLeft, IconChevronRight, IconReceipt2 } from '@tabler/icons-r
 import { cobrosService } from '../../api/cobrosService';
 import { SearchInput } from '../../components/SearchInput';
 import { EmptyState } from '../../components/EmptyState';
+import { PageSpinner } from '../../components/PageSpinner';
 import { usePermission } from '../../hooks/usePermission';
 import type { CobroListItem, HistorialCobros } from '../../types/Cobro';
 
@@ -170,9 +171,7 @@ export function HistorialCobrosPage() {
 
       <section className="bg-surface-container-lowest rounded-3xl soft-elevation overflow-hidden border border-surface-variant">
         {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-          </div>
+          <PageSpinner />
         ) : !historial || historial.items.length === 0 ? (
           <EmptyState
             title="Sin cobros en este período"

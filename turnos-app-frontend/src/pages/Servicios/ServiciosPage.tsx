@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { serviciosService } from '../../api/servicioService';
+import { PageSpinner } from '../../components/PageSpinner';
+import { RequirePermission } from '../../auth/RequirePermission';
 import type { Servicio } from '../../types/Servicio';
 
 export function ServiciosPage() {
@@ -108,11 +110,7 @@ export function ServiciosPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
-      </div>
-    );
+    return <PageSpinner />;
   }
 
   return (
@@ -125,14 +123,16 @@ export function ServiciosPage() {
             Gestioná tu catálogo de servicios. Mantené las cosas simples y organizadas para tus clientes.
           </p>
         </div>
-        <button
-          data-tour="servicios-nuevo"
-          onClick={irAlFormulario}
-          className="bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors soft-elevation flex items-center gap-2 whitespace-nowrap"
-        >
-          <span className="material-symbols-outlined">add</span>
-          Añadir servicio
-        </button>
+        <RequirePermission permiso="GestionarServicios">
+          <button
+            data-tour="servicios-nuevo"
+            onClick={irAlFormulario}
+            className="bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors soft-elevation flex items-center gap-2 whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined">add</span>
+            Añadir servicio
+          </button>
+        </RequirePermission>
       </header>
 
       {errorMessage && (
@@ -168,12 +168,14 @@ export function ServiciosPage() {
               <p className="font-body-sm text-body-sm text-secondary max-w-sm">
                 Definí qué servicios ofrecés, su duración y su precio para que puedan agendarse turnos.
               </p>
-              <button
-                onClick={irAlFormulario}
-                className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
-              >
-                Crear el primer servicio
-              </button>
+              <RequirePermission permiso="GestionarServicios">
+                <button
+                  onClick={irAlFormulario}
+                  className="mt-2 bg-primary-container text-on-primary-container font-title-md text-title-md px-6 py-3 rounded-full hover:bg-primary transition-colors"
+                >
+                  Crear el primer servicio
+                </button>
+              </RequirePermission>
             </div>
           ) : serviciosFiltrados.length === 0 ? (
             <p className="font-body-lg text-body-lg text-secondary text-center py-8">
@@ -206,28 +208,31 @@ export function ServiciosPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0 opacity-100 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                  <button
-                    aria-label="Editar"
-                    onClick={() => iniciarEdicion(s)}
-                    className="flex-1 sm:flex-none p-2 rounded-xl text-secondary hover:bg-surface-container hover:text-primary transition-colors flex justify-center"
-                  >
-                    <span className="material-symbols-outlined">edit</span>
-                  </button>
-                  <button
-                    aria-label="Eliminar"
-                    onClick={() => setServicioAEliminar(s)}
-                    className="flex-1 sm:flex-none p-2 rounded-xl text-secondary hover:bg-error-container hover:text-error transition-colors flex justify-center"
-                  >
-                    <span className="material-symbols-outlined">delete</span>
-                  </button>
-                </div>
+                <RequirePermission permiso="GestionarServicios">
+                  <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0 opacity-100 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
+                    <button
+                      aria-label="Editar"
+                      onClick={() => iniciarEdicion(s)}
+                      className="flex-1 sm:flex-none p-2 rounded-xl text-secondary hover:bg-surface-container hover:text-primary transition-colors flex justify-center"
+                    >
+                      <span className="material-symbols-outlined">edit</span>
+                    </button>
+                    <button
+                      aria-label="Eliminar"
+                      onClick={() => setServicioAEliminar(s)}
+                      className="flex-1 sm:flex-none p-2 rounded-xl text-secondary hover:bg-error-container hover:text-error transition-colors flex justify-center"
+                    >
+                      <span className="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </RequirePermission>
               </div>
             ))
           )}
         </section>
 
         {/* Formulario (alta / edición) */}
+        <RequirePermission permiso="GestionarServicios">
         <aside className="lg:col-span-4" ref={formRef}>
           <div className="bg-surface-container-lowest rounded-3xl p-8 soft-elevation lg:sticky lg:top-6">
             <h2 className="font-title-md text-title-md text-on-surface mb-6 flex items-center gap-2">
@@ -326,6 +331,7 @@ export function ServiciosPage() {
             </form>
           </div>
         </aside>
+        </RequirePermission>
       </div>
 
       {/* Confirmación de borrado */}
