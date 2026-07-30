@@ -10,6 +10,7 @@ export interface MetodoPago {
   porcentajeModificador: number;
   porcentajeComision: number;
   activo: boolean;
+  esEfectivo: boolean;
 }
 
 export interface MetodoPagoCreateDTO {
@@ -17,6 +18,7 @@ export interface MetodoPagoCreateDTO {
   tipoModificador: TipoModificadorPago;
   porcentajeModificador: number;
   porcentajeComision: number;
+  esEfectivo: boolean;
 }
 
 export interface MetodoPagoUpdateDTO extends MetodoPagoCreateDTO {

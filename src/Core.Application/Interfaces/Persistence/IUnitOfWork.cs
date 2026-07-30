@@ -23,6 +23,8 @@ public interface IUnitOfWork : IDisposable
     IListaEsperaRepository ListasEspera { get; }
     INotificacionRepository Notificaciones { get; }
     IHorarioAtencionRepository HorariosAtencion { get; }
+    ISesionCajaRepository SesionesCaja { get; }
+    IMovimientoCajaRepository MovimientosCaja { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Joyride, STATUS, type Step, type EventData, type ButtonType } from 'react-joyride';
 import { useAuth } from '../../context/useAuth';
-import { navLinks } from '../../layout/navLinks';
+import { navLinks, esLinkVisible } from '../../layout/navLinks';
 
 interface PaginaTour {
   path: string;
@@ -183,7 +183,7 @@ export function OnboardingTour() {
 
   const paginasVisibles = useMemo(() => {
     const pathsVisibles = new Set(
-      navLinks.filter((link) => !link.permiso || hasPermission(link.permiso)).map((link) => link.path)
+      navLinks.filter((link) => esLinkVisible(link.permiso, hasPermission)).map((link) => link.path)
     );
     return PAGINAS_TOUR.filter((pagina) => pathsVisibles.has(pagina.path));
   }, [hasPermission]);

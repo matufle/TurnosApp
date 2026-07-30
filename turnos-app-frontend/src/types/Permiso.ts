@@ -13,7 +13,10 @@ export type Permiso =
   | 'GestionarUsuarios'
   | 'GestionarRoles'
   | 'GestionarConfiguracionNegocio'
-  | 'GestionarListaEspera';
+  | 'GestionarListaEspera'
+  | 'GestionarCaja'
+  | 'ForzarCierreCaja'
+  | 'VerCaja';
 
 export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; label: string }[] }[] = [
   {
@@ -47,6 +50,14 @@ export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; labe
       { valor: 'GestionarUsuarios', label: 'Gestionar usuarios del equipo' },
       { valor: 'GestionarRoles', label: 'Gestionar roles y permisos' },
       { valor: 'GestionarConfiguracionNegocio', label: 'Gestionar la configuración del negocio' },
+    ],
+  },
+  {
+    area: 'Caja',
+    permisos: [
+      { valor: 'VerCaja', label: 'Ver el estado de caja y el historial de sesiones (sin poder operarla)' },
+      { valor: 'GestionarCaja', label: 'Abrir, cerrar y registrar movimientos de caja (incluye poder verla)' },
+      { valor: 'ForzarCierreCaja', label: 'Forzar el cierre de una sesión de caja abierta por otro usuario' },
     ],
   },
 ];

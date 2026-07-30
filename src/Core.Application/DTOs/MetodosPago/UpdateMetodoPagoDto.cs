@@ -9,5 +9,6 @@ public record UpdateMetodoPagoDto(
     string TipoModificador,
     decimal PorcentajeModificador,
     decimal PorcentajeComision,
-    bool Activo
+    bool Activo,
+    bool EsEfectivo
 );

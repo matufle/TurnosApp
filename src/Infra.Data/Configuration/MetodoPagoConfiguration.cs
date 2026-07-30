@@ -37,6 +37,10 @@ public class MetodoPagoConfiguration : IEntityTypeConfiguration<MetodoPago>
             .HasPrecision(5, 2)
             .IsRequired();
 
+        builder.Property(m => m.EsEfectivo)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         // Global Query Filter
         builder.HasQueryFilter(m => m.TenantId == _context.CurrentTenantId);
 

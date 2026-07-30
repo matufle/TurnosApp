@@ -46,6 +46,7 @@ public class MetodoPagoService : IMetodoPagoService
             TipoModificador = tipo,
             PorcentajeModificador = dto.PorcentajeModificador,
             PorcentajeComision = dto.PorcentajeComision,
+            EsEfectivo = dto.EsEfectivo,
             Activo = true
         };
 
@@ -67,6 +68,7 @@ public class MetodoPagoService : IMetodoPagoService
         metodoPago.PorcentajeModificador = dto.PorcentajeModificador;
         metodoPago.PorcentajeComision = dto.PorcentajeComision;
         metodoPago.Activo = dto.Activo;
+        metodoPago.EsEfectivo = dto.EsEfectivo;
 
         _unitOfWork.MetodoPagos.Update(metodoPago);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -104,6 +106,7 @@ public class MetodoPagoService : IMetodoPagoService
         TipoModificador: m.TipoModificador.ToString(),
         PorcentajeModificador: m.PorcentajeModificador,
         PorcentajeComision: m.PorcentajeComision,
-        Activo: m.Activo
+        Activo: m.Activo,
+        EsEfectivo: m.EsEfectivo
     );
 }

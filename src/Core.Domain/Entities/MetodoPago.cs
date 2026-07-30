@@ -21,6 +21,9 @@ public class MetodoPago : TenantEntity
 
     public bool Activo { get; set; } = true;
 
+    // Distingue lo único que se cuenta físicamente en un arqueo de caja de lo que solo se concilia después.
+    public bool EsEfectivo { get; set; }
+
     // Navegación
     public ICollection<Cobro> Cobros { get; set; } = [];
 }

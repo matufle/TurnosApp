@@ -8,5 +8,6 @@ public record CreateMetodoPagoDto(
     string Nombre,
     string TipoModificador,
     decimal PorcentajeModificador,
-    decimal PorcentajeComision
+    decimal PorcentajeComision,
+    bool EsEfectivo
 );

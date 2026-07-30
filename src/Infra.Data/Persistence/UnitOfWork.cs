@@ -25,6 +25,8 @@ public class UnitOfWork : IUnitOfWork
     public IListaEsperaRepository ListasEspera { get; }
     public INotificacionRepository Notificaciones { get; }
     public IHorarioAtencionRepository HorariosAtencion { get; }
+    public ISesionCajaRepository SesionesCaja { get; }
+    public IMovimientoCajaRepository MovimientosCaja { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -40,7 +42,9 @@ public class UnitOfWork : IUnitOfWork
         IMetricasRepository metricas,
         IListaEsperaRepository listasEspera,
         INotificacionRepository notificaciones,
-        IHorarioAtencionRepository horariosAtencion)
+        IHorarioAtencionRepository horariosAtencion,
+        ISesionCajaRepository sesionesCaja,
+        IMovimientoCajaRepository movimientosCaja)
     {
         _context = context;
         Tenants = tenants;
@@ -56,6 +60,8 @@ public class UnitOfWork : IUnitOfWork
         ListasEspera = listasEspera;
         Notificaciones = notificaciones;
         HorariosAtencion = horariosAtencion;
+        SesionesCaja = sesionesCaja;
+        MovimientosCaja = movimientosCaja;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

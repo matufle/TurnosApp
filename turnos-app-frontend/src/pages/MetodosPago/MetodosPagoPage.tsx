@@ -1,7 +1,7 @@
 // src/pages/MetodosPago/MetodosPagoPage.tsx
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Modal, TextInput, Select, NumberInput, Button, Menu, ActionIcon } from '@mantine/core';
+import { Modal, TextInput, Select, NumberInput, Checkbox, Button, Menu, ActionIcon } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { IconDots, IconEdit, IconBan, IconCreditCard } from '@tabler/icons-react';
@@ -30,6 +30,7 @@ interface MetodoPagoFormValues {
   tipoModificador: TipoModificadorPago;
   porcentajeModificador: number;
   porcentajeComision: number;
+  esEfectivo: boolean;
 }
 
 export function MetodosPagoPage() {
@@ -41,7 +42,7 @@ export function MetodosPagoPage() {
   const [modalOpened, { open, close }] = useDisclosure(false);
 
   const form = useForm<MetodoPagoFormValues>({
-    initialValues: { nombre: '', tipoModificador: 'Ninguno', porcentajeModificador: 0, porcentajeComision: 0 },
+    initialValues: { nombre: '', tipoModificador: 'Ninguno', porcentajeModificador: 0, porcentajeComision: 0, esEfectivo: false },
     validate: {
       nombre: isNotEmpty('El nombre es obligatorio'),
       porcentajeModificador: (value) => (value >= 0 ? null : 'No puede ser negativo'),
@@ -77,6 +78,7 @@ export function MetodosPagoPage() {
       tipoModificador: metodo.tipoModificador,
       porcentajeModificador: metodo.porcentajeModificador,
       porcentajeComision: metodo.porcentajeComision,
+      esEfectivo: metodo.esEfectivo,
     });
     setMetodoEditando(metodo);
     open();
@@ -296,6 +298,12 @@ export function MetodosPagoPage() {
             decimalScale={2}
             suffix="%"
             {...form.getInputProps('porcentajeComision')}
+          />
+
+          <Checkbox
+            label="Es efectivo"
+            description="Afecta el arqueo de caja (monto inicial, declarado y diferencia). El resto de los medios de pago solo se muestran como total en el resumen de cierre."
+            {...form.getInputProps('esEfectivo', { type: 'checkbox' })}
           />
 
           <Button type="submit" loading={submitting} fullWidth mt="sm">

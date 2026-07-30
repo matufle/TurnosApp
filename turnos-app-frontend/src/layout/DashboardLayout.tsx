@@ -27,7 +27,7 @@ import { tenantService } from '../api/tenantService';
 import { useTenantTheme } from '../context/useTenantTheme';
 import { useAuth } from '../context/useAuth';
 import { OnboardingTour } from '../components/OnboardingTour/OnboardingTour';
-import { navLinks } from './navLinks';
+import { navLinks, esLinkVisible } from './navLinks';
 
 export function DashboardLayout() {
   const [opened, { toggle }] = useDisclosure();
@@ -37,7 +37,7 @@ export function DashboardLayout() {
   // 1. Traemos tanto el color actual como la función para actualizarlo
   const { colorHex, setColorHex } = useTenantTheme();
   const { user, hasPermission, logout } = useAuth();
-  const navLinksVisibles = navLinks.filter((link) => !link.permiso || hasPermission(link.permiso));
+  const navLinksVisibles = navLinks.filter((link) => esLinkVisible(link.permiso, hasPermission));
 
   // 2. Creamos un estado de carga inteligente.
   // Si 'colorHex' ya existe (ej. al presionar F5 en una página privada), no mostramos carga.

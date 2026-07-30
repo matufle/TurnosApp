@@ -10,7 +10,7 @@ function isAuthenticated(): boolean {
   return Boolean(token) && Boolean(tenantId);
 }
 
-export function ProtectedRoute({ children, permiso }: { children: ReactNode; permiso?: string }) {
+export function ProtectedRoute({ children, permiso }: { children: ReactNode; permiso?: string | string[] }) {
   const { loading, hasPermission } = useAuth();
 
   if (!isAuthenticated()) {
@@ -25,7 +25,10 @@ export function ProtectedRoute({ children, permiso }: { children: ReactNode; per
     );
   }
 
-  if (permiso && !hasPermission(permiso)) {
+  // Array: alcanza con tener al menos uno de los permisos indicados.
+  const tienePermiso = !permiso || (Array.isArray(permiso) ? permiso.some(hasPermission) : hasPermission(permiso));
+
+  if (!tienePermiso) {
     return <Navigate to="/app" replace />;
   }
 
