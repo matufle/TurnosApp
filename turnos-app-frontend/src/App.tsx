@@ -34,6 +34,7 @@ const UsuariosPage = lazy(() => import('./pages/Usuarios/UsuariosPage').then((m)
 const RolesPage = lazy(() => import('./pages/Roles/RolesPage').then((m) => ({ default: m.RolesPage })));
 const MetricasPage = lazy(() => import('./pages/Metricas/MetricasPage').then((m) => ({ default: m.MetricasPage })));
 const ListaEsperaPage = lazy(() => import('./pages/ListaEspera/ListaEsperaPage').then((m) => ({ default: m.ListaEsperaPage })));
+const CajaPage = lazy(() => import('./pages/Caja/CajaPage').then((m) => ({ default: m.CajaPage })));
 const ReservaTenantLayout = lazy(() => import('./pages/Reservas/ReservaTenantLayout').then((m) => ({ default: m.ReservaTenantLayout })));
 const LoginClientePage = lazy(() => import('./pages/Reservas/LoginClientePage').then((m) => ({ default: m.LoginClientePage })));
 const RegistroClientePage = lazy(() => import('./pages/Reservas/RegistroClientePage').then((m) => ({ default: m.RegistroClientePage })));
@@ -137,6 +138,14 @@ const finalTheme =
               }
             />
             <Route path="cobros" element={<HistorialCobrosPage />} />
+            <Route
+              path="caja"
+              element={
+                <ProtectedRoute permiso={['VerCaja', 'GestionarCaja']}>
+                  <CajaPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="metricas"
               element={

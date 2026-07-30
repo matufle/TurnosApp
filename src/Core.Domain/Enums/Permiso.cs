@@ -21,9 +21,12 @@ public enum Permiso : long
     GestionarRoles = 1L << 10,
     GestionarConfiguracionNegocio = 1L << 11,
     GestionarListaEspera = 1L << 12,
+    GestionarCaja = 1L << 13,
+    ForzarCierreCaja = 1L << 14,
+    VerCaja = 1L << 15,
 
     Todos = VerAgendaCompleta | GestionarTurnos | GestionarClientes | GestionarServicios
         | GestionarRecursos | GestionarMetodosPago | CrearCobros | VerGananciaNeta
         | VerReportes | GestionarUsuarios | GestionarRoles | GestionarConfiguracionNegocio
-        | GestionarListaEspera
+        | GestionarListaEspera | GestionarCaja | ForzarCierreCaja | VerCaja
 }

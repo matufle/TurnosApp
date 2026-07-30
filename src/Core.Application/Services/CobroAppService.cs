@@ -16,12 +16,18 @@ public class CobroAppService : ICobroAppService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICajaAppService _cajaAppService;
 
-    public CobroAppService(IUnitOfWork unitOfWork, ITenantProvider tenantProvider, ICurrentUserService currentUserService)
+    public CobroAppService(
+        IUnitOfWork unitOfWork,
+        ITenantProvider tenantProvider,
+        ICurrentUserService currentUserService,
+        ICajaAppService cajaAppService)
     {
         _unitOfWork = unitOfWork;
         _tenantProvider = tenantProvider;
         _currentUserService = currentUserService;
+        _cajaAppService = cajaAppService;
     }
 
     public async Task<CobroDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -105,6 +111,9 @@ public class CobroAppService : ICobroAppService
         await _unitOfWork.Cobros.AddAsync(cobro, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // Genera el movimiento de caja automático si hay una sesión abierta — no-op si no la hay.
+        await _cajaAppService.SincronizarMovimientoDeCobroAsync(cobro, cancellationToken);
+
         var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
         return MapToDto(cobro, puedeVerGananciaNeta);
     }
@@ -162,6 +171,10 @@ public class CobroAppService : ICobroAppService
 
         _unitOfWork.Cobros.Update(cobro);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Reversa + reemplaza el movimiento de caja automático si el cobro editado ya tenía
+        // uno en una sesión que sigue abierta — no-op si no hay sesión abierta.
+        await _cajaAppService.SincronizarMovimientoDeCobroAsync(cobro, cancellationToken);
 
         var puedeVerGananciaNeta = await PuedeVerGananciaNetaAsync(cancellationToken);
         return MapToDto(cobro, puedeVerGananciaNeta);

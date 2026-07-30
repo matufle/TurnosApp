@@ -45,6 +45,7 @@ public class AuthAppService : IAuthAppService
         await _unitOfWork.SaveChangesAsync(cancellationToken); // necesario: EF recién asigna tenant.Id acá
 
         var rolAdmin = await SeedearRolesAsync(tenant.Id, cancellationToken);
+        await SeedearMetodoPagoEfectivoAsync(tenant.Id, cancellationToken);
 
         var passwordHash = _passwordHasher.HashPassword(dto.Password);
         var nombre = dto.Email.Split('@')[0];
@@ -86,6 +87,26 @@ public class AuthAppService : IAuthAppService
         await _unitOfWork.SaveChangesAsync(cancellationToken); // necesario: EF recién asigna admin.Id acá
 
         return admin;
+    }
+
+    // Efectivo es el único medio de pago que TODO negocio usa desde el día uno — sin esto,
+    // un tenant nuevo arranca sin nada que elegir en "Registrar movimiento" de Caja hasta
+    // que alguien va manualmente a Métodos de Pago a crearlo. Igual que los roles, el tenant
+    // puede editarlo o desactivarlo después si no lo necesita.
+    private async Task SeedearMetodoPagoEfectivoAsync(int tenantId, CancellationToken cancellationToken)
+    {
+        var efectivo = new MetodoPago
+        {
+            TenantId = tenantId,
+            Nombre = "Efectivo",
+            TipoModificador = TipoModificadorPago.Ninguno,
+            PorcentajeModificador = 0,
+            PorcentajeComision = 0,
+            EsEfectivo = true,
+            Activo = true
+        };
+
+        await _unitOfWork.MetodoPagos.AddAsync(efectivo, cancellationToken);
     }
 
     private static string GenerarSlug(string nombre)
