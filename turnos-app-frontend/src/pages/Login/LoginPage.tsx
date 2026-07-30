@@ -12,6 +12,9 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [emailNoConfirmado, setEmailNoConfirmado] = useState<string | null>(null);
+  const [reenviando, setReenviando] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
 
   const form = useForm({
     initialValues: { email: '', password: '', recordarme: false },
@@ -23,6 +26,8 @@ export function LoginPage() {
 
   const handleSubmit = async (values: typeof form.values) => {
     setErrorMessage(null);
+    setEmailNoConfirmado(null);
+    setReenviado(false);
     setLoading(true);
 
     try {
@@ -33,12 +38,28 @@ export function LoginPage() {
       navigate('/app', { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setErrorMessage('Email o contraseña incorrectos. Intentá de nuevo.');
+        const code = error.response.data?.code as string | undefined;
+        if (code === 'EMAIL_NO_CONFIRMADO') {
+          setEmailNoConfirmado(values.email);
+        } else {
+          setErrorMessage('Email o contraseña incorrectos. Intentá de nuevo.');
+        }
       } else {
         setErrorMessage('No pudimos conectar con el servidor. Intentá de nuevo en unos segundos.');
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReenviar = async () => {
+    if (!emailNoConfirmado) return;
+    setReenviando(true);
+    try {
+      await authService.reenviarConfirmacion(emailNoConfirmado);
+      setReenviado(true);
+    } finally {
+      setReenviando(false);
     }
   };
 
@@ -101,6 +122,30 @@ export function LoginPage() {
               >
                 <span className="material-symbols-outlined text-[20px]">error</span>
                 {errorMessage}
+              </div>
+            )}
+
+            {emailNoConfirmado && (
+              <div
+                role="alert"
+                className="flex flex-col gap-2 rounded-lg border border-error/30 bg-error-container px-4 py-3 font-body-sm text-body-sm text-on-error-container"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[20px]">mark_email_unread</span>
+                  Confirmá tu email antes de ingresar. Revisá tu casilla de entrada.
+                </div>
+                {reenviado ? (
+                  <span>Listo, si correspondía te reenviamos el email.</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleReenviar}
+                    disabled={reenviando}
+                    className="self-start font-semibold hover:underline disabled:opacity-70"
+                  >
+                    {reenviando ? 'Reenviando...' : 'Reenviar email de confirmación'}
+                  </button>
+                )}
               </div>
             )}
 

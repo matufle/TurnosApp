@@ -6,6 +6,7 @@ using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
 using TurnosApp.Core.Domain.Entities;
+using TurnosApp.Core.Domain.Enums;
 using TurnosApp.Core.Exceptions;
 
 namespace TurnosApp.Core.Application.Services;
@@ -35,7 +36,8 @@ public class TenantAppService : ITenantAppService
             Slug: tenant.Slug,
             PermiteSolapamiento: tenant.PermiteSolapamiento,
             ColorPrimario: tenant.ColorPrimario,
-            PermiteReservasPublicas: tenant.PermiteReservasPublicas
+            PermiteReservasPublicas: tenant.PermiteReservasPublicas,
+            FrecuenciaLiquidacion: tenant.FrecuenciaLiquidacion.ToString()
         );
     }
 
@@ -52,8 +54,17 @@ public class TenantAppService : ITenantAppService
         tenant.ColorPrimario = dto.ColorPrimario;
         tenant.PermiteReservasPublicas = dto.PermiteReservasPublicas;
         tenant.PermiteSolapamiento = dto.PermiteSolapamiento;
+        tenant.FrecuenciaLiquidacion = ParseFrecuenciaLiquidacion(dto.FrecuenciaLiquidacion);
         // 3. Como EF Core trackea la entidad, solo guardamos
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+    }
+
+    private static FrecuenciaLiquidacion ParseFrecuenciaLiquidacion(string valor)
+    {
+        if (!Enum.TryParse<FrecuenciaLiquidacion>(valor, ignoreCase: true, out var frecuencia))
+            throw new BadRequestException($"'{valor}' no es una frecuencia de liquidación válida.");
+
+        return frecuencia;
     }
 }

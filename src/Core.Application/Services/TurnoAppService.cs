@@ -234,6 +234,8 @@ public class TurnoAppService : ITurnoAppService
     // caller valida existencia/estado/ownership a su manera antes de llegar acá.
     private async Task CancelarTurnoInternoAsync(Turno turno, CancellationToken cancellationToken)
     {
+        await ValidarNoLiquidadoAsync(turno.Id, cancellationToken);
+
         turno.Estado = EstadoTurno.Cancelado;
         turno.ModificadoEn = DateTime.UtcNow;
 
@@ -295,6 +297,8 @@ public class TurnoAppService : ITurnoAppService
                 code: "TURNO_CANCELADO",
                 message: $"El turno {id} está cancelado y no se puede cambiar su estado.");
 
+        await ValidarNoLiquidadoAsync(id, cancellationToken);
+
         turno.Estado = nuevoEstado;
         turno.ModificadoEn = DateTime.UtcNow;
 
@@ -304,6 +308,18 @@ public class TurnoAppService : ITurnoAppService
         var turnoCompleto = await _unitOfWork.Turnos.GetByIdConDetallesAsync(id, cancellationToken);
 
         return MapToDto(turnoCompleto!);
+    }
+
+    // Un turno con algún LiquidacionDetalle vigente (Liquidacion no Anulada) ya generó
+    // comisión — cancelarlo o cambiarle el estado después alteraría un cálculo ya cerrado.
+    private async Task ValidarNoLiquidadoAsync(int turnoId, CancellationToken cancellationToken)
+    {
+        var yaLiquidado = await _unitOfWork.LiquidacionDetalles.ExisteVigentePorTurnoAsync(turnoId, cancellationToken);
+
+        if (yaLiquidado)
+            throw new BusinessException(
+                code: "TURNO_YA_LIQUIDADO",
+                message: $"El turno {turnoId} ya fue liquidado y no puede modificarse.");
     }
 
     private static TurnoDto MapToDto(Turno turno)

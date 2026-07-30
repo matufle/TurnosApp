@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Net;
 using System.Text;
+using System.Threading.RateLimiting;
 using TurnosApp.Core.Application.Extensions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -82,6 +86,9 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // ── Worker de notificaciones (outbox in-process) ───────────────────────────
 builder.Services.AddHostedService<NotificacionDispatcherWorker>();
 
+// ── Worker de liquidaciones (genera comisiones cuando cierra el período por tenant) ────
+builder.Services.AddHostedService<LiquidacionGeneratorWorker>();
+
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -108,6 +115,63 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
+});
+
+// ── Forwarded headers ──────────────────────────────────────────────────────
+// La app corre detrás del load balancer de Render: sin esto, HttpContext.Connection.
+// RemoteIpAddress siempre sería la IP interna del proxy, no la del cliente real —
+// inutilizando el rate limiting por IP de más abajo (todo el tráfico caería en el
+// mismo balde). KnownNetworks/KnownProxies vacíos porque no conocemos de antemano
+// la IP del proxy de Render (mismo trade-off que cualquier deploy en un PaaS).
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// ── Rate limiting en endpoints de auth (login/registro, staff y cliente) ──────
+// Sin esto, nada impide que un bot spamee cuentas nuevas o intente fuerza bruta
+// de contraseñas contra /api/auth y /api/cliente-auth. Partición por IP real
+// (post ForwardedHeaders); "Login" más permisivo que "Register" porque un usuario
+// legítimo puede tipear mal la contraseña varias veces, mientras que registrar
+// cuentas es una acción rara que un humano hace una sola vez.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            title = "Demasiados intentos",
+            status = StatusCodes.Status429TooManyRequests,
+            detail = "Hiciste demasiados intentos en poco tiempo. Esperá un momento y volvé a intentar."
+        }, cancellationToken);
+    };
+
+    static string ClaveIp(HttpContext http) =>
+        http.Connection.RemoteIpAddress?.ToString() ?? "sin-ip";
+
+    options.AddPolicy("AuthLogin", http => RateLimitPartition.GetSlidingWindowLimiter(
+        ClaveIp(http),
+        _ => new SlidingWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 4,
+            PermitLimit = 10,
+            QueueLimit = 0
+        }));
+
+    options.AddPolicy("AuthRegister", http => RateLimitPartition.GetFixedWindowLimiter(
+        ClaveIp(http),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromHours(1),
+            PermitLimit = 5,
+            QueueLimit = 0
+        }));
 });
 
 // ── Controllers y Swagger ──────────────────────────────────────────────────
@@ -161,6 +225,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// Antes que todo lo demás: repuebla RemoteIpAddress desde X-Forwarded-For para
+// que CORS/rate limiting/logging vean la IP real del cliente, no la del proxy.
+app.UseForwardedHeaders();
 app.UseCors("FrontendPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -168,6 +235,7 @@ app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();

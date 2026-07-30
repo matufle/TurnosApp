@@ -1,21 +1,23 @@
 // src/pages/Reservas/RegistroClientePage.tsx
 import { useState } from 'react';
-import { Link, useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
-import { Anchor, Alert, Button, Center, PasswordInput, Stack, TextInput, Title } from '@mantine/core';
+import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
+import { Anchor, Alert, Button, Center, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useForm, isEmail, isNotEmpty, hasLength } from '@mantine/form';
 import axios from 'axios';
 import { clienteAuthService } from '../../api/clienteAuthService';
-import { useClienteAuth } from '../../context/useClienteAuth';
+import { TurnstileWidget } from '../../components/TurnstileWidget';
 import type { TenantPublico } from '../../types/ClienteAuth';
 
 export function RegistroClientePage() {
   const { slug } = useParams<{ slug: string }>();
   const { tenant } = useOutletContext<{ tenant: TenantPublico }>();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login } = useClienteAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [registroPendienteEmail, setRegistroPendienteEmail] = useState<string | null>(null);
+  const [reenviando, setReenviando] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const form = useForm({
     initialValues: { nombre: '', apellido: '', email: '', telefono: '', password: '' },
@@ -28,6 +30,11 @@ export function RegistroClientePage() {
   });
 
   const handleSubmit = async (values: typeof form.values) => {
+    if (!turnstileToken) {
+      setErrorMessage('Completá la verificación de seguridad para continuar.');
+      return;
+    }
+
     setErrorMessage(null);
     setLoading(true);
 
@@ -36,13 +43,19 @@ export function RegistroClientePage() {
         tenantSlug: tenant.slug,
         ...values,
         telefono: values.telefono || undefined,
+        turnstileToken,
       });
-      await login(response.token, response.tenantId, tenant.slug);
-      const returnTo = searchParams.get('returnTo');
-      navigate(returnTo ? decodeURIComponent(returnTo) : `/reservas/${slug}/mis-turnos`, { replace: true });
+      setRegistroPendienteEmail(response.email);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setErrorMessage('Ya existe una cuenta registrada con ese email.');
+      if (axios.isAxiosError(error)) {
+        const code = error.response?.data?.code as string | undefined;
+        if (code === 'CAPTCHA_INVALIDO') {
+          setErrorMessage('No pudimos verificar que sos humano. Intentá de nuevo.');
+        } else if (error.response?.status === 409) {
+          setErrorMessage('Ya existe una cuenta registrada con ese email.');
+        } else {
+          setErrorMessage('No pudimos conectar con el servidor. Intentá de nuevo.');
+        }
       } else {
         setErrorMessage('No pudimos conectar con el servidor. Intentá de nuevo.');
       }
@@ -50,6 +63,43 @@ export function RegistroClientePage() {
       setLoading(false);
     }
   };
+
+  const handleReenviar = async () => {
+    if (!registroPendienteEmail) return;
+    setReenviando(true);
+    try {
+      await clienteAuthService.reenviarConfirmacion(tenant.slug, registroPendienteEmail);
+      setReenviado(true);
+    } finally {
+      setReenviando(false);
+    }
+  };
+
+  if (registroPendienteEmail) {
+    return (
+      <Center py="xl" px="md">
+        <Stack maw={360} w="100%" gap="md" align="center" ta="center">
+          <Title order={3}>Revisá tu email</Title>
+          <Text c="dimmed">
+            Te enviamos un link de confirmación a <strong>{registroPendienteEmail}</strong>. Confirmá tu cuenta para
+            poder reservar turnos.
+          </Text>
+          {reenviado ? (
+            <Text c="dimmed" size="sm">
+              Listo, si correspondía te reenviamos el email.
+            </Text>
+          ) : (
+            <Anchor component="button" type="button" onClick={handleReenviar} disabled={reenviando}>
+              {reenviando ? 'Reenviando...' : '¿No te llegó? Reenviar email'}
+            </Anchor>
+          )}
+          <Anchor component={Link} to={`/reservas/${slug}/login`}>
+            Ir a iniciar sesión
+          </Anchor>
+        </Stack>
+      </Center>
+    );
+  }
 
   return (
     <Center py="xl" px="md">
@@ -66,7 +116,9 @@ export function RegistroClientePage() {
             <TextInput label="Teléfono (opcional)" {...form.getInputProps('telefono')} />
             <PasswordInput label="Contraseña" {...form.getInputProps('password')} />
 
-            <Button type="submit" loading={loading} fullWidth>
+            <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
+
+            <Button type="submit" loading={loading} disabled={!turnstileToken} fullWidth>
               Registrarme
             </Button>
           </Stack>

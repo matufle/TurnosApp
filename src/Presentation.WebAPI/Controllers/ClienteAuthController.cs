@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TurnosApp.Core.Application.DTOs.ClienteAuth;
 using TurnosApp.Core.Application.Interfaces.Services;
 
@@ -28,7 +29,8 @@ public class ClienteAuthController : ControllerBase
 
     [HttpPost("registro")]
     [AllowAnonymous]
-    public async Task<ActionResult<ClienteAuthResponseDto>> Registro(
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<ActionResult<ClienteRegistroPendienteDto>> Registro(
         [FromBody] ClienteRegistroDto dto,
         CancellationToken cancellationToken)
     {
@@ -38,11 +40,33 @@ public class ClienteAuthController : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthLogin")]
     public async Task<ActionResult<ClienteAuthResponseDto>> Login(
         [FromBody] ClienteLoginDto dto,
         CancellationToken cancellationToken)
     {
         var result = await _clienteAuthAppService.LoginAsync(dto, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPost("confirmar-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmarEmail(
+        [FromBody] ConfirmarEmailClienteDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _clienteAuthAppService.ConfirmarEmailAsync(dto, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("reenviar-confirmacion")]
+    [AllowAnonymous]
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<IActionResult> ReenviarConfirmacion(
+        [FromBody] ReenviarConfirmacionClienteDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _clienteAuthAppService.ReenviarConfirmacionAsync(dto, cancellationToken);
+        return NoContent();
     }
 }

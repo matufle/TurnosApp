@@ -9,5 +9,5 @@ public interface IPublicCatalogoAppService
     Task<IReadOnlyList<RecursoPublicoDto>> GetRecursosAsync(string tenantSlug, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<string>> GetDisponibilidadAsync(
-        string tenantSlug, int recursoId, int servicioId, DateOnly fecha, CancellationToken cancellationToken = default);
+        string tenantSlug, int recursoId, IReadOnlyList<int> servicioIds, DateOnly fecha, CancellationToken cancellationToken = default);
 }

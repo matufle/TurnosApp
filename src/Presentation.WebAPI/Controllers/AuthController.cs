@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TurnosApp.Core.Application.DTOs;
 using TurnosApp.Core.Application.DTOs.Auth;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -40,6 +41,7 @@ public class AuthController : ControllerBase
     //Estos son los endpoints de autenticación, que permiten a los usuarios iniciar sesión y registrarse en la aplicación.
     [HttpPost("login")]
     [AllowAnonymous] // clave: este endpoint no requiere JWT (obviamente, todavía no lo tiene)
+    [EnableRateLimiting("AuthLogin")]
     public async Task<ActionResult<LoginResponseDTO>> Login(
         [FromBody] LoginRequestDTO dto,
         CancellationToken cancellationToken)
@@ -49,11 +51,33 @@ public class AuthController : ControllerBase
     }
     [HttpPost("register")]
     [AllowAnonymous]
-    public async Task<ActionResult<LoginResponseDTO>> Register(
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<ActionResult<RegistroPendienteDto>> Register(
     [FromBody] RegisterRequestDTO dto,
     CancellationToken cancellationToken)
     {
         var result = await _authAppService.RegisterAsync(dto, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPost("confirmar-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmarEmail(
+        [FromBody] ConfirmarEmailDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _authAppService.ConfirmarEmailAsync(dto.Token, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("reenviar-confirmacion")]
+    [AllowAnonymous]
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<IActionResult> ReenviarConfirmacion(
+        [FromBody] ReenviarConfirmacionDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _authAppService.ReenviarConfirmacionAsync(dto.Email, cancellationToken);
+        return NoContent();
     }
 }

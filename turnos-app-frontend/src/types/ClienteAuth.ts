@@ -12,6 +12,7 @@ export interface ClienteRegistroRequest {
   email: string;
   telefono?: string;
   password: string;
+  turnstileToken: string;
 }
 
 export interface ClienteLoginRequest {
@@ -24,6 +25,10 @@ export interface ClienteLoginRequest {
 export interface ClienteAuthResponse {
   token: string;
   tenantId: number;
+  email: string;
+}
+
+export interface ClienteRegistroPendienteResponse {
   email: string;
 }
 

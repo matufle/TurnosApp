@@ -23,4 +23,12 @@ public interface ITurnoRepository : IRepository<Turno>
     /// que resolver). Turnos activos (Pendiente/Confirmado) de un recurso en una fecha dada.
     /// </summary>
     Task<IReadOnlyList<Turno>> GetTurnosDelDiaCrossTenantAsync(int tenantId, int recursoId, DateOnly fecha, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cross-tenant a propósito: usado por LiquidacionGeneratorService (worker en background,
+    /// sin JWT que resolver). Turnos Completado, completamente pagados y sin un
+    /// LiquidacionDetalle vigente, con fecha hasta el cierre del período que se está generando —
+    /// incluye rezagados de períodos anteriores que quedaron sin liquidar.
+    /// </summary>
+    Task<IReadOnlyList<Turno>> GetElegiblesParaLiquidacionCrossTenantAsync(int tenantId, DateTime hasta, CancellationToken cancellationToken = default);
 }

@@ -16,7 +16,9 @@ export type Permiso =
   | 'GestionarListaEspera'
   | 'GestionarCaja'
   | 'ForzarCierreCaja'
-  | 'VerCaja';
+  | 'VerCaja'
+  | 'VerLiquidaciones'
+  | 'GestionarLiquidaciones';
 
 export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; label: string }[] }[] = [
   {
@@ -58,6 +60,13 @@ export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; labe
       { valor: 'VerCaja', label: 'Ver el estado de caja y el historial de sesiones (sin poder operarla)' },
       { valor: 'GestionarCaja', label: 'Abrir, cerrar y registrar movimientos de caja (incluye poder verla)' },
       { valor: 'ForzarCierreCaja', label: 'Forzar el cierre de una sesión de caja abierta por otro usuario' },
+    ],
+  },
+  {
+    area: 'Liquidaciones',
+    permisos: [
+      { valor: 'VerLiquidaciones', label: 'Ver las liquidaciones de todos los profesionales (sin poder operarlas)' },
+      { valor: 'GestionarLiquidaciones', label: 'Configurar comisiones, marcar liquidaciones pagadas, anularlas y cargar adelantos' },
     ],
   },
 ];

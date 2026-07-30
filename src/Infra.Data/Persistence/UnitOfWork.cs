@@ -27,6 +27,10 @@ public class UnitOfWork : IUnitOfWork
     public IHorarioAtencionRepository HorariosAtencion { get; }
     public ISesionCajaRepository SesionesCaja { get; }
     public IMovimientoCajaRepository MovimientosCaja { get; }
+    public IReglaComisionRepository ReglasComision { get; }
+    public ILiquidacionRepository Liquidaciones { get; }
+    public ILiquidacionDetalleRepository LiquidacionDetalles { get; }
+    public IAdelantoProfesionalRepository AdelantosProfesional { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -44,7 +48,11 @@ public class UnitOfWork : IUnitOfWork
         INotificacionRepository notificaciones,
         IHorarioAtencionRepository horariosAtencion,
         ISesionCajaRepository sesionesCaja,
-        IMovimientoCajaRepository movimientosCaja)
+        IMovimientoCajaRepository movimientosCaja,
+        IReglaComisionRepository reglasComision,
+        ILiquidacionRepository liquidaciones,
+        ILiquidacionDetalleRepository liquidacionDetalles,
+        IAdelantoProfesionalRepository adelantosProfesional)
     {
         _context = context;
         Tenants = tenants;
@@ -62,6 +70,10 @@ public class UnitOfWork : IUnitOfWork
         HorariosAtencion = horariosAtencion;
         SesionesCaja = sesionesCaja;
         MovimientosCaja = movimientosCaja;
+        ReglasComision = reglasComision;
+        Liquidaciones = liquidaciones;
+        LiquidacionDetalles = liquidacionDetalles;
+        AdelantosProfesional = adelantosProfesional;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

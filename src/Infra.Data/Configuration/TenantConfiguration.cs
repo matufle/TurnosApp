@@ -28,6 +28,14 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
         builder.Property(t => t.FechaAlta)
             .IsRequired();
 
+        // Persistido como string (no el ordinal int) — mismo criterio que EstadoTurno/
+        // EstadoSesionCaja: resiliente a reordenamientos futuros del enum.
+        builder.Property(t => t.FrecuenciaLiquidacion)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(TurnosApp.Core.Domain.Enums.FrecuenciaLiquidacion.Mensual);
+
         // Tenant no tiene Global Query Filter — es la raíz del multi-tenancy,
         // no pertenece a ningún tenant.
     }

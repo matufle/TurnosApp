@@ -39,6 +39,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<HorarioAtencion> HorariosAtencion => Set<HorarioAtencion>();
     public DbSet<SesionCaja> SesionesCaja => Set<SesionCaja>();
     public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
+    public DbSet<ReglaComision> ReglasComision => Set<ReglaComision>();
+    public DbSet<Liquidacion> Liquidaciones => Set<Liquidacion>();
+    public DbSet<LiquidacionDetalle> LiquidacionDetalles => Set<LiquidacionDetalle>();
+    public DbSet<AdelantoProfesional> AdelantosProfesional => Set<AdelantoProfesional>();
 
     // Exponemos el TenantId resuelto para que las configuraciones lo capturen
     // en el closure del Global Query Filter.
@@ -79,8 +83,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HorarioAtencionConfiguration(this));
         modelBuilder.ApplyConfiguration(new SesionCajaConfiguration(this));
         modelBuilder.ApplyConfiguration(new MovimientoCajaConfiguration(this));
+        modelBuilder.ApplyConfiguration(new ReglaComisionConfiguration(this));
+        modelBuilder.ApplyConfiguration(new LiquidacionConfiguration(this));
+        modelBuilder.ApplyConfiguration(new AdelantoProfesionalConfiguration(this));
         // Estas no necesitan contexto — se registran solas vía assembly scan:
-        // TenantConfiguration, TurnoServicioConfiguration
+        // TenantConfiguration, TurnoServicioConfiguration, LiquidacionDetalleConfiguration
 
         base.OnModelCreating(modelBuilder);
     }

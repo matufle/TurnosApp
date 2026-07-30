@@ -57,11 +57,11 @@ public class PublicController : ControllerBase
     public async Task<IActionResult> GetDisponibilidad(
         string slug,
         [FromQuery] int recursoId,
-        [FromQuery] int servicioId,
+        [FromQuery] int[] servicioIds,
         [FromQuery] DateOnly fecha,
         CancellationToken cancellationToken)
     {
-        var slots = await _publicCatalogoAppService.GetDisponibilidadAsync(slug, recursoId, servicioId, fecha, cancellationToken);
+        var slots = await _publicCatalogoAppService.GetDisponibilidadAsync(slug, recursoId, servicioIds, fecha, cancellationToken);
         return Ok(slots);
     }
 }

@@ -9,6 +9,7 @@ namespace TurnosApp.Core.Application.DTOs.Tenant
     string Slug,
     string ColorPrimario,
     bool PermiteReservasPublicas,
-    bool PermiteSolapamiento
+    bool PermiteSolapamiento,
+    string FrecuenciaLiquidacion
 );
 }

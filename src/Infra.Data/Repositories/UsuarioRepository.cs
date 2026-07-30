@@ -31,6 +31,13 @@ public class UsuarioRepository : IUsuarioRepository
             .Include(u => u.Rol)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
+    public async Task<Usuario?> GetByTokenConfirmacionAsync(string token, CancellationToken cancellationToken)
+        // IgnoreQueryFilters: la confirmación ocurre sin JWT, antes de conocer el tenant.
+        // Tracked (sin AsNoTracking) porque el caller muta y guarda la entidad.
+        => await _context.Usuarios
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.TokenConfirmacionEmail == token, cancellationToken);
+
     public async Task<IReadOnlyList<Usuario>> GetAllAsync(CancellationToken cancellationToken)
         => await _context.Usuarios
             .Include(u => u.Rol)

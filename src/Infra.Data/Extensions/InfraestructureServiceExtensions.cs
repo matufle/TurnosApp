@@ -51,6 +51,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IHorarioAtencionRepository, HorarioAtencionRepository>();
         services.AddScoped<ISesionCajaRepository, SesionCajaRepository>();
         services.AddScoped<IMovimientoCajaRepository, MovimientoCajaRepository>();
+        services.AddScoped<IReglaComisionRepository, ReglaComisionRepository>();
+        services.AddScoped<ILiquidacionRepository, LiquidacionRepository>();
+        services.AddScoped<ILiquidacionDetalleRepository, LiquidacionDetalleRepository>();
+        services.AddScoped<IAdelantoProfesionalRepository, AdelantoProfesionalRepository>();
 
         // Los repositorios no se registran individualmente en DI —
         // se accede a ellos exclusivamente a través de IUnitOfWork,

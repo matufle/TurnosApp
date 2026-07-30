@@ -18,6 +18,12 @@ public class Cliente : TenantEntity
     // Un Cliente cargado a mano por el staff (walk-in) puede seguir sin cuenta indefinidamente.
     public string? PasswordHash { get; set; }
 
+    // Solo relevante cuando PasswordHash != null (ver LoginAsync: un walk-in sin cuenta
+    // ya corta antes por PasswordHash is null).
+    public bool EmailConfirmado { get; set; } = false;
+    public string? TokenConfirmacionEmail { get; set; }
+    public DateTime? TokenConfirmacionExpira { get; set; }
+
     /// <summary>
     /// Campo flexible para metadatos específicos del rubro.
     /// Ejemplo radiología: { "obraSocial": "PAMI", "nroAfiliado": "123" }

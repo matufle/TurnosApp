@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useForm, isEmail, isNotEmpty, hasLength, matchesField } from '@mantine/form';
 import { authService } from '../../api/authService';
-import { useAuth } from '../../context/useAuth';
+import { TurnstileWidget } from '../../components/TurnstileWidget';
 
 export function RegisterPage() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
   const emailPrecargado = (location.state as { email?: string } | null)?.email ?? '';
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [registroPendienteEmail, setRegistroPendienteEmail] = useState<string | null>(null);
+  const [reenviando, setReenviando] = useState(false);
+  const [reenviado, setReenviado] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const form = useForm({
     initialValues: {
@@ -33,19 +35,30 @@ export function RegisterPage() {
   });
 
   const handleSubmit = async (values: typeof form.values) => {
+    if (!turnstileToken) {
+      setErrorMessage('Completá la verificación de seguridad para continuar.');
+      return;
+    }
+
     setErrorMessage(null);
     setLoading(true);
 
     try {
-      const response = await authService.register(values);
+      const response = await authService.register({
+        nombreNegocio: values.nombreNegocio,
+        email: values.email,
+        password: values.password,
+        turnstileToken,
+      });
 
-      await login(response.token, response.tenantId);
-
-      navigate('/app', { replace: true });
+      setRegistroPendienteEmail(response.email);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const status = error.response.status;
-        if (status === 409) {
+        const code = error.response.data?.code as string | undefined;
+        if (code === 'CAPTCHA_INVALIDO') {
+          setErrorMessage('No pudimos verificar que sos humano. Intentá de nuevo.');
+        } else if (status === 409) {
           setErrorMessage('Ya existe una cuenta con ese email.');
         } else if (status === 400) {
           const validationErrors = error.response.data?.errors as Record<string, string[]> | undefined;
@@ -62,6 +75,17 @@ export function RegisterPage() {
     }
   };
 
+  const handleReenviar = async () => {
+    if (!registroPendienteEmail) return;
+    setReenviando(true);
+    try {
+      await authService.reenviarConfirmacion(registroPendienteEmail);
+      setReenviado(true);
+    } finally {
+      setReenviando(false);
+    }
+  };
+
   return (
     <div className="bg-surface font-body-lg text-on-background min-h-screen flex flex-col">
       <main className="flex-grow flex items-center justify-center px-margin-mobile md:px-margin-desktop py-12">
@@ -71,6 +95,37 @@ export function RegisterPage() {
             <p className="font-title-md text-title-md text-secondary">Organizado, práctico y moderno.</p>
           </div>
 
+          {registroPendienteEmail ? (
+            <div className="bg-surface-container-lowest rounded-[32px] p-8 md:p-12 soft-elevation border border-surface-variant/30 text-center space-y-6">
+              <span className="material-symbols-outlined text-primary text-[48px]">mark_email_read</span>
+              <div>
+                <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">Revisá tu email</h2>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Te enviamos un link de confirmación a <strong>{registroPendienteEmail}</strong>. Confirmá tu cuenta
+                  para poder iniciar sesión.
+                </p>
+              </div>
+              {reenviado ? (
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  Listo, si correspondía te reenviamos el email.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleReenviar}
+                  disabled={reenviando}
+                  className="font-body-sm text-body-sm text-primary font-semibold hover:underline disabled:opacity-70"
+                >
+                  {reenviando ? 'Reenviando...' : '¿No te llegó? Reenviar email'}
+                </button>
+              )}
+              <div>
+                <Link to="/login" className="font-body-sm text-body-sm text-primary font-bold hover:underline underline-offset-4">
+                  Ir a iniciar sesión
+                </Link>
+              </div>
+            </div>
+          ) : (
           <div className="bg-surface-container-lowest rounded-[32px] p-8 md:p-12 soft-elevation border border-surface-variant/30">
             <div className="mb-8">
               <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">Creá tu cuenta</h2>
@@ -252,10 +307,15 @@ export function RegisterPage() {
                 )}
               </div>
 
+              {/* Verificación de seguridad */}
+              <div className="flex justify-center">
+                <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
+              </div>
+
               {/* Acción principal */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="w-full bg-primary-container hover:bg-primary disabled:opacity-70 disabled:cursor-not-allowed text-on-primary font-title-md text-title-md py-4 rounded-xl soft-elevation transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -278,6 +338,7 @@ export function RegisterPage() {
               </p>
             </div>
           </div>
+          )}
         </div>
       </main>
     </div>

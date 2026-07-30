@@ -8,5 +8,6 @@ public record ClienteRegistroDto(
     [Required, StringLength(150, MinimumLength = 1)] string Apellido,
     [Required, EmailAddress, StringLength(200)] string Email,
     string? Telefono,
-    [Required, StringLength(100, MinimumLength = 8)] string Password
+    [Required, StringLength(100, MinimumLength = 8)] string Password,
+    [Required] string TurnstileToken
 );

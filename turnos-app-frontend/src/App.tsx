@@ -14,6 +14,7 @@ import { tenantService } from './api/tenantService';
 import { LandingPage } from './pages/Landing/LandindPage';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
+import { ConfirmarEmailPage } from './pages/ConfirmarEmail/ConfirmarEmailPage';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { ClienteProtectedRoute } from './auth/ClienteProtectedRoute';
 
@@ -35,9 +36,11 @@ const RolesPage = lazy(() => import('./pages/Roles/RolesPage').then((m) => ({ de
 const MetricasPage = lazy(() => import('./pages/Metricas/MetricasPage').then((m) => ({ default: m.MetricasPage })));
 const ListaEsperaPage = lazy(() => import('./pages/ListaEspera/ListaEsperaPage').then((m) => ({ default: m.ListaEsperaPage })));
 const CajaPage = lazy(() => import('./pages/Caja/CajaPage').then((m) => ({ default: m.CajaPage })));
+const LiquidacionesPage = lazy(() => import('./pages/Liquidaciones/LiquidacionesPage').then((m) => ({ default: m.LiquidacionesPage })));
 const ReservaTenantLayout = lazy(() => import('./pages/Reservas/ReservaTenantLayout').then((m) => ({ default: m.ReservaTenantLayout })));
 const LoginClientePage = lazy(() => import('./pages/Reservas/LoginClientePage').then((m) => ({ default: m.LoginClientePage })));
 const RegistroClientePage = lazy(() => import('./pages/Reservas/RegistroClientePage').then((m) => ({ default: m.RegistroClientePage })));
+const ConfirmarEmailClientePage = lazy(() => import('./pages/Reservas/ConfirmarEmailClientePage').then((m) => ({ default: m.ConfirmarEmailClientePage })));
 const MisTurnosPage = lazy(() => import('./pages/Reservas/MisTurnosPage').then((m) => ({ default: m.MisTurnosPage })));
 const CatalogoPage = lazy(() => import('./pages/Reservas/CatalogoPage').then((m) => ({ default: m.CatalogoPage })));
 const ReservarPage = lazy(() => import('./pages/Reservas/ReservarPage').then((m) => ({ default: m.ReservarPage })));
@@ -82,6 +85,7 @@ const finalTheme =
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
 
           {/* Self-service de cara al cliente final: identidad y branding propios,
               completamente separados del staff (ver ClienteAuthProvider). */}
@@ -89,6 +93,7 @@ const finalTheme =
             <Route index element={<CatalogoPage />} />
             <Route path="login" element={<LoginClientePage />} />
             <Route path="registro" element={<RegistroClientePage />} />
+            <Route path="confirmar-email" element={<ConfirmarEmailClientePage />} />
             <Route
               path="reservar"
               element={
@@ -147,6 +152,14 @@ const finalTheme =
               }
             />
             <Route
+              path="liquidaciones"
+              element={
+                <ProtectedRoute permiso={['VerLiquidaciones', 'GestionarLiquidaciones']}>
+                  <LiquidacionesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="metricas"
               element={
                 <ProtectedRoute permiso="VerReportes">
@@ -195,7 +208,7 @@ export default function App() {
 
   useEffect(() => {
     const cargarMarca = async () => {
-      const rutasPublicas = ['/', '/login', '/registro'];
+      const rutasPublicas = ['/', '/login', '/registro', '/confirmar-email'];
       const esRutaPublica =
         rutasPublicas.includes(window.location.pathname) ||
         window.location.pathname.startsWith('/reservas/');

@@ -12,6 +12,17 @@ export interface LoginResponse {
   email: string;
 }
 
+export interface RegistroPendienteResponse {
+  email: string;
+}
+
+export interface RegisterRequest {
+  nombreNegocio: string;
+  email: string;
+  password: string;
+  turnstileToken: string;
+}
+
 export interface MeResponse {
   usuarioId: number;
   nombre: string;
@@ -30,8 +41,8 @@ export const authService = {
     return response.data;
   },
 
-register: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await httpClient.post<LoginResponse>('/auth/register', credentials);
+register: async (dto: RegisterRequest): Promise<RegistroPendienteResponse> => {
+    const response = await httpClient.post<RegistroPendienteResponse>('/auth/register', dto);
     return response.data;
   },
 
@@ -42,5 +53,13 @@ register: async (credentials: LoginRequest): Promise<LoginResponse> => {
 
   completarOnboarding: async (): Promise<void> => {
     await httpClient.patch('/auth/onboarding');
+  },
+
+  confirmarEmail: async (token: string): Promise<void> => {
+    await httpClient.post('/auth/confirmar-email', { token });
+  },
+
+  reenviarConfirmacion: async (email: string): Promise<void> => {
+    await httpClient.post('/auth/reenviar-confirmacion', { email });
   },
 };

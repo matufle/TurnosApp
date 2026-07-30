@@ -25,6 +25,10 @@ public interface IUnitOfWork : IDisposable
     IHorarioAtencionRepository HorariosAtencion { get; }
     ISesionCajaRepository SesionesCaja { get; }
     IMovimientoCajaRepository MovimientosCaja { get; }
+    IReglaComisionRepository ReglasComision { get; }
+    ILiquidacionRepository Liquidaciones { get; }
+    ILiquidacionDetalleRepository LiquidacionDetalles { get; }
+    IAdelantoProfesionalRepository AdelantosProfesional { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.

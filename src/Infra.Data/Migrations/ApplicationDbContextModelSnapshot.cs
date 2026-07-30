@@ -22,6 +22,45 @@ namespace TurnosApp.Infra.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.AdelantoProfesional", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Concepto")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("LiquidacionId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("RecursoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LiquidacionId");
+
+                    b.HasIndex("RecursoId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("AdelantosProfesional", (string)null);
+                });
+
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -46,6 +85,11 @@ namespace TurnosApp.Infra.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<bool>("EmailConfirmado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -61,6 +105,13 @@ namespace TurnosApp.Infra.Data.Migrations
 
                     b.Property<int>("TenantId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("TokenConfirmacionEmail")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("TokenConfirmacionExpira")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -165,6 +216,97 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasIndex("RecursoId", "DiaSemana");
 
                     b.ToTable("HorariosAtencion", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Liquidacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("FechaGeneracion")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("PeriodoDesde")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("PeriodoHasta")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RecursoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UsuarioPagoId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecursoId");
+
+                    b.HasIndex("UsuarioPagoId");
+
+                    b.HasIndex("TenantId", "RecursoId", "PeriodoDesde", "PeriodoHasta")
+                        .IsUnique();
+
+                    b.ToTable("Liquidaciones", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.LiquidacionDetalle", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LiquidacionId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PrecioBaseAplicado")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("ServicioId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TipoComisionSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("TurnoId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("ValorComisionSnapshot")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LiquidacionId");
+
+                    b.HasIndex("ServicioId");
+
+                    b.HasIndex("TurnoId");
+
+                    b.ToTable("LiquidacionDetalles", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
@@ -339,7 +481,7 @@ namespace TurnosApp.Infra.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int?>("ClienteId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreadoEn")
@@ -451,6 +593,52 @@ namespace TurnosApp.Infra.Data.Migrations
                         .HasFilter("\"UsuarioId\" IS NOT NULL");
 
                     b.ToTable("Recursos", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ReglaComision", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("RecursoId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ServicioId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecursoId");
+
+                    b.HasIndex("ServicioId");
+
+                    b.HasIndex("TenantId", "RecursoId")
+                        .IsUnique()
+                        .HasFilter("\"Activo\" = true AND \"ServicioId\" IS NULL");
+
+                    b.HasIndex("TenantId", "RecursoId", "ServicioId")
+                        .IsUnique()
+                        .HasFilter("\"Activo\" = true AND \"ServicioId\" IS NOT NULL");
+
+                    b.ToTable("ReglasComision", (string)null);
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Rol", b =>
@@ -595,6 +783,13 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Property<DateTime>("FechaAlta")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("FrecuenciaLiquidacion")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Mensual");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -715,6 +910,11 @@ namespace TurnosApp.Infra.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<bool>("EmailConfirmado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -735,6 +935,13 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Property<int>("TenantId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("TokenConfirmacionEmail")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("TokenConfirmacionExpira")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -745,6 +952,32 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasIndex("TenantId");
 
                     b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.AdelantoProfesional", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Liquidacion", "Liquidacion")
+                        .WithMany("Adelantos")
+                        .HasForeignKey("LiquidacionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Recurso", "Recurso")
+                        .WithMany("AdelantosProfesional")
+                        .HasForeignKey("RecursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("AdelantosProfesional")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Liquidacion");
+
+                    b.Navigation("Recurso");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Cliente", b =>
@@ -801,6 +1034,59 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Navigation("Recurso");
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Liquidacion", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Recurso", "Recurso")
+                        .WithMany("Liquidaciones")
+                        .HasForeignKey("RecursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("Liquidaciones")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Usuario", "UsuarioPago")
+                        .WithMany()
+                        .HasForeignKey("UsuarioPagoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Recurso");
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("UsuarioPago");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.LiquidacionDetalle", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Liquidacion", "Liquidacion")
+                        .WithMany("Detalles")
+                        .HasForeignKey("LiquidacionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Servicio", "Servicio")
+                        .WithMany()
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Turno", "Turno")
+                        .WithMany("LiquidacionDetalles")
+                        .HasForeignKey("TurnoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Liquidacion");
+
+                    b.Navigation("Servicio");
+
+                    b.Navigation("Turno");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ListaEspera", b =>
@@ -901,8 +1187,7 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.HasOne("TurnosApp.Core.Domain.Entities.Cliente", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TurnosApp.Core.Domain.Entities.ListaEspera", "ListaEspera")
                         .WithMany()
@@ -945,6 +1230,32 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Navigation("Tenant");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.ReglaComision", b =>
+                {
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Recurso", "Recurso")
+                        .WithMany("ReglasComision")
+                        .HasForeignKey("RecursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Servicio", "Servicio")
+                        .WithMany("ReglasComision")
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TurnosApp.Core.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("ReglasComision")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Recurso");
+
+                    b.Navigation("Servicio");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Rol", b =>
@@ -1063,6 +1374,13 @@ namespace TurnosApp.Infra.Data.Migrations
                     b.Navigation("Turnos");
                 });
 
+            modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Liquidacion", b =>
+                {
+                    b.Navigation("Adelantos");
+
+                    b.Navigation("Detalles");
+                });
+
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.MetodoPago", b =>
                 {
                     b.Navigation("Cobros");
@@ -1070,6 +1388,12 @@ namespace TurnosApp.Infra.Data.Migrations
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Recurso", b =>
                 {
+                    b.Navigation("AdelantosProfesional");
+
+                    b.Navigation("Liquidaciones");
+
+                    b.Navigation("ReglasComision");
+
                     b.Navigation("Turnos");
                 });
 
@@ -1080,6 +1404,8 @@ namespace TurnosApp.Infra.Data.Migrations
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Servicio", b =>
                 {
+                    b.Navigation("ReglasComision");
+
                     b.Navigation("TurnoServicios");
                 });
 
@@ -1090,15 +1416,21 @@ namespace TurnosApp.Infra.Data.Migrations
 
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Tenant", b =>
                 {
+                    b.Navigation("AdelantosProfesional");
+
                     b.Navigation("Clientes");
 
                     b.Navigation("Cobros");
+
+                    b.Navigation("Liquidaciones");
 
                     b.Navigation("MetodosPago");
 
                     b.Navigation("MovimientosCaja");
 
                     b.Navigation("Recursos");
+
+                    b.Navigation("ReglasComision");
 
                     b.Navigation("Servicios");
 
@@ -1110,6 +1442,8 @@ namespace TurnosApp.Infra.Data.Migrations
             modelBuilder.Entity("TurnosApp.Core.Domain.Entities.Turno", b =>
                 {
                     b.Navigation("Cobros");
+
+                    b.Navigation("LiquidacionDetalles");
 
                     b.Navigation("TurnoServicios");
                 });

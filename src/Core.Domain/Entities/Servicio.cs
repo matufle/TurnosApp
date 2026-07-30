@@ -16,4 +16,5 @@ public class Servicio : TenantEntity
 
     // Navegación (M:N hacia Turno vía tabla de unión explícita)
     public ICollection<TurnoServicio> TurnoServicios { get; set; } = [];
+    public ICollection<ReglaComision> ReglasComision { get; set; } = [];
 }
