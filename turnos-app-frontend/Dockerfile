@@ -18,5 +18,13 @@ COPY docker/entrypoint.sh /docker-entrypoint.sh
 # Necesario porque el archivo fue creado/editado en Windows.
 RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
-EXPOSE 80
+# Corre como el usuario no-root "nginx" que ya trae la imagen (por eso escucha en
+# :8080 y no en :80 — un puerto <1024 requiere root para bindearlo). Le damos
+# ownership de lo que necesita tocar en runtime: cache/logs de nginx, el pid file,
+# y el html donde entrypoint.sh escribe env-config.js en cada arranque.
+RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /usr/share/nginx/html \
+    && touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+
+USER nginx
+EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
