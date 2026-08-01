@@ -34,6 +34,9 @@ EXPOSE 8080
 
 COPY --from=publish /app/publish .
 
+# Corre como el usuario no-root que ya trae la imagen base (evita correr el proceso como root).
+USER $APP_UID
+
 # OJO AQUÍ: Por los logs de errores que me pasaste antes, tu aplicación genera esta DLL.
 # Si al correrlo te dice "Did you mean to run dotnet SDK commands?", cambialo por "Presentation.WebAPI.dll"
 ENTRYPOINT ["dotnet", "TurnosApp.Presentation.WebAPI.dll"]
