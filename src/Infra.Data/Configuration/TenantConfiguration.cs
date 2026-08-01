@@ -36,6 +36,28 @@ public class TenantConfiguration : IEntityTypeConfiguration<Tenant>
             .HasMaxLength(20)
             .HasDefaultValue(TurnosApp.Core.Domain.Enums.FrecuenciaLiquidacion.Mensual);
 
+        // Persistido como string, mismo criterio que FrecuenciaLiquidacion/EstadoTurno.
+        builder.Property(t => t.EstadoSuscripcion)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(TurnosApp.Core.Domain.Enums.EstadoSuscripcion.Trial);
+
+        builder.Property(t => t.MercadoPagoPreapprovalId)
+            .HasMaxLength(100);
+
+        builder.Property(t => t.EsGrandfathered)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        // Opcional: un tenant puede no tener plan asignado todavía (recién registrado,
+        // antes de que exista un Plan activo seedeado). Restrict: no tiene sentido borrar
+        // un Plan con tenants asignados.
+        builder.HasOne(t => t.Plan)
+            .WithMany(p => p.Tenants)
+            .HasForeignKey(t => t.PlanId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Tenant no tiene Global Query Filter — es la raíz del multi-tenancy,
         // no pertenece a ningún tenant.
     }

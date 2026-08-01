@@ -73,7 +73,8 @@ public class TenantMiddleware
                pathValue.StartsWith("/api/tenants", StringComparison.OrdinalIgnoreCase) ||
                pathValue.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase) ||
                pathValue.StartsWith("/api/public", StringComparison.OrdinalIgnoreCase) ||
-               pathValue.StartsWith("/api/cliente-auth", StringComparison.OrdinalIgnoreCase);
+               pathValue.StartsWith("/api/cliente-auth", StringComparison.OrdinalIgnoreCase) ||
+               pathValue.StartsWith("/api/webhooks", StringComparison.OrdinalIgnoreCase);
     }
 
 }

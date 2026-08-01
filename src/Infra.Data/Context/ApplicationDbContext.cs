@@ -43,6 +43,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Liquidacion> Liquidaciones => Set<Liquidacion>();
     public DbSet<LiquidacionDetalle> LiquidacionDetalles => Set<LiquidacionDetalle>();
     public DbSet<AdelantoProfesional> AdelantosProfesional => Set<AdelantoProfesional>();
+    public DbSet<Plan> Planes => Set<Plan>();
+    public DbSet<WebhookEvent> WebhookEvents => Set<WebhookEvent>();
 
     // Exponemos el TenantId resuelto para que las configuraciones lo capturen
     // en el closure del Global Query Filter.

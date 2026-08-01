@@ -19,6 +19,18 @@ public class Tenant : BaseEntity
     public DateTime FechaAlta { get; set; } = DateTime.UtcNow;
     public FrecuenciaLiquidacion FrecuenciaLiquidacion { get; set; } = FrecuenciaLiquidacion.Mensual;
 
+    // Suscripción (Mercado Pago Preapproval). EsGrandfathered = true para todo tenant creado
+    // antes del deploy de este gating (ver migración de backfill) — nunca pasa por el chequeo
+    // de RequiereSuscripcionActivaAttribute, sin importar EstadoSuscripcion. A diferencia de
+    // Stripe, MP no tiene un "Customer" separado: el preapproval se crea directo con el email
+    // del pagador, así que solo hay un id externo que trackear (el del preapproval en sí).
+    public int? PlanId { get; set; }
+    public Plan? Plan { get; set; }
+    public string? MercadoPagoPreapprovalId { get; set; }
+    public EstadoSuscripcion EstadoSuscripcion { get; set; } = EstadoSuscripcion.Trial;
+    public DateTime? SuscripcionVenceEn { get; set; }
+    public bool EsGrandfathered { get; set; } = false;
+
     // Navegación
     public ICollection<Recurso> Recursos { get; set; } = [];
     public ICollection<Cliente> Clientes { get; set; } = [];

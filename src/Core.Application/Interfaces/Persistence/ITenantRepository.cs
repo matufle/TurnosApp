@@ -12,4 +12,5 @@ namespace TurnosApp.Core.Application.Interfaces.Persistence;
 public interface ITenantRepository : IRepository<Tenant>
 {
     Task<Tenant?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+    Task<Tenant?> GetByMercadoPagoPreapprovalIdAsync(string mercadoPagoPreapprovalId, CancellationToken cancellationToken = default);
 }

@@ -188,7 +188,13 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // ── Controllers y Swagger ──────────────────────────────────────────────────
-builder.Services.AddControllers();
+// RequiereSuscripcionActivaAttribute como filtro global (no atributo por-controller como
+// RequierePermiso): el gating de suscripción aplica a toda la app por igual, con sus propias
+// excepciones por ruta (ver el atributo) en vez de tener que taggear ~15 controllers a mano.
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<TurnosApp.Presentation.WebAPI.Authorization.RequiereSuscripcionActivaAttribute>();
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

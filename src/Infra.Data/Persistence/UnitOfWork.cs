@@ -31,6 +31,8 @@ public class UnitOfWork : IUnitOfWork
     public ILiquidacionRepository Liquidaciones { get; }
     public ILiquidacionDetalleRepository LiquidacionDetalles { get; }
     public IAdelantoProfesionalRepository AdelantosProfesional { get; }
+    public IPlanRepository Planes { get; }
+    public IWebhookEventRepository WebhookEvents { get; }
 
     public UnitOfWork(
         ApplicationDbContext context,
@@ -52,7 +54,9 @@ public class UnitOfWork : IUnitOfWork
         IReglaComisionRepository reglasComision,
         ILiquidacionRepository liquidaciones,
         ILiquidacionDetalleRepository liquidacionDetalles,
-        IAdelantoProfesionalRepository adelantosProfesional)
+        IAdelantoProfesionalRepository adelantosProfesional,
+        IPlanRepository planes,
+        IWebhookEventRepository webhookEvents)
     {
         _context = context;
         Tenants = tenants;
@@ -74,6 +78,8 @@ public class UnitOfWork : IUnitOfWork
         Liquidaciones = liquidaciones;
         LiquidacionDetalles = liquidacionDetalles;
         AdelantosProfesional = adelantosProfesional;
+        Planes = planes;
+        WebhookEvents = webhookEvents;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

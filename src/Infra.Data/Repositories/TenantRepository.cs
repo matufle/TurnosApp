@@ -19,5 +19,10 @@ namespace TurnosApp.Infra.Data.Repositories
         {
             return await _dbSet.FirstOrDefaultAsync(t => t.Slug == slug, cancellationToken);
         }
+
+        public async Task<Tenant?> GetByMercadoPagoPreapprovalIdAsync(string mercadoPagoPreapprovalId, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.FirstOrDefaultAsync(t => t.MercadoPagoPreapprovalId == mercadoPagoPreapprovalId, cancellationToken);
+        }
     }
 }

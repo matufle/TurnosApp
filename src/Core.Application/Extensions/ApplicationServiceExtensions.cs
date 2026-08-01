@@ -30,6 +30,8 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IAdelantoProfesionalAppService, AdelantoProfesionalAppService>();
         services.AddScoped<ILiquidacionGeneratorService, LiquidacionGeneratorService>();
         services.AddScoped<ITurnstileService, TurnstileService>();
+        services.AddScoped<IMercadoPagoService, MercadoPagoService>();
+        services.AddScoped<ISuscripcionAppService, SuscripcionAppService>();
 
         // SolapamientoValidator como Scoped: necesita ITurnoRepository
         // que también es Scoped (vive dentro del UnitOfWork Scoped).
