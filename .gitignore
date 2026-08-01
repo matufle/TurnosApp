@@ -374,3 +374,6 @@ appsettings.*.local.json
 
 # Contexto local para Claude Code - no se versiona
 CLAUDE.md
+
+# Wiki local de Obsidian - no se versiona
+obsidian/

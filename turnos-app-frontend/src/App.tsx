@@ -2,6 +2,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MantineProvider, createTheme, Loader, Center } from '@mantine/core';
+import * as Sentry from '@sentry/react';
 
 import { theme as turnifyTheme } from './theme/turnifyTheme';
 import { generateShades } from './theme/generateShades';
@@ -9,7 +10,9 @@ import { applyTailwindBrandColor } from './theme/applyTailwindBrandColor';
 import { TenantThemeProvider } from './context/TenantThemeContext';
 import { useTenantTheme } from './context/useTenantTheme';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import { tenantService } from './api/tenantService';
+import { identifyAnalyticsUser, resetAnalyticsUser } from './lib/analytics';
 
 import { LandingPage } from './pages/Landing/LandindPage';
 import { LoginPage } from './pages/Login/LoginPage';
@@ -55,10 +58,26 @@ function RouteFallback() {
 
 function ThemedApp() {
   const { colorHex } = useTenantTheme();
+  const { user } = useAuth();
 
   useEffect(() => {
     applyTailwindBrandColor(colorHex && colorHex !== '#0EA5E9' ? colorHex : null);
   }, [colorHex]);
+
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({ id: String(user.usuarioId), email: user.email });
+      Sentry.setTag('tenantId', user.tenantId);
+      identifyAnalyticsUser(String(user.usuarioId), {
+        $email: user.email,
+        tenantId: user.tenantId,
+        rol: user.rolNombre,
+      });
+    } else {
+      Sentry.setUser(null);
+      resetAnalyticsUser();
+    }
+  }, [user]);
 
 const finalTheme =
     colorHex && colorHex !== '#0EA5E9'

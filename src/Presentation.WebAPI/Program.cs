@@ -24,6 +24,19 @@ using TurnosApp.Presentation.WebAPI.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Sentry (reporte de errores) ────────────────────────────────────────────
+// Antes que cualquier otra cosa: si algo revienta durante el resto del arranque
+// (ej. la validación de Jwt:Key de abajo), Sentry ya está armado para capturarlo.
+// Sentry:Dsn vacío en Development si no se configuró — el SDK se queda inactivo
+// (no-op) sin romper el arranque, mismo criterio que Turnstile:SecretKey vacío.
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"];
+    options.Environment = builder.Environment.EnvironmentName;
+    options.TracesSampleRate = 0.2;
+    options.SendDefaultPii = false;
+});
+
 // ── Validación de configuración crítica ────────────────────────────────────
 // La clave del appsettings.json versionado es sólo un placeholder de desarrollo.
 // Si en producción no se seteó Jwt__Key por variable de entorno, cortamos el

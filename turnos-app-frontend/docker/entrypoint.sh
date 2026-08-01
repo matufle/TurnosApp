@@ -5,7 +5,10 @@
 # en el momento del arranque (no del build).
 cat <<EOF > /usr/share/nginx/html/env-config.js
 window._env_ = {
-  VITE_API_BASE_URL: "${VITE_API_BASE_URL}"
+  VITE_API_BASE_URL: "${VITE_API_BASE_URL}",
+  VITE_SENTRY_DSN: "${VITE_SENTRY_DSN}",
+  VITE_MIXPANEL_TOKEN: "${VITE_MIXPANEL_TOKEN}",
+  VITE_HOTJAR_ID: "${VITE_HOTJAR_ID}"
 };
 EOF
 

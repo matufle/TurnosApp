@@ -43,6 +43,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { turnosService } from '../../api/turnosService';
 import { clientesService } from '../../api/clientesService';
 import { recursosService } from '../../api/recursosService';
+import { trackEvent } from '../../lib/analytics';
 import { PageSpinner } from '../../components/PageSpinner';
 import { serviciosService } from '../../api/servicioService';
 import { RegistrarCobroModal } from './RegistrarCobroModal';
@@ -399,6 +400,7 @@ export function TurnosPage() {
         fechaHoraInicio: fechaHoraCompleta.toISOString(),
       });
 
+      trackEvent('Appointment Created', { origen: 'staff' });
       closeDrawer();
       form.reset();
       await recargarTurnos();
