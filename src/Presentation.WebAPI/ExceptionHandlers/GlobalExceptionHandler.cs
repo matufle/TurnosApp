@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Sentry;
 using TurnosApp.Core.Application.Exceptions; // BusinessException
 using TurnosApp.Core.Domain.Exceptions;
 using TurnosApp.Core.Exceptions;      // NotFoundException, BadRequestException, ConflictException, SolapamientoException, DomainException
@@ -26,7 +27,10 @@ public class GlobalExceptionHandler : IExceptionHandler
         var (statusCode, title, detail) = MapException(exception);
 
         if (statusCode == StatusCodes.Status500InternalServerError)
+        {
             _logger.LogError(exception, "Excepción no controlada: {Message}", exception.Message);
+            CapturarEnSentry(httpContext, exception);
+        }
         else
             _logger.LogWarning("Excepción de negocio ({Status}): {Message}", statusCode, detail);
 
@@ -81,4 +85,21 @@ public class GlobalExceptionHandler : IExceptionHandler
             _env.IsDevelopment() ? exception.Message : "Contactá al administrador si el problema persiste."
         )
     };
+
+    // Solo 500s no mapeados: los 4xx de negocio (BusinessException, NotFoundException, etc.)
+    // son ruido esperado del día a día, no bugs — reportarlos inundaría Sentry sin agregar valor.
+    private static void CapturarEnSentry(HttpContext httpContext, Exception exception)
+    {
+        SentrySdk.CaptureException(exception, scope =>
+        {
+            var tenantId = httpContext.User.FindFirst("TenantId")?.Value;
+            var usuarioId = httpContext.User.FindFirst("UsuarioId")?.Value;
+
+            if (!string.IsNullOrEmpty(tenantId))
+                scope.SetTag("tenantId", tenantId);
+
+            if (!string.IsNullOrEmpty(usuarioId))
+                scope.User = new SentryUser { Id = usuarioId };
+        });
+    }
 }

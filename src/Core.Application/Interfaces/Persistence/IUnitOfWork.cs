@@ -29,6 +29,8 @@ public interface IUnitOfWork : IDisposable
     ILiquidacionRepository Liquidaciones { get; }
     ILiquidacionDetalleRepository LiquidacionDetalles { get; }
     IAdelantoProfesionalRepository AdelantosProfesional { get; }
+    IPlanRepository Planes { get; }
+    IWebhookEventRepository WebhookEvents { get; }
 
     /// <summary>
     /// Persiste todos los cambios pendientes del change tracker en la base de datos.

@@ -14,6 +14,7 @@ import {
   IconClock,
   IconCashRegister,
   IconWallet,
+  IconCrown,
 } from '@tabler/icons-react';
 
 // Compartido entre DashboardLayout (sidebar) y OnboardingTour (arma el tour en el mismo
@@ -37,6 +38,11 @@ export const navLinks = [
   { icon: IconUsersGroup, label: 'Usuarios', path: '/app/usuarios', permiso: 'GestionarUsuarios' },
   { icon: IconShieldLock, label: 'Roles y Permisos', path: '/app/roles', permiso: 'GestionarRoles' },
   { icon: IconSettings, label: 'Configuración', path: '/app/configuracion', permiso: 'GestionarConfiguracionNegocio' },
+  // Sin permiso: el estado de la suscripción queda visible para cualquier usuario autenticado
+  // (mismo criterio que el GET del backend, ver SuscripcionesController) — si el tenant queda
+  // bloqueado por falta de pago, cualquier empleado necesita poder ver por qué, aunque no
+  // pueda hacer nada al respecto sin GestionarSuscripcion.
+  { icon: IconCrown, label: 'Suscripción', path: '/app/suscripcion' },
 ];
 
 // Un link es visible si no exige permiso, o si el usuario tiene AL MENOS UNO de los

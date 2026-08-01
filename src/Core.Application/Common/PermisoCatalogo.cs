@@ -34,6 +34,7 @@ public static class PermisoCatalogo
         Permiso.VerCaja,
         Permiso.VerLiquidaciones,
         Permiso.GestionarLiquidaciones,
+        Permiso.GestionarSuscripcion,
     };
 
     public static IReadOnlyList<string> ToNombres(Permiso permisos) =>

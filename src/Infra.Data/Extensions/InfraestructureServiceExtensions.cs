@@ -55,6 +55,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ILiquidacionRepository, LiquidacionRepository>();
         services.AddScoped<ILiquidacionDetalleRepository, LiquidacionDetalleRepository>();
         services.AddScoped<IAdelantoProfesionalRepository, AdelantoProfesionalRepository>();
+        services.AddScoped<IPlanRepository, PlanRepository>();
+        services.AddScoped<IWebhookEventRepository, WebhookEventRepository>();
 
         // Los repositorios no se registran individualmente en DI —
         // se accede a ellos exclusivamente a través de IUnitOfWork,

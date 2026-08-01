@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useForm, isEmail, isNotEmpty, hasLength, matchesField } from '@mantine/form';
 import { authService } from '../../api/authService';
 import { TurnstileWidget } from '../../components/TurnstileWidget';
+import { trackEvent } from '../../lib/analytics';
 
 export function RegisterPage() {
   const location = useLocation();
@@ -51,6 +52,7 @@ export function RegisterPage() {
         turnstileToken,
       });
 
+      trackEvent('User Registered', { email: response.email });
       setRegistroPendienteEmail(response.email);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

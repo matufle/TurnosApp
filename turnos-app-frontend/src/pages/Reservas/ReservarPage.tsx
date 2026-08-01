@@ -10,6 +10,7 @@ import { DatePickerInput } from '@mantine/dates';
 import axios from 'axios';
 import { publicCatalogoService } from '../../api/publicCatalogoService';
 import { misTurnosService } from '../../api/misTurnosService';
+import { trackEvent } from '../../lib/analytics';
 import { horaUtcALocal } from '../../utils/horarioTimezone';
 import type { Servicio } from '../../types/Servicio';
 import type { RecursoPublico } from '../../types/ReservaPublica';
@@ -89,6 +90,7 @@ export function ReservarPage() {
         servicioIds,
         fechaHoraInicio: `${fecha}T${slotUtc}:00.000Z`,
       });
+      trackEvent('Appointment Created', { origen: 'self-service' });
       navigate(`/reservas/${slug}/mis-turnos`, { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {

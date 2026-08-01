@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm, isEmail, isNotEmpty } from '@mantine/form';
 import { authService } from '../../api/authService';
 import { useAuth } from '../../context/useAuth';
+import { trackEvent } from '../../lib/analytics';
 import axios from 'axios';
 
 export function LoginPage() {
@@ -34,6 +35,7 @@ export function LoginPage() {
       const response = await authService.login(values);
 
       await login(response.token, response.tenantId);
+      trackEvent('Login Succeeded');
 
       navigate('/app', { replace: true });
     } catch (error) {

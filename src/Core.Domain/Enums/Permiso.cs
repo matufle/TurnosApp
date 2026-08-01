@@ -30,9 +30,12 @@ public enum Permiso : long
     VerLiquidaciones = 1L << 16,
     GestionarLiquidaciones = 1L << 17,
 
+    // Crear/gestionar la suscripción del tenant (iniciar/cancelar el preapproval de Mercado Pago).
+    GestionarSuscripcion = 1L << 18,
+
     Todos = VerAgendaCompleta | GestionarTurnos | GestionarClientes | GestionarServicios
         | GestionarRecursos | GestionarMetodosPago | CrearCobros | VerGananciaNeta
         | VerReportes | GestionarUsuarios | GestionarRoles | GestionarConfiguracionNegocio
         | GestionarListaEspera | GestionarCaja | ForzarCierreCaja | VerCaja
-        | VerLiquidaciones | GestionarLiquidaciones
+        | VerLiquidaciones | GestionarLiquidaciones | GestionarSuscripcion
 }

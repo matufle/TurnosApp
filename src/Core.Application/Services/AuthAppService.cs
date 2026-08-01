@@ -56,6 +56,7 @@ public class AuthAppService : IAuthAppService
 
         var rolAdmin = await SeedearRolesAsync(tenant.Id, cancellationToken);
         await SeedearMetodoPagoEfectivoAsync(tenant.Id, cancellationToken);
+        await SeedearSuscripcionTrialAsync(tenant, cancellationToken);
 
         var passwordHash = _passwordHasher.HashPassword(dto.Password);
         var nombre = dto.Email.Split('@')[0];
@@ -120,6 +121,20 @@ public class AuthAppService : IAuthAppService
         };
 
         await _unitOfWork.MetodoPagos.AddAsync(efectivo, cancellationToken);
+    }
+
+    // Trial local (no el de Mercado Pago — ver SuscripcionAppService): el preapproval recién
+    // se crea cuando el tenant intenta suscribirse de verdad (IniciarSuscripcionAsync), no acá
+    // — un registro anónimo no debería depender de que la API de Mercado Pago esté arriba.
+    // Si todavía no hay un Plan activo seedeado (ej. clon local sin la migración de datos
+    // corrida a mano todavía), el tenant queda en Trial sin PlanId — no bloqueamos el registro.
+    private async Task SeedearSuscripcionTrialAsync(Tenant tenant, CancellationToken cancellationToken)
+    {
+        var plan = await _unitOfWork.Planes.GetActivoAsync(cancellationToken);
+
+        tenant.EstadoSuscripcion = EstadoSuscripcion.Trial;
+        tenant.SuscripcionVenceEn = DateTime.UtcNow.AddDays(plan?.TrialDias ?? 30);
+        tenant.PlanId = plan?.Id;
     }
 
     private static string GenerarSlug(string nombre)

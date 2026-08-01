@@ -18,7 +18,8 @@ export type Permiso =
   | 'ForzarCierreCaja'
   | 'VerCaja'
   | 'VerLiquidaciones'
-  | 'GestionarLiquidaciones';
+  | 'GestionarLiquidaciones'
+  | 'GestionarSuscripcion';
 
 export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; label: string }[] }[] = [
   {
@@ -67,6 +68,12 @@ export const PERMISOS_POR_AREA: { area: string; permisos: { valor: Permiso; labe
     permisos: [
       { valor: 'VerLiquidaciones', label: 'Ver las liquidaciones de todos los profesionales (sin poder operarlas)' },
       { valor: 'GestionarLiquidaciones', label: 'Configurar comisiones, marcar liquidaciones pagadas, anularlas y cargar adelantos' },
+    ],
+  },
+  {
+    area: 'Suscripción',
+    permisos: [
+      { valor: 'GestionarSuscripcion', label: 'Gestionar la suscripción del negocio (checkout, portal de facturación)' },
     ],
   },
 ];
