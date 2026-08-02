@@ -159,6 +159,48 @@ public class ClienteAuthAppService : IClienteAuthAppService
         await _notificacionAppService.ProgramarConfirmacionEmailClienteAsync(cliente, tenant.Slug, token, cancellationToken);
     }
 
+    public async Task OlvidePasswordAsync(OlvidePasswordClienteDto dto, CancellationToken cancellationToken = default)
+    {
+        var tenant = await _publicAppService.ResolverTenantPorSlugAsync(dto.TenantSlug, cancellationToken);
+        var emailNormalizado = dto.Email.Trim().ToLowerInvariant();
+
+        var cliente = await _unitOfWork.Clientes.GetByTenantYEmailAsync(tenant.TenantId, emailNormalizado, cancellationToken);
+
+        // Anti-enumeración: si no existe o es un walk-in sin cuenta (PasswordHash null, nada
+        // que resetear), no hacemos nada pero igual devolvemos éxito.
+        if (cliente is null || cliente.PasswordHash is null)
+            return;
+
+        var token = SecureTokenGenerator.Generar();
+        cliente.TokenResetPassword = token;
+        cliente.TokenResetPasswordExpira = DateTime.UtcNow.AddMinutes(30);
+
+        _unitOfWork.Clientes.Update(cliente);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificacionAppService.ProgramarResetPasswordEmailClienteAsync(cliente, tenant.Slug, token, cancellationToken);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordClienteDto dto, CancellationToken cancellationToken = default)
+    {
+        var tenant = await _publicAppService.ResolverTenantPorSlugAsync(dto.TenantSlug, cancellationToken);
+
+        var cliente = await _unitOfWork.Clientes.GetByTenantYTokenResetPasswordAsync(tenant.TenantId, dto.Token, cancellationToken);
+
+        if (cliente is null)
+            throw new BusinessException(code: "TOKEN_INVALIDO", message: "El link de recuperación no es válido.");
+
+        if (cliente.TokenResetPasswordExpira is null || cliente.TokenResetPasswordExpira < DateTime.UtcNow)
+            throw new BusinessException(code: "TOKEN_EXPIRADO", message: "El link de recuperación expiró. Solicitá uno nuevo.");
+
+        cliente.PasswordHash = _passwordHasher.HashPassword(dto.NuevaPassword);
+        cliente.TokenResetPassword = null;
+        cliente.TokenResetPasswordExpira = null;
+
+        _unitOfWork.Clientes.Update(cliente);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<ClienteMeDto> GetMeAsync(CancellationToken cancellationToken = default)
     {
         var clienteId = _currentClienteService.GetCurrentClienteId();

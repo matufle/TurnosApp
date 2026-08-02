@@ -1,11 +1,12 @@
 // src/pages/Reservas/RegistroClientePage.tsx
 import { useState } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
-import { Anchor, Alert, Button, Center, Checkbox, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Alert, Button, Center, Checkbox, PasswordInput, Stack, TextInput, Title } from '@mantine/core';
 import { useForm, isEmail, isNotEmpty, hasLength } from '@mantine/form';
 import axios from 'axios';
 import { clienteAuthService } from '../../api/clienteAuthService';
 import { TurnstileWidget } from '../../components/TurnstileWidget';
+import { RevisaTuEmailCard } from '../../components/RevisaTuEmailCard';
 import type { TenantPublico } from '../../types/ClienteAuth';
 
 export function RegistroClientePage() {
@@ -79,27 +80,16 @@ export function RegistroClientePage() {
 
   if (registroPendienteEmail) {
     return (
-      <Center py="xl" px="md">
-        <Stack maw={360} w="100%" gap="md" align="center" ta="center">
-          <Title order={3}>Revisá tu email</Title>
-          <Text c="dimmed">
-            Te enviamos un link de confirmación a <strong>{registroPendienteEmail}</strong>. Confirmá tu cuenta para
-            poder reservar turnos.
-          </Text>
-          {reenviado ? (
-            <Text c="dimmed" size="sm">
-              Listo, si correspondía te reenviamos el email.
-            </Text>
-          ) : (
-            <Anchor component="button" type="button" onClick={handleReenviar} disabled={reenviando}>
-              {reenviando ? 'Reenviando...' : '¿No te llegó? Reenviar email'}
-            </Anchor>
-          )}
-          <Anchor component={Link} to={`/reservas/${slug}/login`}>
-            Ir a iniciar sesión
-          </Anchor>
-        </Stack>
-      </Center>
+      <div className="flex justify-center px-4 py-12">
+        <RevisaTuEmailCard
+          email={registroPendienteEmail}
+          loginHref={`/reservas/${slug}/login`}
+          reenviando={reenviando}
+          reenviado={reenviado}
+          onReenviar={handleReenviar}
+          onCambiarEmail={() => setRegistroPendienteEmail(null)}
+        />
+      </div>
     );
   }
 

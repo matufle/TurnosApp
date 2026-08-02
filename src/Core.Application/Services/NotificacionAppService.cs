@@ -157,4 +157,51 @@ public class NotificacionAppService : INotificacionAppService
         await _unitOfWork.Notificaciones.AddAsync(notificacion, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task ProgramarResetPasswordEmailUsuarioAsync(Usuario usuario, string token, CancellationToken cancellationToken = default)
+    {
+        var baseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
+        var link = $"{baseUrl}/reset-password?token={token}";
+
+        var notificacion = new Notificacion
+        {
+            TenantId = usuario.TenantId, // flujo anónimo (reset): ITenantProvider no resuelve nada acá
+            Tipo = TipoNotificacion.ResetPasswordUsuario,
+            ClienteId = null,
+            DestinatarioEmail = usuario.Email,
+            Asunto = "Restablecé tu contraseña en Slotia",
+            CuerpoHtml = $"Hola {usuario.Nombre}, restablecé tu contraseña en Slotia: " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 30 minutos. " +
+                         "Si no lo pediste vos, ignorá este email.",
+            ProgramadaPara = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Notificaciones.AddAsync(notificacion, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ProgramarResetPasswordEmailClienteAsync(Cliente cliente, string tenantSlug, string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(cliente.Email))
+            return;
+
+        var baseUrl = _configuration["Frontend:BaseUrl"]?.TrimEnd('/');
+        var link = $"{baseUrl}/reservas/{tenantSlug}/reset-password?token={token}";
+
+        var notificacion = new Notificacion
+        {
+            TenantId = cliente.TenantId, // flujo anónimo (reset): ITenantProvider no resuelve nada acá
+            Tipo = TipoNotificacion.ResetPasswordCliente,
+            ClienteId = cliente.Id,
+            DestinatarioEmail = cliente.Email,
+            Asunto = "Restablecé tu contraseña",
+            CuerpoHtml = $"Hola {cliente.Nombre}, restablecé tu contraseña: " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 30 minutos. " +
+                         "Si no lo pediste vos, ignorá este email.",
+            ProgramadaPara = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Notificaciones.AddAsync(notificacion, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 }

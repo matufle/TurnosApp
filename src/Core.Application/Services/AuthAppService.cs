@@ -193,4 +193,35 @@ public class AuthAppService : IAuthAppService
 
         await _notificacionAppService.ProgramarConfirmacionEmailUsuarioAsync(usuario, token, cancellationToken);
     }
+
+    public async Task OlvidePasswordAsync(string email, CancellationToken cancellationToken)
+    {
+        var usuario = await _unitOfWork.Usuarios.GetByEmailGlobalAsync(email, cancellationToken);
+
+        // Nunca revelamos si el email existe (mismo criterio anti-enumeración que en
+        // ReenviarConfirmacionAsync): si no existe, no hacemos nada pero igual "éxito".
+        if (usuario is null)
+            return;
+
+        var token = SecureTokenGenerator.Generar();
+        usuario.EstablecerTokenResetPassword(token, DateTime.UtcNow.AddMinutes(30));
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _notificacionAppService.ProgramarResetPasswordEmailUsuarioAsync(usuario, token, cancellationToken);
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto dto, CancellationToken cancellationToken)
+    {
+        var usuario = await _unitOfWork.Usuarios.GetByTokenResetPasswordAsync(dto.Token, cancellationToken);
+
+        if (usuario is null)
+            throw new BusinessException(code: "TOKEN_INVALIDO", message: "El link de recuperación no es válido.");
+
+        if (usuario.TokenResetPasswordExpira is null || usuario.TokenResetPasswordExpira < DateTime.UtcNow)
+            throw new BusinessException(code: "TOKEN_EXPIRADO", message: "El link de recuperación expiró. Solicitá uno nuevo.");
+
+        usuario.ActualizarPasswordHash(_passwordHasher.HashPassword(dto.NuevaPassword));
+        usuario.LimpiarTokenResetPassword();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 }

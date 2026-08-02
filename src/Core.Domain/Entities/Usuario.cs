@@ -14,6 +14,8 @@ public class Usuario
     public bool EmailConfirmado { get; private set; } = false;
     public string? TokenConfirmacionEmail { get; private set; }
     public DateTime? TokenConfirmacionExpira { get; private set; }
+    public string? TokenResetPassword { get; private set; }
+    public DateTime? TokenResetPasswordExpira { get; private set; }
 
     private Usuario() { } // EF Core
 
@@ -60,5 +62,17 @@ public class Usuario
         EmailConfirmado = true;
         TokenConfirmacionEmail = null;
         TokenConfirmacionExpira = null;
+    }
+
+    public void EstablecerTokenResetPassword(string token, DateTime expira)
+    {
+        TokenResetPassword = token;
+        TokenResetPasswordExpira = expira;
+    }
+
+    public void LimpiarTokenResetPassword()
+    {
+        TokenResetPassword = null;
+        TokenResetPasswordExpira = null;
     }
 }

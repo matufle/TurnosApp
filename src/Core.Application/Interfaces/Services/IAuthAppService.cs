@@ -11,5 +11,7 @@ namespace TurnosApp.Core.Application.Interfaces.Services
         Task<RegistroPendienteDto> RegisterAsync(RegisterRequestDTO dto, CancellationToken cancellationToken);
         Task ConfirmarEmailAsync(string token, CancellationToken cancellationToken);
         Task ReenviarConfirmacionAsync(string email, CancellationToken cancellationToken);
+        Task OlvidePasswordAsync(string email, CancellationToken cancellationToken);
+        Task ResetPasswordAsync(ResetPasswordDto dto, CancellationToken cancellationToken);
     }
 }

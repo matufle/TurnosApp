@@ -80,4 +80,26 @@ public class AuthController : ControllerBase
         await _authAppService.ReenviarConfirmacionAsync(dto.Email, cancellationToken);
         return NoContent();
     }
+
+    [HttpPost("olvide-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<IActionResult> OlvidePassword(
+        [FromBody] OlvidePasswordDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _authAppService.OlvidePasswordAsync(dto.Email, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("AuthRegister")]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordDto dto,
+        CancellationToken cancellationToken)
+    {
+        await _authAppService.ResetPasswordAsync(dto, cancellationToken);
+        return NoContent();
+    }
 }

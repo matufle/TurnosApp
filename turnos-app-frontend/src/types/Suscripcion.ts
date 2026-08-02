@@ -8,4 +8,5 @@ export interface Suscripcion {
   planNombre: string | null;
   planPrecioMensual: number | null;
   tieneSuscripcionIniciada: boolean;
+  diasRestantesGracia: number | null;
 }

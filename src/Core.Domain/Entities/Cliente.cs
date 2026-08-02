@@ -23,6 +23,8 @@ public class Cliente : TenantEntity
     public bool EmailConfirmado { get; set; } = false;
     public string? TokenConfirmacionEmail { get; set; }
     public DateTime? TokenConfirmacionExpira { get; set; }
+    public string? TokenResetPassword { get; set; }
+    public DateTime? TokenResetPasswordExpira { get; set; }
 
     /// <summary>
     /// Campo flexible para metadatos específicos del rubro.

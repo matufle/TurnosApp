@@ -185,14 +185,12 @@ export function LoginPage() {
                 >
                   Contraseña
                 </label>
-                <a
-                  href="#"
-                  onClick={(e) => e.preventDefault()}
-                  title="Próximamente"
-                  className="font-body-sm text-body-sm text-primary hover:text-on-primary-fixed-variant transition-colors"
+                <Link
+                  to="/olvide-password"
+                  className="font-body-sm text-body-sm text-primary no-underline hover:text-on-primary-fixed-variant transition-colors"
                 >
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
               <div className="relative group">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">

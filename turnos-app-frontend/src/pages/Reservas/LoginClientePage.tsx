@@ -94,6 +94,9 @@ export function LoginClientePage() {
 
             <TextInput label="Email" placeholder="tu@email.com" {...form.getInputProps('email')} />
             <PasswordInput label="Contraseña" {...form.getInputProps('password')} />
+            <Anchor component={Link} to={`/reservas/${slug}/olvide-password`} size="sm">
+              ¿Olvidaste tu contraseña?
+            </Anchor>
             <Checkbox
               label="Recordarme"
               {...form.getInputProps('recordarMe', { type: 'checkbox' })}

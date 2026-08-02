@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.IO.Compression;
 using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -102,6 +104,14 @@ builder.Services.AddHostedService<NotificacionDispatcherWorker>();
 // ── Worker de liquidaciones (genera comisiones cuando cierra el período por tenant) ────
 builder.Services.AddHostedService<LiquidacionGeneratorWorker>();
 
+// ── Health check ────────────────────────────────────────────────────────────
+// Endpoint liviano para un monitor externo (ej. UptimeRobot) — TenantMiddleware ya lo
+// exceptuaba del header X-Tenant-Id, pero nunca se había mapeado. DbConnectivityHealthCheck
+// (sin sumar un paquete NuGet aparte solo para esto) hace un Database.CanConnectAsync barato
+// — distingue "el proceso está arriba pero la DB no responde" de una caída real del proceso.
+builder.Services.AddHealthChecks()
+    .AddCheck<TurnosApp.Presentation.WebAPI.HealthChecks.DbConnectivityHealthCheck>("database");
+
 // ── Manejo global de excepciones ───────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -185,6 +195,46 @@ builder.Services.AddRateLimiter(options =>
             PermitLimit = 5,
             QueueLimit = 0
         }));
+
+    // Catálogo público (PublicController): sin límite previo, a diferencia de los endpoints de
+    // auth — el load test de rendimiento mostró que tráfico anónimo concentrado (~200-400
+    // conexiones simultáneas) tumba la única instancia. 120/min por IP es generoso para un
+    // visitante real navegando el catálogo, pero corta rápido una ráfaga/bot/scraper antes de
+    // que se coma toda la capacidad compartida.
+    options.AddPolicy("PublicoCatalogo", http => RateLimitPartition.GetSlidingWindowLimiter(
+        ClaveIp(http),
+        _ => new SlidingWindowRateLimiterOptions
+        {
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 4,
+            PermitLimit = 120,
+            QueueLimit = 0
+        }));
+});
+
+// ── Compresión de respuestas ───────────────────────────────────────────────
+// JSON comprime muy bien (70-80% menos bytes en catálogos/listados grandes) — reduce tiempo
+// de transferencia, importante en una instancia con ancho de banda/CPU limitados. Habilitado
+// para HTTPS: el riesgo de BREACH aplica a HTML con secretos reflejados junto a input del
+// atacante (ej. token CSRF); acá es una API JSON sin ese patrón. Nivel "Fastest" a propósito:
+// prioriza no sumarle CPU al pico de tráfico por sobre comprimir al máximo.
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+
+// ── Output caching del catálogo público ────────────────────────────────────
+// Solo para lecturas anónimas que cambian poco (servicios/recursos/datos del tenant por slug) —
+// bajo tráfico repetido (ej. muchos visitantes viendo el mismo catálogo) evita ir a la DB en
+// cada request. Deliberadamente NO se cachea disponibilidad: refleja turnos ya reservados en
+// tiempo real, cachearla arriesgaría mostrar un horario como libre cuando ya se ocupó.
+builder.Services.AddOutputCache(options =>
+{
+    options.AddPolicy("CatalogoPublico", policy => policy.Expire(TimeSpan.FromSeconds(30)));
 });
 
 // ── Controllers y Swagger ──────────────────────────────────────────────────
@@ -234,6 +284,8 @@ var app = builder.Build();
 
 // ExceptionHandler primero: captura excepciones de todo el pipeline posterior.
 app.UseExceptionHandler();
+// Compresión lo antes posible en el pipeline, para envolver la respuesta de todo lo demás.
+app.UseResponseCompression();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -255,6 +307,8 @@ app.UseMiddleware<TenantMiddleware>();
 
 app.UseAuthorization();
 app.UseRateLimiter();
+app.UseOutputCache();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

@@ -33,6 +33,17 @@ httpClient.interceptors.response.use(
       window.location.href = '/login';
     }
 
+    // Suscripción vencida sin gracia restante: el backend bloquea todo salvo /api/auth y
+    // /api/suscripciones (ver RequiereSuscripcionActivaAttribute). En vez de que cada página
+    // muestre su error genérico de carga, mandamos directo a la pantalla de Suscripción.
+    if (
+      error.response?.status === 409 &&
+      error.response?.data?.code === 'SUSCRIPCION_INACTIVA' &&
+      !window.location.pathname.startsWith('/app/suscripcion')
+    ) {
+      window.location.href = '/app/suscripcion';
+    }
+
     if (error.response) {
       const problemDetails = error.response.data;
       console.error(`[API Error ${problemDetails.status}] ${problemDetails.title}: ${problemDetails.detail}`);

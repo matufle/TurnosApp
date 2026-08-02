@@ -27,6 +27,7 @@ import { tenantService } from '../api/tenantService';
 import { useTenantTheme } from '../context/useTenantTheme';
 import { useAuth } from '../context/useAuth';
 import { OnboardingTour } from '../components/OnboardingTour/OnboardingTour';
+import { SuscripcionGraciaBanner } from '../components/SuscripcionGraciaBanner';
 import { navLinks, esLinkVisible } from './navLinks';
 
 export function DashboardLayout() {
@@ -137,7 +138,7 @@ export function DashboardLayout() {
       </AppShell.Header>
 
       {/* 🟢 NAVBAR */}
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p="md" style={{ overflowY: 'auto' }}>
         <Stack gap="xs">
           {navLinksVisibles.map((link) => (
             <NavLink
@@ -161,6 +162,7 @@ export function DashboardLayout() {
       {/* 🟢 CONTENIDO PRINCIPAL */}
       <AppShell.Main bg="gray.0">
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <SuscripcionGraciaBanner />
           <Outlet />
         </div>
       </AppShell.Main>

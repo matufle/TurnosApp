@@ -23,4 +23,10 @@ public interface IClienteRepository : IRepository<Cliente>
     /// de email de Cliente ocurre sin JWT.
     /// </summary>
     Task<Cliente?> GetByTenantYTokenConfirmacionAsync(int tenantId, string token, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cross-tenant a propósito, mismo motivo que GetByTenantYTokenConfirmacionAsync: el reset
+    /// de contraseña de Cliente ocurre sin JWT.
+    /// </summary>
+    Task<Cliente?> GetByTenantYTokenResetPasswordAsync(int tenantId, string token, CancellationToken cancellationToken = default);
 }

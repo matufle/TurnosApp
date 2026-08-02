@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Filters;
+using TurnosApp.Core.Application.Common;
 using TurnosApp.Core.Application.Exceptions;
 using TurnosApp.Core.Application.Interfaces.Persistence;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -9,7 +10,11 @@ namespace TurnosApp.Presentation.WebAPI.Authorization;
 /// <summary>
 /// Filtro global (registrado en Program.cs vía AddControllers(options => options.Filters.Add
 /// &lt;RequiereSuscripcionActivaAttribute&gt;()), no atributo por-controller como RequierePermiso)
-/// que bloquea a un tenant cuya suscripción no está activa ni en trial vigente. Grandfathering
+/// que bloquea a un tenant cuya suscripción no está activa ni en trial vigente. Un tenant en
+/// PastDue (falló el cobro recurrente) conserva acceso durante SuscripcionConstantes.DiasGraciaPastDue
+/// días desde que entró en ese estado (Tenant.PastDueDesde) — le da tiempo a actualizar el método
+/// de pago sin cortarlo de inmediato. Cancelada, en cambio, bloquea sin gracia: es una decisión
+/// explícita del tenant, no una falla de cobro transitoria. Grandfathering
 /// total: todo tenant con EsGrandfathered=true (todos los que existían antes de este deploy,
 /// ver migración AgregarSuscripcionMercadoPago) nunca pasa por este chequeo — decisión de producto
 /// confirmada con Mateo para no trabar a nadie que ya estaba usando la app.
@@ -45,8 +50,13 @@ public class RequiereSuscripcionActivaAttribute : Attribute, IAsyncAuthorization
         if (tenant is null || tenant.EsGrandfathered)
             return;
 
+        var enGraciaPorPastDue = tenant.EstadoSuscripcion == EstadoSuscripcion.PastDue
+            && tenant.PastDueDesde.HasValue
+            && tenant.PastDueDesde.Value.AddDays(SuscripcionConstantes.DiasGraciaPastDue) > DateTime.UtcNow;
+
         var suscripcionActiva = tenant.EstadoSuscripcion == EstadoSuscripcion.Activa
-            || (tenant.EstadoSuscripcion == EstadoSuscripcion.Trial && tenant.SuscripcionVenceEn > DateTime.UtcNow);
+            || (tenant.EstadoSuscripcion == EstadoSuscripcion.Trial && tenant.SuscripcionVenceEn > DateTime.UtcNow)
+            || enGraciaPorPastDue;
 
         if (!suscripcionActiva)
         {

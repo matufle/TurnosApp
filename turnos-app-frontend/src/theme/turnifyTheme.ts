@@ -11,7 +11,7 @@ export const theme = createTheme({
   colors: { cyan: cyanTurnify },
   primaryColor: 'cyan',
   primaryShade: 5,
-  fontFamily: 'Inter, sans-serif',
-  headings: { fontFamily: 'Inter, sans-serif', fontWeight: '700' },
+  fontFamily: 'Inter, -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
+  headings: { fontFamily: 'Inter, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', fontWeight: '700' },
   defaultRadius: 'md',
 });
