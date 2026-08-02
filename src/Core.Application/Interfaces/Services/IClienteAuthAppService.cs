@@ -9,4 +9,6 @@ public interface IClienteAuthAppService
     Task<ClienteMeDto> GetMeAsync(CancellationToken cancellationToken = default);
     Task ConfirmarEmailAsync(ConfirmarEmailClienteDto dto, CancellationToken cancellationToken = default);
     Task ReenviarConfirmacionAsync(ReenviarConfirmacionClienteDto dto, CancellationToken cancellationToken = default);
+    Task OlvidePasswordAsync(OlvidePasswordClienteDto dto, CancellationToken cancellationToken = default);
+    Task ResetPasswordAsync(ResetPasswordClienteDto dto, CancellationToken cancellationToken = default);
 }

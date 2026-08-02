@@ -36,4 +36,14 @@ public interface INotificacionAppService
     /// Programa el email de confirmación de cuenta de un Cliente (self-service) recién registrado.
     /// </summary>
     Task ProgramarConfirmacionEmailClienteAsync(Cliente cliente, string tenantSlug, string token, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Programa el email de reset de contraseña de un Usuario (staff) que lo solicitó.
+    /// </summary>
+    Task ProgramarResetPasswordEmailUsuarioAsync(Usuario usuario, string token, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Programa el email de reset de contraseña de un Cliente (self-service) que lo solicitó.
+    /// </summary>
+    Task ProgramarResetPasswordEmailClienteAsync(Cliente cliente, string tenantSlug, string token, CancellationToken cancellationToken = default);
 }

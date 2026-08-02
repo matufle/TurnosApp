@@ -8,6 +8,7 @@ public interface IUsuarioRepository
     Task<Usuario?> GetByEmailGlobalAsync(string email, CancellationToken cancellationToken);
     Task<Usuario?> GetByIdAsync(int id, CancellationToken cancellationToken);
     Task<Usuario?> GetByTokenConfirmacionAsync(string token, CancellationToken cancellationToken);
+    Task<Usuario?> GetByTokenResetPasswordAsync(string token, CancellationToken cancellationToken);
     Task<IReadOnlyList<Usuario>> GetAllAsync(CancellationToken cancellationToken);
     Task<int> ContarPorRolAsync(int rolId, CancellationToken cancellationToken);
     Task AddAsync(Usuario usuario, CancellationToken cancellationToken);

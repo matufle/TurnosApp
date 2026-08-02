@@ -137,7 +137,7 @@ export function DashboardLayout() {
       </AppShell.Header>
 
       {/* 🟢 NAVBAR */}
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p="md" style={{ overflowY: 'auto' }}>
         <Stack gap="xs">
           {navLinksVisibles.map((link) => (
             <NavLink

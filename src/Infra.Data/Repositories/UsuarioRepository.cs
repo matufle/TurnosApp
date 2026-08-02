@@ -38,6 +38,13 @@ public class UsuarioRepository : IUsuarioRepository
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.TokenConfirmacionEmail == token, cancellationToken);
 
+    public async Task<Usuario?> GetByTokenResetPasswordAsync(string token, CancellationToken cancellationToken)
+        // IgnoreQueryFilters: el reset ocurre sin JWT, antes de conocer el tenant.
+        // Tracked (sin AsNoTracking) porque el caller muta y guarda la entidad.
+        => await _context.Usuarios
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.TokenResetPassword == token, cancellationToken);
+
     public async Task<IReadOnlyList<Usuario>> GetAllAsync(CancellationToken cancellationToken)
         => await _context.Usuarios
             .Include(u => u.Rol)

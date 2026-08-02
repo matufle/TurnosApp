@@ -18,6 +18,8 @@ import { LandingPage } from './pages/Landing/LandindPage';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
 import { ConfirmarEmailPage } from './pages/ConfirmarEmail/ConfirmarEmailPage';
+import { OlvidePasswordPage } from './pages/OlvidePassword/OlvidePasswordPage';
+import { ResetPasswordPage } from './pages/ResetPassword/ResetPasswordPage';
 import { TerminosPage } from './pages/Legal/TerminosPage';
 import { PrivacidadPage } from './pages/Legal/PrivacidadPage';
 import { ProtectedRoute } from './auth/ProtectedRoute';
@@ -47,6 +49,8 @@ const ReservaTenantLayout = lazy(() => import('./pages/Reservas/ReservaTenantLay
 const LoginClientePage = lazy(() => import('./pages/Reservas/LoginClientePage').then((m) => ({ default: m.LoginClientePage })));
 const RegistroClientePage = lazy(() => import('./pages/Reservas/RegistroClientePage').then((m) => ({ default: m.RegistroClientePage })));
 const ConfirmarEmailClientePage = lazy(() => import('./pages/Reservas/ConfirmarEmailClientePage').then((m) => ({ default: m.ConfirmarEmailClientePage })));
+const OlvidePasswordClientePage = lazy(() => import('./pages/Reservas/OlvidePasswordClientePage').then((m) => ({ default: m.OlvidePasswordClientePage })));
+const ResetPasswordClientePage = lazy(() => import('./pages/Reservas/ResetPasswordClientePage').then((m) => ({ default: m.ResetPasswordClientePage })));
 const MisTurnosPage = lazy(() => import('./pages/Reservas/MisTurnosPage').then((m) => ({ default: m.MisTurnosPage })));
 const CatalogoPage = lazy(() => import('./pages/Reservas/CatalogoPage').then((m) => ({ default: m.CatalogoPage })));
 const ReservarPage = lazy(() => import('./pages/Reservas/ReservarPage').then((m) => ({ default: m.ReservarPage })));
@@ -108,6 +112,8 @@ const finalTheme =
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
+          <Route path="/olvide-password" element={<OlvidePasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/terminos" element={<TerminosPage />} />
           <Route path="/privacidad" element={<PrivacidadPage />} />
 
@@ -118,6 +124,8 @@ const finalTheme =
             <Route path="login" element={<LoginClientePage />} />
             <Route path="registro" element={<RegistroClientePage />} />
             <Route path="confirmar-email" element={<ConfirmarEmailClientePage />} />
+            <Route path="olvide-password" element={<OlvidePasswordClientePage />} />
+            <Route path="reset-password" element={<ResetPasswordClientePage />} />
             <Route
               path="reservar"
               element={
@@ -233,7 +241,16 @@ export default function App() {
 
   useEffect(() => {
     const cargarMarca = async () => {
-      const rutasPublicas = ['/', '/login', '/registro', '/confirmar-email', '/terminos', '/privacidad'];
+      const rutasPublicas = [
+        '/',
+        '/login',
+        '/registro',
+        '/confirmar-email',
+        '/olvide-password',
+        '/reset-password',
+        '/terminos',
+        '/privacidad',
+      ];
       const esRutaPublica =
         rutasPublicas.includes(window.location.pathname) ||
         window.location.pathname.startsWith('/reservas/');

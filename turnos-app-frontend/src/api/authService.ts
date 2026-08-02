@@ -62,4 +62,12 @@ register: async (dto: RegisterRequest): Promise<RegistroPendienteResponse> => {
   reenviarConfirmacion: async (email: string): Promise<void> => {
     await httpClient.post('/auth/reenviar-confirmacion', { email });
   },
+
+  olvidePassword: async (email: string): Promise<void> => {
+    await httpClient.post('/auth/olvide-password', { email });
+  },
+
+  resetPassword: async (token: string, nuevaPassword: string): Promise<void> => {
+    await httpClient.post('/auth/reset-password', { token, nuevaPassword });
+  },
 };

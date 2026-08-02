@@ -30,4 +30,12 @@ export const clienteAuthService = {
   reenviarConfirmacion: async (tenantSlug: string, email: string): Promise<void> => {
     await clienteHttpClient.post('/cliente-auth/reenviar-confirmacion', { tenantSlug, email });
   },
+
+  olvidePassword: async (tenantSlug: string, email: string): Promise<void> => {
+    await clienteHttpClient.post('/cliente-auth/olvide-password', { tenantSlug, email });
+  },
+
+  resetPassword: async (tenantSlug: string, token: string, nuevaPassword: string): Promise<void> => {
+    await clienteHttpClient.post('/cliente-auth/reset-password', { tenantSlug, token, nuevaPassword });
+  },
 };

@@ -6,5 +6,7 @@ public enum TipoNotificacion
     RecordatorioTurno,
     ListaEspera,
     ConfirmacionEmailUsuario,
-    ConfirmacionEmailCliente
+    ConfirmacionEmailCliente,
+    ResetPasswordUsuario,
+    ResetPasswordCliente
 }
