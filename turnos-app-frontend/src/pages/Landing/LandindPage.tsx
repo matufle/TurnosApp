@@ -34,7 +34,7 @@ export function LandingPage() {
               calendar_today
             </span>
             <span className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight">
-              Turnify
+              Slotia
             </span>
           </div>
 
@@ -98,7 +98,7 @@ export function LandingPage() {
               </h1>
 
               <p className="font-body-lg text-body-lg text-secondary md:text-lg max-w-xl">
-                Olvidate de las agendas en papel y los mensajes desordenados. Turnify centraliza tus
+                Olvidate de las agendas en papel y los mensajes desordenados. Slotia centraliza tus
                 reservas, organiza tus recursos y servicios, y te da una vista clara de tu semana.
               </p>
 
@@ -325,16 +325,21 @@ export function LandingPage() {
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
             calendar_today
           </span>
-          Turnify
+          Slotia
         </div>
 
         <nav className="flex flex-wrap justify-center gap-6">
-          {['Política de Privacidad', 'Términos de Servicio', 'Centro de Ayuda', 'Contacto'].map((label) => (
+          {[
+            { label: 'Política de Privacidad', href: '/privacidad' },
+            { label: 'Términos de Servicio', href: '/terminos' },
+            { label: 'Centro de Ayuda', href: '#' },
+            { label: 'Contacto', href: '#' },
+          ].map(({ label, href }) => (
             <a
               key={label}
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              title="Próximamente"
+              href={href}
+              onClick={href === '#' ? (e) => e.preventDefault() : undefined}
+              title={href === '#' ? 'Próximamente' : undefined}
               className="text-on-secondary-container font-body-sm text-body-sm no-underline hover:text-primary hover:underline underline-offset-4 transition-all duration-300"
             >
               {label}
@@ -342,7 +347,7 @@ export function LandingPage() {
           ))}
         </nav>
 
-        <div className="font-body-sm text-body-sm text-secondary">© 2026 Turnify. Organizado, práctico y moderno.</div>
+        <div className="font-body-sm text-body-sm text-secondary">© 2026 Slotia. Organizado, práctico y moderno.</div>
       </footer>
     </div>
   );

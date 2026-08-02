@@ -1,7 +1,7 @@
 // src/pages/Reservas/RegistroClientePage.tsx
 import { useState } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
-import { Anchor, Alert, Button, Center, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Anchor, Alert, Button, Center, Checkbox, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useForm, isEmail, isNotEmpty, hasLength } from '@mantine/form';
 import axios from 'axios';
 import { clienteAuthService } from '../../api/clienteAuthService';
@@ -20,12 +20,13 @@ export function RegistroClientePage() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const form = useForm({
-    initialValues: { nombre: '', apellido: '', email: '', telefono: '', password: '' },
+    initialValues: { nombre: '', apellido: '', email: '', telefono: '', password: '', aceptaTerminos: false },
     validate: {
       nombre: isNotEmpty('Ingresá tu nombre'),
       apellido: isNotEmpty('Ingresá tu apellido'),
       email: isEmail('Ingresá un email válido'),
       password: hasLength({ min: 8 }, 'La contraseña debe tener al menos 8 caracteres'),
+      aceptaTerminos: (value) => (value ? null : 'Tenés que aceptar los términos para continuar'),
     },
   });
 
@@ -39,9 +40,10 @@ export function RegistroClientePage() {
     setLoading(true);
 
     try {
+      const { aceptaTerminos: _aceptaTerminos, ...datosCliente } = values;
       const response = await clienteAuthService.registrar({
         tenantSlug: tenant.slug,
-        ...values,
+        ...datosCliente,
         telefono: values.telefono || undefined,
         turnstileToken,
       });
@@ -115,6 +117,22 @@ export function RegistroClientePage() {
             <TextInput label="Email" placeholder="tu@email.com" {...form.getInputProps('email')} />
             <TextInput label="Teléfono (opcional)" {...form.getInputProps('telefono')} />
             <PasswordInput label="Contraseña" {...form.getInputProps('password')} />
+
+            <Checkbox
+              label={
+                <>
+                  Acepto los{' '}
+                  <Anchor href="/terminos" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                    Términos de Servicio
+                  </Anchor>{' '}
+                  y la{' '}
+                  <Anchor href="/privacidad" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                    Política de Privacidad
+                  </Anchor>
+                </>
+              }
+              {...form.getInputProps('aceptaTerminos', { type: 'checkbox' })}
+            />
 
             <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
 

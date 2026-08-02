@@ -72,7 +72,7 @@ export function LoginPage() {
         <div className="hidden md:flex w-1/2 bg-surface-container-low relative overflow-hidden flex-col justify-between p-12">
           <div className="relative z-10">
             <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mb-4">
-              Turnify
+              Slotia
             </h1>
             <p className="font-title-md text-title-md text-secondary max-w-sm">
               Gestión organizada, práctica y moderna para negocios que quieren crecer.
@@ -102,7 +102,7 @@ export function LoginPage() {
         <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center">
           <div className="md:hidden mb-12 flex flex-col items-center">
             <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
-              Turnify
+              Slotia
             </h1>
             <p className="font-body-sm text-body-sm text-secondary">Simple. Moderno. Organizado.</p>
           </div>
@@ -258,7 +258,7 @@ export function LoginPage() {
             <p className="font-body-lg text-body-lg text-secondary">
               ¿No tenés una cuenta?{' '}
               <Link to="/registro" className="text-primary font-title-md hover:underline underline-offset-4">
-                Unite a Turnify
+                Unite a Slotia
               </Link>
             </p>
           </footer>

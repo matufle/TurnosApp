@@ -93,7 +93,7 @@ export function RegisterPage() {
       <main className="flex-grow flex items-center justify-center px-margin-mobile md:px-margin-desktop py-12">
         <div className="w-full max-w-[500px]">
           <div className="text-center mb-10">
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Turnify</h1>
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Slotia</h1>
             <p className="font-title-md text-title-md text-secondary">Organizado, práctico y moderno.</p>
           </div>
 
@@ -285,18 +285,18 @@ export function RegisterPage() {
                   >
                     Acepto los{' '}
                     <a
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      title="Próximamente"
+                      href="/terminos"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary font-semibold hover:underline"
                     >
                       Términos de Servicio
                     </a>{' '}
                     y la{' '}
                     <a
-                      href="#"
-                      onClick={(e) => e.preventDefault()}
-                      title="Próximamente"
+                      href="/privacidad"
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-primary font-semibold hover:underline"
                     >
                       Política de Privacidad

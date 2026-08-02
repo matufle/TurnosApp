@@ -124,8 +124,8 @@ public class NotificacionAppService : INotificacionAppService
             Tipo = TipoNotificacion.ConfirmacionEmailUsuario,
             ClienteId = null,
             DestinatarioEmail = usuario.Email,
-            Asunto = "Confirmá tu cuenta en Turnify",
-            CuerpoHtml = $"Hola {usuario.Nombre}, confirmá tu cuenta para empezar a usar Turnify: " +
+            Asunto = "Confirmá tu cuenta en Slotia",
+            CuerpoHtml = $"Hola {usuario.Nombre}, confirmá tu cuenta para empezar a usar Slotia: " +
                          $"<a href=\"{link}\">{link}</a>. Este link vence en 48 horas.",
             ProgramadaPara = DateTime.UtcNow
         };

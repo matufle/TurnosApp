@@ -95,7 +95,7 @@ export function DashboardLayout() {
           <Group>
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Text size="xl" fw={800} c="brand">
-              Turnify
+              Slotia
             </Text>
           </Group>
 
