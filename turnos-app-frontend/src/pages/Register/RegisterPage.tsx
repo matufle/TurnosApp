@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useForm, isEmail, isNotEmpty, hasLength, matchesField } from '@mantine/form';
 import { authService } from '../../api/authService';
 import { TurnstileWidget } from '../../components/TurnstileWidget';
+import { RevisaTuEmailCard } from '../../components/RevisaTuEmailCard';
 import { trackEvent } from '../../lib/analytics';
 
 export function RegisterPage() {
@@ -93,40 +94,19 @@ export function RegisterPage() {
       <main className="flex-grow flex items-center justify-center px-margin-mobile md:px-margin-desktop py-12">
         <div className="w-full max-w-[500px]">
           <div className="text-center mb-10">
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Slotia</h1>
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">Turnify</h1>
             <p className="font-title-md text-title-md text-secondary">Organizado, práctico y moderno.</p>
           </div>
 
           {registroPendienteEmail ? (
-            <div className="bg-surface-container-lowest rounded-[32px] p-8 md:p-12 soft-elevation border border-surface-variant/30 text-center space-y-6">
-              <span className="material-symbols-outlined text-primary text-[48px]">mark_email_read</span>
-              <div>
-                <h2 className="font-headline-lg text-headline-lg text-on-surface mb-2">Revisá tu email</h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Te enviamos un link de confirmación a <strong>{registroPendienteEmail}</strong>. Confirmá tu cuenta
-                  para poder iniciar sesión.
-                </p>
-              </div>
-              {reenviado ? (
-                <p className="font-body-sm text-body-sm text-on-surface-variant">
-                  Listo, si correspondía te reenviamos el email.
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleReenviar}
-                  disabled={reenviando}
-                  className="font-body-sm text-body-sm text-primary font-semibold hover:underline disabled:opacity-70"
-                >
-                  {reenviando ? 'Reenviando...' : '¿No te llegó? Reenviar email'}
-                </button>
-              )}
-              <div>
-                <Link to="/login" className="font-body-sm text-body-sm text-primary font-bold hover:underline underline-offset-4">
-                  Ir a iniciar sesión
-                </Link>
-              </div>
-            </div>
+            <RevisaTuEmailCard
+              email={registroPendienteEmail}
+              loginHref="/login"
+              reenviando={reenviando}
+              reenviado={reenviado}
+              onReenviar={handleReenviar}
+              onCambiarEmail={() => setRegistroPendienteEmail(null)}
+            />
           ) : (
           <div className="bg-surface-container-lowest rounded-[32px] p-8 md:p-12 soft-elevation border border-surface-variant/30">
             <div className="mb-8">
