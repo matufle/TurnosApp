@@ -31,6 +31,12 @@ public class Tenant : BaseEntity
     public DateTime? SuscripcionVenceEn { get; set; }
     public bool EsGrandfathered { get; set; } = false;
 
+    // Fecha en que el tenant entró en PastDue (falló el cobro recurrente). Se usa para calcular
+    // el período de gracia (ver SuscripcionConstantes.DiasGraciaPastDue) antes de bloquear el
+    // acceso — se limpia al reactivarse (Activa) o al cancelar explícitamente (Cancelada, que
+    // no tiene gracia). Se setea una sola vez por episodio de PastDue, no en cada webhook.
+    public DateTime? PastDueDesde { get; set; }
+
     // Navegación
     public ICollection<Recurso> Recursos { get; set; } = [];
     public ICollection<Cliente> Clientes { get; set; } = [];

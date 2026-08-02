@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using TurnosApp.Core.Application.DTOs.Public;
 using TurnosApp.Core.Application.DTOs.Servicios;
 using TurnosApp.Core.Application.Interfaces.Services;
@@ -13,6 +15,7 @@ namespace TurnosApp.Presentation.WebAPI.Controllers;
 [ApiController]
 [Route("api/public")]
 [AllowAnonymous]
+[EnableRateLimiting("PublicoCatalogo")]
 public class PublicController : ControllerBase
 {
     private readonly IPublicAppService _publicAppService;
@@ -25,6 +28,7 @@ public class PublicController : ControllerBase
     }
 
     [HttpGet("tenants/{slug}")]
+    [OutputCache(PolicyName = "CatalogoPublico")]
     [ProducesResponseType(typeof(TenantPublicoDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTenantPorSlug(string slug, CancellationToken cancellationToken)
@@ -34,6 +38,7 @@ public class PublicController : ControllerBase
     }
 
     [HttpGet("tenants/{slug}/servicios")]
+    [OutputCache(PolicyName = "CatalogoPublico")]
     [ProducesResponseType(typeof(IReadOnlyList<ServicioDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetServicios(string slug, CancellationToken cancellationToken)
@@ -43,6 +48,7 @@ public class PublicController : ControllerBase
     }
 
     [HttpGet("tenants/{slug}/recursos")]
+    [OutputCache(PolicyName = "CatalogoPublico")]
     [ProducesResponseType(typeof(IReadOnlyList<RecursoPublicoDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRecursos(string slug, CancellationToken cancellationToken)

@@ -69,13 +69,13 @@
 
   --container-container-max: 1280px;
 
-  --font-display-lg: "Inter", sans-serif;
-  --font-label-md: "Inter", sans-serif;
-  --font-headline-lg-mobile: "Inter", sans-serif;
-  --font-headline-lg: "Inter", sans-serif;
-  --font-title-md: "Inter", sans-serif;
-  --font-body-lg: "Inter", sans-serif;
-  --font-body-sm: "Inter", sans-serif;
+  --font-display-lg: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-label-md: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-headline-lg-mobile: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-headline-lg: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-title-md: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-body-lg: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-body-sm: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
   --text-display-lg: 48px;
   --text-display-lg--line-height: 56px;

@@ -4,6 +4,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Server GC crea un heap por core y apunta a throughput a costa de memoria — pensado para
+         servers grandes. En una instancia free-tier chica (Render free ronda los 512MB) eso
+         empuja el proceso más cerca del límite de memoria bajo picos de carga, justo el escenario
+         que causó caídas prolongadas en el load test. Workstation GC (no concurrente) usa mucha
+         menos memoria a costa de throughput bruto, mejor trade-off para este tamaño de instancia. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

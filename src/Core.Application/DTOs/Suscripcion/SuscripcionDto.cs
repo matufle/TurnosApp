@@ -6,5 +6,6 @@ public record SuscripcionDto(
     bool EsGrandfathered,
     string? PlanNombre,
     decimal? PlanPrecioMensual,
-    bool TieneSuscripcionIniciada
+    bool TieneSuscripcionIniciada,
+    int? DiasRestantesGracia
 );

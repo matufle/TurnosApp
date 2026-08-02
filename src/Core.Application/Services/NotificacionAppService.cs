@@ -171,7 +171,7 @@ public class NotificacionAppService : INotificacionAppService
             DestinatarioEmail = usuario.Email,
             Asunto = "Restablecé tu contraseña en Slotia",
             CuerpoHtml = $"Hola {usuario.Nombre}, restablecé tu contraseña en Slotia: " +
-                         $"<a href=\"{link}\">{link}</a>. Este link vence en 1 hora. " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 30 minutos. " +
                          "Si no lo pediste vos, ignorá este email.",
             ProgramadaPara = DateTime.UtcNow
         };
@@ -196,7 +196,7 @@ public class NotificacionAppService : INotificacionAppService
             DestinatarioEmail = cliente.Email,
             Asunto = "Restablecé tu contraseña",
             CuerpoHtml = $"Hola {cliente.Nombre}, restablecé tu contraseña: " +
-                         $"<a href=\"{link}\">{link}</a>. Este link vence en 1 hora. " +
+                         $"<a href=\"{link}\">{link}</a>. Este link vence en 30 minutos. " +
                          "Si no lo pediste vos, ignorá este email.",
             ProgramadaPara = DateTime.UtcNow
         };

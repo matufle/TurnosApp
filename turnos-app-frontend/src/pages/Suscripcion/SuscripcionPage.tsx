@@ -99,7 +99,11 @@ export function SuscripcionPage() {
       case 'Activa':
         return 'Tu suscripción está activa y al día.';
       case 'PastDue':
-        return 'Tu suscripción está pausada por Mercado Pago. Iniciá una suscripción nueva para reactivar el acceso.';
+        return suscripcion?.diasRestantesGracia !== null && suscripcion?.diasRestantesGracia !== undefined
+          ? suscripcion.diasRestantesGracia > 0
+            ? `No pudimos procesar tu pago. Tenés ${suscripcion.diasRestantesGracia} ${suscripcion.diasRestantesGracia === 1 ? 'día' : 'días'} para actualizar tu método de pago antes de perder el acceso.`
+            : 'No pudimos procesar tu pago y el período de gracia terminó. Actualizá tu método de pago para recuperar el acceso.'
+          : 'Tu suscripción está pausada por Mercado Pago. Iniciá una suscripción nueva para reactivar el acceso.';
       case 'Cancelada':
         return 'Tu suscripción está cancelada. Suscribite de nuevo para seguir usando Turnify.';
     }

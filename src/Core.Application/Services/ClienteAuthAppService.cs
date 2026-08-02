@@ -173,7 +173,7 @@ public class ClienteAuthAppService : IClienteAuthAppService
 
         var token = SecureTokenGenerator.Generar();
         cliente.TokenResetPassword = token;
-        cliente.TokenResetPasswordExpira = DateTime.UtcNow.AddHours(1);
+        cliente.TokenResetPasswordExpira = DateTime.UtcNow.AddMinutes(30);
 
         _unitOfWork.Clientes.Update(cliente);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

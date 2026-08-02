@@ -204,7 +204,7 @@ public class AuthAppService : IAuthAppService
             return;
 
         var token = SecureTokenGenerator.Generar();
-        usuario.EstablecerTokenResetPassword(token, DateTime.UtcNow.AddHours(1));
+        usuario.EstablecerTokenResetPassword(token, DateTime.UtcNow.AddMinutes(30));
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await _notificacionAppService.ProgramarResetPasswordEmailUsuarioAsync(usuario, token, cancellationToken);
