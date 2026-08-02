@@ -381,7 +381,7 @@ export function RecursosPage() {
                   {...form.getInputProps('usuarioId')}
                 />
                 <p className="font-body-sm text-body-sm text-secondary mt-1">
-                  Si esta persona también inicia sesión en Turnify, vinculá su usuario para no duplicar la carga.
+                  Si esta persona también inicia sesión en Slotia, vinculá su usuario para no duplicar la carga.
                 </p>
               </div>
 

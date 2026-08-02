@@ -18,6 +18,8 @@ import { LandingPage } from './pages/Landing/LandindPage';
 import { LoginPage } from './pages/Login/LoginPage';
 import { RegisterPage } from './pages/Register/RegisterPage';
 import { ConfirmarEmailPage } from './pages/ConfirmarEmail/ConfirmarEmailPage';
+import { TerminosPage } from './pages/Legal/TerminosPage';
+import { PrivacidadPage } from './pages/Legal/PrivacidadPage';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { ClienteProtectedRoute } from './auth/ClienteProtectedRoute';
 
@@ -106,6 +108,8 @@ const finalTheme =
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
+          <Route path="/terminos" element={<TerminosPage />} />
+          <Route path="/privacidad" element={<PrivacidadPage />} />
 
           {/* Self-service de cara al cliente final: identidad y branding propios,
               completamente separados del staff (ver ClienteAuthProvider). */}
@@ -229,7 +233,7 @@ export default function App() {
 
   useEffect(() => {
     const cargarMarca = async () => {
-      const rutasPublicas = ['/', '/login', '/registro', '/confirmar-email'];
+      const rutasPublicas = ['/', '/login', '/registro', '/confirmar-email', '/terminos', '/privacidad'];
       const esRutaPublica =
         rutasPublicas.includes(window.location.pathname) ||
         window.location.pathname.startsWith('/reservas/');

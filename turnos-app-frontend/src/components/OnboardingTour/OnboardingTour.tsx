@@ -19,7 +19,7 @@ const PAGINAS_TOUR: PaginaTour[] = [
     steps: [
       {
         target: '[data-tour="nav-turnos"]',
-        title: '¡Bienvenido a Turnify!',
+        title: '¡Bienvenido a Slotia!',
         content: 'Te vamos a mostrar rápido las secciones principales. Empecemos por Turnos: acá vas a ver y agendar la agenda de tu negocio.',
         placement: 'right',
       },
@@ -155,7 +155,7 @@ const PAGINAS_TOUR: PaginaTour[] = [
       },
       {
         target: '[data-tour="config-solapamiento"]',
-        content: '¡Y listo! Esta opción decide si permitís turnos superpuestos en el mismo horario. Ya podés empezar a usar Turnify.',
+        content: '¡Y listo! Esta opción decide si permitís turnos superpuestos en el mismo horario. Ya podés empezar a usar Slotia.',
       },
     ],
   },

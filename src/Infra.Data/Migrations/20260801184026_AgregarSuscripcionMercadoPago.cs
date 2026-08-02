@@ -103,7 +103,7 @@ namespace TurnosApp.Infra.Data.Migrations
             migrationBuilder.Sql(
                 """
                 INSERT INTO "Planes" ("Nombre", "PrecioMensual", "TrialDias", "Activo")
-                VALUES ('Plan Turnify', 50000, 30, TRUE);
+                VALUES ('Plan Slotia', 50000, 30, TRUE);
                 """);
 
             // Grandfathering total: todo tenant que ya existía antes de este deploy (todos
@@ -117,7 +117,7 @@ namespace TurnosApp.Infra.Data.Migrations
                 UPDATE "Tenants"
                 SET "EsGrandfathered" = TRUE,
                     "EstadoSuscripcion" = 'Activa',
-                    "PlanId" = (SELECT "Id" FROM "Planes" WHERE "Nombre" = 'Plan Turnify' LIMIT 1);
+                    "PlanId" = (SELECT "Id" FROM "Planes" WHERE "Nombre" = 'Plan Slotia' LIMIT 1);
                 """);
 
             // Mismo gotcha documentado en CLAUDE.md (ver 20260727150732_BackfillPermisosRolAdmin):

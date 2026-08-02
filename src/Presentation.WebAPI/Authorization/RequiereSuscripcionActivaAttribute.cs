@@ -52,7 +52,7 @@ public class RequiereSuscripcionActivaAttribute : Attribute, IAsyncAuthorization
         {
             throw new BusinessException(
                 code: "SUSCRIPCION_INACTIVA",
-                message: "Tu suscripción no está activa. Actualizá tu método de pago para seguir usando Turnify.");
+                message: "Tu suscripción no está activa. Actualizá tu método de pago para seguir usando Slotia.");
         }
     }
 }

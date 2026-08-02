@@ -67,7 +67,7 @@ public class SuscripcionAppService : ISuscripcionAppService
         // se crea directo con el email del pagador.
         var preapproval = await _mercadoPagoService.CrearPreapprovalAsync(
             usuario.Email,
-            $"Suscripción Turnify - {tenant.Nombre}",
+            $"Suscripción Slotia - {tenant.Nombre}",
             plan.PrecioMensual,
             backUrl,
             cancellationToken);

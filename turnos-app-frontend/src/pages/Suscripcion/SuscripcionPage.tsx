@@ -105,7 +105,7 @@ export function SuscripcionPage() {
       <div>
         <Title order={2}>Suscripción</Title>
         <Text c="dimmed" size="sm">
-          Estado de la suscripción de tu negocio a Turnify.
+          Estado de la suscripción de tu negocio a Slotia.
         </Text>
       </div>
 
@@ -159,7 +159,7 @@ export function SuscripcionPage() {
 
                 {suscripcion.estadoSuscripcion === 'Cancelada' && (
                   <Text size="sm" c="red">
-                    Tu suscripción está cancelada. Suscribite de nuevo para seguir usando Turnify.
+                    Tu suscripción está cancelada. Suscribite de nuevo para seguir usando Slotia.
                   </Text>
                 )}
 
